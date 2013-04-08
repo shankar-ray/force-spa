@@ -1,0 +1,61 @@
+{
+    "done": true,
+    "totalSize": 1,
+    "records": [
+        {
+            "attributes": {
+                "type": "SimpleContainerBean",
+                "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000101"
+            },
+            "Id": "a01i00000000003",
+            "RelatedBeans": {
+                "done": true,
+                "totalSize": 2,
+                "records": [
+                    {
+                        "attributes": {
+                            "type": "SimpleBean",
+                            "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000001"
+                        },
+                        "Id": "a01i00000000001",
+                        "Name": "Name 1",
+                        "Description": "Description 1"
+                    },
+                    {
+                        "attributes": {
+                            "type": "SimpleBean",
+                            "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000002"
+                        },
+                        "Id": "a01i00000000002",
+                        "Name": "Name 2",
+                        "Description": "Description 2"
+                    }
+                ]
+            },
+            "MoreRelatedBeans": {
+                "done": true,
+                "totalSize": 2,
+                "records": [
+                    {
+                        "attributes": {
+                            "type": "SimpleBean",
+                            "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000003"
+                        },
+                        "Id": "a01i00000000003",
+                        "Name": "Name 3",
+                        "Description": "Description 3"
+                    },
+                    {
+                        "attributes": {
+                            "type": "SimpleBean",
+                            "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000004"
+                        },
+                        "Id": "a01i00000000004",
+                        "Name": "Name 4",
+                        "Description": "Description 4"
+                    }
+                ]
+            }
+        }
+    ]
+}

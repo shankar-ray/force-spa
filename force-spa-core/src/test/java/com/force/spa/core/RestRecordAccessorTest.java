@@ -1,0 +1,370 @@
+/*
+ * Copyright, 2012, SALESFORCE.com 
+ * All Rights Reserved
+ * Company Confidential
+ */
+package com.force.spa.core;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.RecordQuery;
+import com.force.spa.RecordRequestException;
+import com.force.spa.RecordResponseException;
+import com.force.spa.core.testbeans.DateTimeBean;
+import com.force.spa.core.testbeans.InsertableUpdatableBean;
+import com.force.spa.core.testbeans.SimpleBean;
+import com.force.spa.core.testbeans.SimpleContainerBean;
+import com.force.spa.core.testbeans.StandardFieldBean;
+import com.force.spa.core.testbeans.UserMoniker;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.junit.Test;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyMapOf;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
+
+    @Test
+    public void testSimpleCreate() throws Exception {
+        SimpleBean bean = new SimpleBean();
+        bean.setName("Name 1");
+        bean.setDescription("Description 1");
+        bean.setState("This is transient");
+
+        when(
+            mockConnector.doCreate(anyString(), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(bean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(mockConnector).doCreate("SimpleBean", getResourceString("simpleCreateRequest.json"), null);
+    }
+
+    @Test
+    public void testCreateErrorResponse() throws Exception {
+        SimpleBean bean = new SimpleBean();
+        bean.setName("Name 1");
+        bean.setDescription("Description 1");
+
+        when(
+            mockConnector.doCreate(anyString(), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createErrorResponse.json"));
+
+        try {
+            accessor.create(bean);
+            fail("Didn't get expected exception");
+        } catch (RecordResponseException e) {
+            assertThat(e.getMessage(), is(equalTo("Error message 1; Error message 2")));
+        }
+    }
+
+    @Test
+    public void testCreateInvalidResponse() throws Exception {
+        SimpleBean bean = new SimpleBean();
+        bean.setName("Name 1");
+        bean.setDescription("Description 1");
+
+        when(
+            mockConnector.doCreate(anyString(), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createInvalidResponse.json"));
+
+        try {
+            accessor.create(bean);
+            fail("Didn't get expected exception");
+        } catch (RecordResponseException e) {
+            assertThat(e.getMessage(), is(equalTo("JSON response is missing expected fields")));
+        }
+    }
+
+    @Test
+    public void testStandardFieldCreate() throws Exception {
+        StandardFieldBean bean = new StandardFieldBean();
+        bean.setName("Name 1");
+        bean.setCreatedBy(new UserMoniker("a01i00000000201"));
+        bean.setCreatedDate(new Date());
+        bean.setLastModifiedBy(new UserMoniker("a01i00000000202"));
+        bean.setLastModifiedDate(new Date());
+        bean.setOwner(new UserMoniker("a01i00000000203"));
+
+        when(
+            mockConnector.doCreate(anyString(), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(bean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(mockConnector).doCreate("StandardFieldBean", getResourceString("standardFieldCreateRequest.json"), null);
+    }
+
+    @Test
+    public void testCreateInsertableUpdatable() throws Exception {
+        InsertableUpdatableBean bean = new InsertableUpdatableBean();
+        bean.setName("Name 1");
+        bean.setNotInsertable("Updatable but not insertable value");
+        bean.setNotUpdatable("Insertable but not updatable value");
+        bean.setNotInsertableOrUpdatable("Not insertable or updatable value");
+
+        when(
+            mockConnector.doCreate(anyString(), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(bean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(mockConnector).doCreate("InsertableUpdatableBean", getResourceString("createInsertableUpdatableRequest.json"), null);
+    }
+
+    @Test
+    public void testSimplePatch() throws Exception {
+        SimpleBean beanChanges = new SimpleBean();
+        beanChanges.setDescription("Description 1");
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.patch("a01i00000000001AAC", beanChanges);
+
+        verify(mockConnector).doUpdate("SimpleBean", "a01i00000000001AAC", getResourceString("simplePatchRequest.json"), null);
+    }
+
+    @Test
+    public void testSimpleUpdate() throws Exception {
+        SimpleBean beanChanges = new SimpleBean();
+        beanChanges.setName("Name 2");
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.update("a01i00000000001AAC", beanChanges);
+
+        verify(mockConnector).doUpdate("SimpleBean", "a01i00000000001AAC", getResourceString("simpleUpdateRequest.json"), null);
+
+        SimpleBean beanChanges2 = new SimpleBean();
+        beanChanges2.setDescription("Description 1");
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.patch("a01i00000000001AAC", beanChanges2);
+
+        verify(mockConnector).doUpdate("SimpleBean", "a01i00000000001AAC", getResourceString("simplePatchRequest.json"), null);
+    }
+
+    @Test
+    public void testUpdateByBeanButNoId() throws Exception {
+        SimpleBean beanChanges = new SimpleBean();
+        beanChanges.setDescription("Description 1");
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        try {
+            accessor.update(beanChanges);
+            fail("Didn't get expected exception");
+        } catch (RecordRequestException e) {
+            assertThat(e.getMessage(), is(equalTo("Record bean does not have an id value set")));
+        }
+    }
+
+    @Test
+    public void testStandardFieldPatch() throws Exception {
+        StandardFieldBean beanChanges = new StandardFieldBean();
+        beanChanges.setName("Name 1");
+        beanChanges.setCreatedBy(new UserMoniker("a01i00000000201"));
+        beanChanges.setCreatedDate(new Date());
+        beanChanges.setLastModifiedBy(new UserMoniker("a01i00000000202"));
+        beanChanges.setLastModifiedDate(new Date());
+        beanChanges.setOwner(new UserMoniker("a01i00000000203"));
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.patch("a01i00000000001AAC", beanChanges);
+
+        verify(mockConnector).doUpdate("StandardFieldBean", "a01i00000000001AAC", getResourceString("standardFieldPatchRequest.json"), null);
+    }
+
+    @Test
+    public void testDeleteByBean() throws Exception {
+        SimpleBean bean = new SimpleBean();
+        bean.setId("a01i00000000001AAC");
+
+        doNothing().when(mockConnector).doDelete(anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.delete(bean);
+
+        verify(mockConnector).doDelete("SimpleBean", "a01i00000000001AAC", null);
+    }
+
+    @Test
+    public void testSimpleDelete() throws Exception {
+        doNothing().when(mockConnector).doDelete(anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.delete("a01i00000000001AAC", SimpleBean.class);
+
+        verify(mockConnector).doDelete("SimpleBean", "a01i00000000001AAC", null);
+    }
+
+    @Test
+    public void testDeleteByBeanButNoId() throws Exception {
+        SimpleBean bean = new SimpleBean();
+        bean.setDescription("Description 1");
+
+        doNothing().when(mockConnector).doDelete(anyString(), anyString(), anyMapOf(String.class, String.class));
+
+        try {
+            accessor.delete(bean);
+            fail("Didn't get expected exception");
+        } catch (RecordRequestException e) {
+            assertThat(e.getMessage(), is(equalTo("Record bean does not have an id value set")));
+        }
+    }
+
+    @Test
+    public void testSimpleGet() throws Exception {
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
+
+        SimpleBean bean = accessor.get("a01i00000000001AAC", SimpleBean.class);
+
+        assertThat(bean, is(not(nullValue())));
+
+        assertThat(bean.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(bean.getId(), is(equalTo("a01i00000000001")));
+        assertThat(bean.getName(), is(equalTo("Name 1")));
+        assertThat(bean.getDescription(), is(equalTo("Description 1")));
+    }
+
+    @Test
+    public void testSimpleQuery() throws Exception {
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
+
+        List<SimpleBean> beans = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute();
+
+        assertThat(beans.size(), is(equalTo(2)));
+
+        SimpleBean bean1 = beans.get(0);
+        assertThat(bean1.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean1.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(bean1.getId(), is(equalTo("a01i00000000001")));
+        assertThat(bean1.getName(), is(equalTo("Name 1")));
+        assertThat(bean1.getDescription(), is(equalTo("Description 1")));
+
+        SimpleBean bean2 = beans.get(1);
+        assertThat(bean2.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000002")));
+        assertThat(bean2.getId(), is(equalTo("a01i00000000002")));
+        assertThat(bean2.getName(), is(equalTo("Name 2")));
+        assertThat(bean2.getDescription(), is(equalTo("Description 2")));
+    }
+
+    @Test
+    public void testSubquery() throws Exception {
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleSubqueryResponse.json"));
+
+        List<SimpleContainerBean> containerBeans =
+            accessor.createQuery("select * from SimpleContainerBean", SimpleContainerBean.class).execute();
+
+        assertThat(containerBeans.size(), is(equalTo(1)));
+
+        SimpleContainerBean containerBean1 = containerBeans.get(0);
+        assertThat(containerBean1.getRelatedBeans().size(), is(equalTo(2)));
+
+        SimpleBean bean1 = containerBean1.getRelatedBeans().get(0);
+        assertThat(bean1.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean1.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(bean1.getId(), is(equalTo("a01i00000000001")));
+        assertThat(bean1.getName(), is(equalTo("Name 1")));
+        assertThat(bean1.getDescription(), is(equalTo("Description 1")));
+
+        SimpleBean bean2 = containerBean1.getRelatedBeans().get(1);
+        assertThat(bean2.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000002")));
+        assertThat(bean2.getId(), is(equalTo("a01i00000000002")));
+        assertThat(bean2.getName(), is(equalTo("Name 2")));
+        assertThat(bean2.getDescription(), is(equalTo("Description 2")));
+
+        assertThat(containerBean1.getMoreRelatedBeans().length, is(equalTo(2)));
+
+        SimpleBean bean3 = containerBean1.getMoreRelatedBeans()[0];
+        assertThat(bean3.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean3.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000003")));
+        assertThat(bean3.getId(), is(equalTo("a01i00000000003")));
+        assertThat(bean3.getName(), is(equalTo("Name 3")));
+        assertThat(bean3.getDescription(), is(equalTo("Description 3")));
+
+        SimpleBean bean4 = containerBean1.getMoreRelatedBeans()[1];
+        assertThat(bean4.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean4.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000004")));
+        assertThat(bean4.getId(), is(equalTo("a01i00000000004")));
+        assertThat(bean4.getName(), is(equalTo("Name 4")));
+        assertThat(bean4.getDescription(), is(equalTo("Description 4")));
+    }
+
+    @Test
+    public void testAggregateQuery() throws Exception {
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
+
+        RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
+        List<JsonNode> jsonNodes = query.execute(JsonNode.class);
+
+        assertThat(jsonNodes.size(), is(equalTo(2)));
+
+        JsonNode node1 = jsonNodes.get(0);
+        assertThat(node1.get("expr0").asInt(), is(equalTo(1)));
+        assertThat(node1.get("Name").asText(), is(equalTo("Name 1")));
+
+        JsonNode node2 = jsonNodes.get(1);
+        assertThat(node2.get("expr0").asInt(), is(equalTo(1)));
+        assertThat(node2.get("Name").asText(), is(equalTo("Name 2")));
+    }
+
+    @Test
+    public void testDateTimePatch() throws Exception {
+        TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
+        SimpleDateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        iso8601Format.setTimeZone(gmtTimeZone);
+        SimpleDateFormat justDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        justDateFormat.setTimeZone(gmtTimeZone);
+
+        DateTimeBean beanChanges = new DateTimeBean();
+        beanChanges.setJavaDateAndTime(iso8601Format.parse("1999-04-01T08:14:56.000+0000"));
+        beanChanges.setJavaDateOnly(justDateFormat.parse("1999-04-01"));
+        beanChanges.setJodaDateAndTime(new DateTime(beanChanges.getJavaDateAndTime().getTime(), DateTimeZone.UTC));
+        beanChanges.setJodaDateOnly(LocalDate.parse("1999-04-01"));
+
+        doNothing().when(mockConnector).doUpdate(anyString(), anyString(), anyString(), anyMapOf(String.class, String.class));
+        accessor.patch("a01i00000000001AAC", beanChanges);
+
+        verify(mockConnector).doUpdate("DateTimeBean", "a01i00000000001AAC", getResourceString("dateTimePatchRequest.json"), null);
+    }
+
+    @Test
+    public void testDateTimeQuery() throws Exception {
+        TimeZone gmtTimeZone = TimeZone.getTimeZone("GMT");
+        SimpleDateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        iso8601Format.setTimeZone(gmtTimeZone);
+        SimpleDateFormat justDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        justDateFormat.setTimeZone(gmtTimeZone);
+
+        Date javaDateAndTime = iso8601Format.parse("1999-04-01T08:14:56.000+0000");
+        Date javaDateOnly = justDateFormat.parse("1999-04-01");
+        DateTime jodaDateAndTime = new DateTime(javaDateAndTime.getTime(), DateTimeZone.UTC);
+        LocalDate jodaDateOnly = LocalDate.parse("1999-04-01");
+
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("dateTimeQueryResponse.json"));
+
+        DateTimeBean bean = accessor.get("a01i00000000001AAC", DateTimeBean.class);
+
+        assertThat(bean, is(not(nullValue())));
+
+        assertThat(bean.getJavaDateAndTime(), is(equalTo(javaDateAndTime)));
+        assertThat(bean.getJavaDateOnly(), is(equalTo(javaDateOnly)));
+        assertThat(bean.getJodaDateAndTime(), is(equalTo(jodaDateAndTime)));
+        assertThat(bean.getJodaDateOnly(), is(equalTo(jodaDateOnly)));
+    }
+}
