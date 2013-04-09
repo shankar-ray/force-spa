@@ -5,8 +5,8 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.SalesforceField;
-import com.force.spa.SalesforceObject;
+import com.force.spa.core.SalesforceField;
+import com.force.spa.core.SalesforceObject;
 
 @SalesforceObject(name = "Name")
 public class Name {

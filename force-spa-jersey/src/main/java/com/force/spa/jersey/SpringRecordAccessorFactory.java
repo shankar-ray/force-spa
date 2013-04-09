@@ -5,16 +5,16 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
-import com.force.spa.RecordAccessor;
+import com.force.spa.core.AuthorizationConnector;
+import com.force.spa.core.RecordAccessor;
 import com.sun.jersey.api.client.Client;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * A Spring factory for instances of {@link com.force.spa.RecordAccessor} that use a {@link JerseyRestConnector} for
- * communications.
+ * A Spring factory for instances of {@link com.force.spa.core.RecordAccessor} that use a {@link JerseyRestConnector}
+ * for communications.
  */
 @Component("recordAccessorFactory")
 public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> {

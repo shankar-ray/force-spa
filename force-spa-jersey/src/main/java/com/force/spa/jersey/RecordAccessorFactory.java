@@ -5,14 +5,14 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
-import com.force.spa.RecordAccessor;
+import com.force.spa.core.AuthorizationConnector;
+import com.force.spa.core.RecordAccessor;
 import com.force.spa.core.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 import org.apache.commons.lang.Validate;
 
 /**
- * A simple (non-Spring) factory for instances of {@link com.force.spa.RecordAccessor} that use a {@link
+ * A simple (non-Spring) factory for instances of {@link com.force.spa.core.RecordAccessor} that use a {@link
  * JerseyRestConnector} for communications.
  */
 public class RecordAccessorFactory {
@@ -21,9 +21,9 @@ public class RecordAccessorFactory {
     private AuthorizationConnector defaultAuthorizationConnector = null; // Lazily populated.
 
     /**
-     * Creates a new instance of {@link com.force.spa.RecordAccessor} with a default {@link Client} and a default {@link
-     * AuthorizationConnector} that uses an OAuth username-password flow with credential information retrieved from the
-     * environment. The most current Salesforce API version is used by default.
+     * Creates a new instance of {@link com.force.spa.core.RecordAccessor} with a default {@link Client} and a default
+     * {@link AuthorizationConnector} that uses an OAuth username-password flow with credential information retrieved
+     * from the environment. The most current Salesforce API version is used by default.
      * <p/>
      * This form is likely not very useful in production environments because of the limited authorization support but
      * can be useful for integration tests.
@@ -36,7 +36,7 @@ public class RecordAccessorFactory {
     }
 
     /**
-     * Creates a new instance of {@link com.force.spa.RecordAccessor} with a default {@link Client} and a specific
+     * Creates a new instance of {@link com.force.spa.core.RecordAccessor} with a default {@link Client} and a specific
      * {@link AuthorizationConnector}. The most current Salesforce API version is used by default.
      * <p/>
      * This is probably the most common constructor to use in production environments because it provides sufficient
@@ -50,7 +50,7 @@ public class RecordAccessorFactory {
     }
 
     /**
-     * Creates a new instance of {@link com.force.spa.RecordAccessor} with a specific {@link Client} and a specific
+     * Creates a new instance of {@link com.force.spa.core.RecordAccessor} with a specific {@link Client} and a specific
      * {@link AuthorizationConnector} and a specific Salesforce API version.
      * <p/>
      * You'll typically use this form if you want to supply a {@link Client} that is pre-configured with specific

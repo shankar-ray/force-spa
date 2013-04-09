@@ -5,8 +5,8 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
-import com.force.spa.RecordAccessor;
+import com.force.spa.core.AuthorizationConnector;
+import com.force.spa.core.RecordAccessor;
 import com.sun.jersey.api.client.Client;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

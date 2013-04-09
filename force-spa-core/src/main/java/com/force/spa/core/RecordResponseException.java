@@ -1,21 +1,21 @@
 /*
- * Copyright, 2012-2013, SALESFORCE.com
+ * Copyright, 2012, SALESFORCE.com
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa;
+package com.force.spa.core;
 
 /**
- * Thrown to indicate a problem issuing the request to access records. The request probably did not make it to the
- * server or failed so severely that the server couldn't even begin to process it.
+ * Thrown to indicate a problem accessing records was returned in the response from the Salesforce server. The request
+ * was successfully issued and the error is coming from the server.
  */
-public class RecordRequestException extends RuntimeException {
-    private static final long serialVersionUID = 6311549209416962878L;
+public class RecordResponseException extends RuntimeException {
+    private static final long serialVersionUID = 1028782519413158664L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.
      */
-    public RecordRequestException() {
+    public RecordResponseException() {
         super();
     }
 
@@ -24,7 +24,7 @@ public class RecordRequestException extends RuntimeException {
      *
      * @param message the detail message
      */
-    public RecordRequestException(String message) {
+    public RecordResponseException(String message) {
         super(message);
     }
 
@@ -35,7 +35,7 @@ public class RecordRequestException extends RuntimeException {
      *
      * @param cause the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public RecordRequestException(Throwable cause) {
+    public RecordResponseException(Throwable cause) {
         super(cause);
     }
 
@@ -45,7 +45,7 @@ public class RecordRequestException extends RuntimeException {
      * @param message the detail message
      * @param cause   the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public RecordRequestException(String message, Throwable cause) {
+    public RecordResponseException(String message, Throwable cause) {
         super(message, cause);
     }
 }

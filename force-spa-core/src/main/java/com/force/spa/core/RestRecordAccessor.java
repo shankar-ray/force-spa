@@ -7,11 +7,6 @@ package com.force.spa.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.force.spa.RecordAccessor;
-import com.force.spa.RecordQuery;
-import com.force.spa.RecordRequestException;
-import com.force.spa.RecordResponseException;
-import com.force.spa.RestConnector;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -25,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An implementation of {@link com.force.spa.RecordAccessor} that is based on the JSON representations of the Salesforce
- * REST API.
+ * An implementation of {@link RecordAccessor} that is based on the JSON representations of the Salesforce REST API.
  */
 public final class RestRecordAccessor implements RecordAccessor {
 

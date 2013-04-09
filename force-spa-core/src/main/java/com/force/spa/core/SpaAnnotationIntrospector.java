@@ -16,8 +16,6 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.util.BeanUtil;
-import com.force.spa.SalesforceField;
-import com.force.spa.SalesforceObject;
 import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.Column;

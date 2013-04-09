@@ -5,7 +5,7 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
+import com.force.spa.core.AuthorizationConnector;
 import com.sun.jersey.api.client.Client;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;

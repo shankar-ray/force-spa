@@ -5,11 +5,9 @@
  */
 package com.force.spa.core;
 
-import com.force.spa.RecordQuery;
-
 /**
- * An abstract implementation of {@link com.force.spa.RecordQuery} that handles some standard stuff so that derived
- * classes just need to worry about implementing {@link com.force.spa.RecordQuery#execute()}.
+ * An abstract implementation of {@link RecordQuery} that handles some standard stuff so that derived classes just need
+ * to worry about implementing {@link RecordQuery#execute()}.
  *
  * @param <T> the class of returned records
  */

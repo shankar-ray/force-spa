@@ -5,6 +5,7 @@
  */
 package com.force.spa;
 
+import com.force.spa.core.RecordResponseException;
 import org.junit.Test;
 
 import java.io.Serializable;

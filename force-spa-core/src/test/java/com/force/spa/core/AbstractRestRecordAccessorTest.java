@@ -5,8 +5,6 @@
  */
 package com.force.spa.core;
 
-import com.force.spa.RecordAccessor;
-import com.force.spa.RestConnector;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 
@@ -20,7 +18,7 @@ import static org.mockito.Mockito.mock;
  * An abstract base class that includes a small amount of supporting infrastructure to help with unit tests related to a
  * {@link RestRecordAccessor}.
  * <p/>
- * This class initializes a {@link RestRecordAccessor} with a mock {@link com.force.spa.RestConnector} that can be used
+ * This class initializes a {@link RestRecordAccessor} with a mock {@link RestConnector} that can be used
  * to interact with the network inputs and outputs of the test.
  * <p/>
  * Also included are some utility routines for reading mock network requests and responses from resources.

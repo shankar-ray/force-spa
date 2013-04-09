@@ -8,8 +8,6 @@ package com.force.spa.core;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import com.force.spa.ChildToParent;
-import com.force.spa.SalesforceObject;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;

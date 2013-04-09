@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa;
+package com.force.spa.core;
 
 import java.io.InputStream;
 import java.net.URI;
