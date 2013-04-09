@@ -77,10 +77,7 @@ public final class RestRecordAccessor implements RecordAccessor {
     public void update(Object record) {
         Validate.notNull(record, "record must not be null");
 
-        ObjectDescriptor descriptor = getRequiredDescriptor(record.getClass());
-        String id = getRequiredId(descriptor, record);
-
-        update(id, record);
+        update(getRecordId(record), record);
     }
 
     @Override
@@ -121,10 +118,7 @@ public final class RestRecordAccessor implements RecordAccessor {
     public void delete(Object record) {
         Validate.notNull(record, "record must not be null");
 
-        ObjectDescriptor descriptor = getRequiredDescriptor(record.getClass());
-        String id = getRequiredId(descriptor, record);
-
-        delete(id, record.getClass());
+        delete(getRecordId(record), record.getClass());
     }
 
     @Override
@@ -164,15 +158,41 @@ public final class RestRecordAccessor implements RecordAccessor {
         return descriptor;
     }
 
-    private static String getRequiredId(ObjectDescriptor descriptor, Object record) {
+    /**
+     * Get the "id" field of a record.
+     * <p/>
+     * This would normally be private but is made public to help with bridging the old Simplejpa interface to this new
+     * interface.
+     *
+     * @param record the record
+     */
+    public String getRecordId(Object record) {
+        ObjectDescriptor descriptor = getRequiredDescriptor(record.getClass());
         if (descriptor.hasIdMember()) {
-            String id = RecordUtils.getId(descriptor.getIdProperty(), record);
+            String id = RecordUtils.getId(descriptor, record);
             if (StringUtils.isEmpty(id)) {
                 throw new RecordRequestException("Record bean does not have an id value set");
             }
             return id;
         } else {
-            throw new RecordRequestException("Record class is not annotated with an Id member");
+            throw new RecordRequestException("Record class doesn't have an id member");
+        }
+    }
+
+    /**
+     * Set the "id" field of a record.
+     * <p/>
+     * This only exists to help with bridging the old Simplejpa interface to this new interface.
+     *
+     * @param record the record
+     * @param id     the id
+     */
+    public void setRecordId(Object record, String id) {
+        ObjectDescriptor descriptor = getRequiredDescriptor(record.getClass());
+        if (descriptor.hasIdMember()) {
+            RecordUtils.setId(descriptor, record, id);
+        } else {
+            throw new RecordRequestException("Record class doesn't have an id member");
         }
     }
 

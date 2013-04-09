@@ -103,4 +103,37 @@ final class RecordUtils {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Sets the "id" property of a record.
+     *
+     * @param descriptor descriptor of the object
+     * @param record     the record on which to set the id
+     * @param value      the id
+     */
+    public static void setId(ObjectDescriptor descriptor, Object record, String value) {
+        if (descriptor.hasIdMember()) {
+            setId(descriptor.getIdProperty(), record, value);
+        } else {
+            throw new IllegalArgumentException("The record does not have an id member");
+        }
+    }
+
+    /**
+     * Sets the "id" property of a record.
+     *
+     * @param idProperty definition of the id property
+     * @param record     the record on which to set the id
+     * @param value      the id
+     */
+    public static void setId(BeanPropertyDefinition idProperty, Object record, String value) {
+        if (idProperty.hasSetter()) {
+            idProperty.getSetter().setValue(record, value);
+        } else if (idProperty.hasField()) {
+            Field field = idProperty.getField().getAnnotated();
+            field.setAccessible(true);
+            idProperty.getField().setValue(record, value);
+        } else
+            throw new IllegalArgumentException("There is no way to set the record id");
+    }
 }
