@@ -5,7 +5,7 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.core.AuthorizationConnector;
+import com.force.spa.AuthorizationConnector;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientRequest;
 import com.sun.jersey.api.client.ClientResponse;

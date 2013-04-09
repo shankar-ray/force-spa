@@ -5,7 +5,7 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.core.RecordAccessor;
+import com.force.spa.RecordAccessor;
 import org.junit.After;
 import org.junit.Test;
 

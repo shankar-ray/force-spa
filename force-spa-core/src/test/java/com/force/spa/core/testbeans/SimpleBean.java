@@ -5,8 +5,8 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.core.SalesforceField;
-import com.force.spa.core.SalesforceObject;
+import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
 
 import javax.persistence.Transient;
 import java.util.Map;

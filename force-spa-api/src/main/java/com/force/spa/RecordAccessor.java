@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa;
 
 /**
  * A CRUD-based interface for interacting with persistent records in Salesforce through the use of annotated Javabeans.

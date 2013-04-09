@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.core.SalesforceField;
+import com.force.spa.SalesforceField;
 
 public class UserMoniker {
 

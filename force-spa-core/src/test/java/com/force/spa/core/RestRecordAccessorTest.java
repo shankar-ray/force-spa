@@ -6,6 +6,9 @@
 package com.force.spa.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.RecordQuery;
+import com.force.spa.RecordRequestException;
+import com.force.spa.RecordResponseException;
 import com.force.spa.core.testbeans.DateTimeBean;
 import com.force.spa.core.testbeans.InsertableUpdatableBean;
 import com.force.spa.core.testbeans.SimpleBean;

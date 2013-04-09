@@ -5,9 +5,9 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.core.ChildToParent;
-import com.force.spa.core.SalesforceField;
-import com.force.spa.core.SalesforceObject;
+import com.force.spa.ChildToParent;
+import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
 
 /**
  * A test bean that is helps test recursive type references.

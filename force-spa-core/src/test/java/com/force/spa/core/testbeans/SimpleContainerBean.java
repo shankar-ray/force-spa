@@ -5,9 +5,9 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.core.ParentToChild;
-import com.force.spa.core.SalesforceField;
-import com.force.spa.core.SalesforceObject;
+import com.force.spa.ParentToChild;
+import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
 
 import java.util.List;
 

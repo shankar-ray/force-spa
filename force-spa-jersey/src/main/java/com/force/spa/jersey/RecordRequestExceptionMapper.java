@@ -5,7 +5,7 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.core.RecordRequestException;
+import com.force.spa.RecordRequestException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 
@@ -15,8 +15,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 /**
- * A Jersey exception mapper that can map ({@link com.force.spa.core.RecordRequestException}) into appropriate HTTP
- * responses.
+ * A Jersey exception mapper that can map ({@link RecordRequestException}) into appropriate HTTP responses.
  */
 @Named
 @Provider

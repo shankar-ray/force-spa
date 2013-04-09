@@ -5,9 +5,9 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.core.AuthorizationConnector;
-import com.force.spa.core.RecordRequestException;
-import com.force.spa.core.RestConnector;
+import com.force.spa.AuthorizationConnector;
+import com.force.spa.RecordRequestException;
+import com.force.spa.RestConnector;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.jersey.api.client.Client;

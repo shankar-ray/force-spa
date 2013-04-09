@@ -5,8 +5,8 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.core.SalesforceField;
-import com.force.spa.core.SalesforceObject;
+import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
 
 /**
  * A test bean with fields that choose whether they are insertable or updatable.

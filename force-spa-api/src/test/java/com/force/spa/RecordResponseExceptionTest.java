@@ -5,7 +5,7 @@
  */
 package com.force.spa;
 
-import com.force.spa.core.RecordRequestException;
+import com.force.spa.RecordResponseException;
 import org.junit.Test;
 
 import java.io.Serializable;
@@ -17,19 +17,19 @@ import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
-public class RecordRequestExceptionTest {
+public class RecordResponseExceptionTest {
     private static final String MESSAGE = "Exception Message";
     private static final String CAUSE_MESSAGE = "Cause Message";
 
     @Test
     public void testDerivation() {
-        assertThat(new RecordRequestException(), isA(RuntimeException.class));
-        assertThat(new RecordRequestException(), isA(Serializable.class));
+        assertThat(new RecordResponseException(), isA(RuntimeException.class));
+        assertThat(new RecordResponseException(), isA(Serializable.class));
     }
 
     @Test
     public void testDefaultConstructor() {
-        RecordRequestException exception = new RecordRequestException();
+        RecordResponseException exception = new RecordResponseException();
         assertThat(exception.getCause(), is(nullValue()));
         assertThat(exception.getMessage(), is(nullValue()));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName())));
@@ -39,7 +39,7 @@ public class RecordRequestExceptionTest {
     public void testCauseConstructor() {
         RuntimeException cause = new RuntimeException(CAUSE_MESSAGE);
 
-        RecordRequestException exception = new RecordRequestException(cause);
+        RecordResponseException exception = new RecordResponseException(cause);
         assertThat(exception.getCause(), is(sameInstance((Throwable) cause)));
         assertThat(exception.getMessage(), is(equalTo(cause.toString())));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + cause.toString())));
@@ -47,7 +47,7 @@ public class RecordRequestExceptionTest {
 
     @Test
     public void testMessageConstructor() {
-        RecordRequestException exception = new RecordRequestException(MESSAGE);
+        RecordResponseException exception = new RecordResponseException(MESSAGE);
         assertThat(exception.getCause(), is(nullValue()));
         assertThat(exception.getMessage(), is(equalTo(MESSAGE)));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + MESSAGE)));
@@ -57,7 +57,7 @@ public class RecordRequestExceptionTest {
     public void testMessageAndCauseConstructor() {
         RuntimeException cause = new RuntimeException(CAUSE_MESSAGE);
 
-        RecordRequestException exception = new RecordRequestException(MESSAGE, cause);
+        RecordResponseException exception = new RecordResponseException(MESSAGE, cause);
         assertThat(exception.getCause(), is(sameInstance((Throwable) cause)));
         assertThat(exception.getMessage(), is(equalTo(MESSAGE)));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + MESSAGE)));

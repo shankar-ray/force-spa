@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

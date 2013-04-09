@@ -5,7 +5,7 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.core.AuthorizationConnector;
+import com.force.spa.AuthorizationConnector;
 
 import java.net.URI;
 

@@ -7,6 +7,11 @@ package com.force.spa.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.force.spa.RecordAccessor;
+import com.force.spa.RecordQuery;
+import com.force.spa.RecordRequestException;
+import com.force.spa.RecordResponseException;
+import com.force.spa.RestConnector;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
