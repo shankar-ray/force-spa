@@ -6,6 +6,8 @@
 package com.force.spa.jersey;
 
 import com.force.spa.RecordAccessor;
+import com.force.spa.RecordNotFoundException;
+import com.force.spa.RecordRequestException;
 import org.junit.After;
 import org.junit.Test;
 
@@ -16,6 +18,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class RecordAccessorIntegrationTest {
     private RecordAccessor accessor = new RecordAccessorFactory().newInstance();
@@ -88,5 +91,15 @@ public class RecordAccessorIntegrationTest {
 
         Contact contact3 = accessor.get(id, Contact.class);
         assertThat(contact3, is(nullValue()));
+    }
+
+    @Test
+    public void testDeleteNonexistentId() {
+        try {
+            accessor.delete("0123456789012345", Contact.class);
+            fail("Didn't get expected exception");
+        } catch (RecordNotFoundException e) {
+            // This is expected
+        }
     }
 }

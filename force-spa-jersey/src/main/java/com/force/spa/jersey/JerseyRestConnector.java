@@ -6,6 +6,8 @@
 package com.force.spa.jersey;
 
 import com.force.spa.AuthorizationConnector;
+import com.force.spa.ObjectNotFoundException;
+import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RestConnector;
 import com.google.common.cache.Cache;
@@ -79,7 +81,12 @@ public final class JerseyRestConnector implements RestConnector {
             WebResource resource = getDataResource().path("sobjects").path(entityType);
             return configuredResource(resource, headers).post(InputStream.class, jsonBody);
         } catch (UniformInterfaceException e) {
-            throw new RecordRequestException(String.format("Create failed: %s", extractMessage(e)), e);
+            String message = String.format("Create failed: %s", extractMessage(e));
+            if (e.getResponse().getStatus() == 404) {
+                throw new ObjectNotFoundException(message, e);
+            } else {
+                throw new RecordRequestException(message, e);
+            }
         }
     }
 
@@ -89,7 +96,12 @@ public final class JerseyRestConnector implements RestConnector {
             WebResource resource = getDataResource().uri(uri);
             return configuredResource(resource, headers).get(InputStream.class);
         } catch (UniformInterfaceException e) {
-            throw new RecordRequestException(String.format("Get failed: %s", extractMessage(e)), e);
+            String message = String.format("Get failed: %s", extractMessage(e));
+            if (e.getResponse().getStatus() == 404) {
+                throw new RecordNotFoundException(message, e);
+            } else {
+                throw new RecordRequestException(message, e);
+            }
         }
     }
 
@@ -99,7 +111,8 @@ public final class JerseyRestConnector implements RestConnector {
             WebResource resource = getDataResource().path("query").queryParam("q", soql);
             return configuredResource(resource, headers).get(InputStream.class);
         } catch (UniformInterfaceException e) {
-            throw new RecordRequestException(String.format("Query failed: %s", extractMessage(e)), e);
+            String message = String.format("Query failed: %s", extractMessage(e));
+            throw new RecordRequestException(message, e);
         }
     }
 
@@ -113,7 +126,12 @@ public final class JerseyRestConnector implements RestConnector {
                 throw new UniformInterfaceException(response, true);
             }
         } catch (UniformInterfaceException e) {
-            throw new RecordRequestException(String.format("Updated failed: %s", extractMessage(e)), e);
+            String message = String.format("Update failed: %s", extractMessage(e));
+            if (e.getResponse().getStatus() == 404) {
+                throw new RecordNotFoundException(message, e);
+            } else {
+                throw new RecordRequestException(message, e);
+            }
         }
     }
 
@@ -127,7 +145,12 @@ public final class JerseyRestConnector implements RestConnector {
                 throw new UniformInterfaceException(response, true);
             }
         } catch (UniformInterfaceException e) {
-            throw new RecordRequestException(String.format("Delete failed: %s", extractMessage(e)), e);
+            String message = String.format("Delete failed: %s", extractMessage(e));
+            if (e.getResponse().getStatus() == 404) {
+                throw new RecordNotFoundException(message, e);
+            } else {
+                throw new RecordRequestException(message, e);
+            }
         }
     }
 

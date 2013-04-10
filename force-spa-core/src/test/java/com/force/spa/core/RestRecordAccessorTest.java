@@ -324,6 +324,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(node2.get("Name").asText(), is(equalTo("Name 2")));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testAggregateQueryToMap() throws Exception {
         when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));

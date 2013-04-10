@@ -10,7 +10,7 @@ package com.force.spa;
  * was successfully issued and the error is coming from the server.
  */
 public class RecordResponseException extends RuntimeException {
-    private static final long serialVersionUID = 1028782519413158664L;
+    private static final long serialVersionUID = 634661220360809866L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.
