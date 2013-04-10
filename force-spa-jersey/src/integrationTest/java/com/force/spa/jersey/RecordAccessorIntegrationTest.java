@@ -7,7 +7,6 @@ package com.force.spa.jersey;
 
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordNotFoundException;
-import com.force.spa.RecordRequestException;
 import org.junit.After;
 import org.junit.Test;
 
