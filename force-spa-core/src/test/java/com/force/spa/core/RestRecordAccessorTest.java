@@ -23,6 +23,7 @@ import org.junit.Test;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -306,7 +307,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     }
 
     @Test
-    public void testAggregateQuery() throws Exception {
+    public void testAggregateQueryToJsonNode() throws Exception {
         when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
 
         RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
@@ -321,6 +322,24 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         JsonNode node2 = jsonNodes.get(1);
         assertThat(node2.get("expr0").asInt(), is(equalTo(1)));
         assertThat(node2.get("Name").asText(), is(equalTo("Name 2")));
+    }
+
+    @Test
+    public void testAggregateQueryToMap() throws Exception {
+        when(mockConnector.doQuery(anyString(), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
+
+        RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
+        List<Map> maps = query.execute(Map.class);
+
+        assertThat(maps.size(), is(equalTo(2)));
+
+        Map<String,Object> map1 = maps.get(0);
+        assertThat((Integer)map1.get("expr0"), is(equalTo(1)));
+        assertThat((String)map1.get("Name"), is(equalTo("Name 1")));
+
+        Map node2 = maps.get(1);
+        assertThat((Integer)node2.get("expr0"), is(equalTo(1)));
+        assertThat((String)node2.get("Name"), is(equalTo("Name 2")));
     }
 
     @Test
