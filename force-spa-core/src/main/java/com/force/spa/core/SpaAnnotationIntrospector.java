@@ -40,11 +40,13 @@ import java.io.IOException;
  */
 class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
-    private final transient ObjectMappingContext mappingContext;
+    private static final long serialVersionUID = -6877076662700362622L;
 
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
     private static final Class<?>[] UPDATE_VIEWS = new Class<?>[]{SerializationViews.Update.class, SerializationViews.Patch.class};
+
+    private final transient ObjectMappingContext mappingContext;
 
     SpaAnnotationIntrospector(ObjectMappingContext mappingContext) {
         this.mappingContext = mappingContext;
