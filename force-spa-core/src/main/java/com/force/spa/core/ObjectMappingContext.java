@@ -112,7 +112,7 @@ final class ObjectMappingContext {
         if (clazz.isPrimitive() || isIntrinsicJavaPackage(clazz.getPackage()) || isJodaTimePackage(clazz.getPackage()))
             return null; // Primitive types can't be Salesforce objects and therefore have no descriptors.
 
-        if (clazz.isEnum())
+        if (isEnum(clazz))
             return null; // Enums can't be Salesforce objects
 
         return createObjectDescriptor(clazz);
@@ -191,6 +191,15 @@ final class ObjectMappingContext {
 
     private static boolean isJodaTimePackage(Package aPackage) {
         return (aPackage != null) && (aPackage.getName().startsWith("org.joda.time"));
+    }
+
+    /*
+     * An enhanced check for "isEnum" because the standard Class.isEnum() isn't always enough. When an enum includes
+     * abstract methods an inner anonymous class arises and even though that class has the enum modifier bit set,
+     * Class.isEnum() returns false which is not the answer we need.
+     */
+    private static boolean isEnum(Class<?> clazz) {
+        return ((clazz.getModifiers() & 0x4000)) != 0;
     }
 
     private static Class<?> getPropertyClass(BeanPropertyDefinition property) {

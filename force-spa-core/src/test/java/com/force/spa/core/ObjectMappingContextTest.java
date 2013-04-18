@@ -7,6 +7,7 @@ package com.force.spa.core;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.force.spa.core.testbeans.CustomBean;
+import com.force.spa.core.testbeans.EnumBean;
 import com.force.spa.core.testbeans.ExplicitlyNamedBean;
 import com.force.spa.core.testbeans.NoGetterBean;
 import com.force.spa.core.testbeans.NoSetterBean;
@@ -19,6 +20,7 @@ import org.junit.Test;
 
 import static com.force.spa.core.HasPropertyName.hasPropertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -178,5 +180,21 @@ public class ObjectMappingContextTest {
         assertThat(mappingContext.getObjectWriterForCreate().isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS), is(false));
         assertThat(mappingContext.getObjectWriterForPatch().isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS), is(false));
         assertThat(mappingContext.getObjectWriterForUpdate().isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS), is(false));
+    }
+
+    @Test
+    public void testEnumBean() throws Exception {
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(EnumBean.class);
+        assertThat(descriptor, is(not(nullValue())));
+        assertThat(descriptor.getName(), is(equalTo("EnumBean")));
+        assertThat(descriptor.getBeanDescription().findProperties(), contains(hasPropertyName("state")));
+    }
+
+    @Test
+    public void testEnumBeanSerialization() throws Exception {
+        EnumBean bean = new EnumBean();
+        bean.setState(EnumBean.State.ONE);
+        String serializedBean = mappingContext.getObjectWriterForCreate().writeValueAsString(bean);
+        assertThat(serializedBean, is(equalTo("{\"state\":\"ONE\"}")));
     }
 }
