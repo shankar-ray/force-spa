@@ -5,6 +5,7 @@
  */
 package com.force.spa.jersey;
 
+import com.force.spa.AuthorizationException;
 import com.force.spa.RecordRequestException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -22,7 +23,16 @@ import javax.ws.rs.ext.Provider;
 public class RecordRequestExceptionMapper implements ExceptionMapper<RecordRequestException> {
     @Override
     public Response toResponse(RecordRequestException exception) {
-        if (exception.getCause() instanceof UniformInterfaceException) {
+
+        if (exception instanceof AuthorizationException) {
+
+            return Response
+                .status(ClientResponse.Status.BAD_REQUEST)
+                .entity(exception.getMessage())
+                .build();
+
+        } else if (exception.getCause() instanceof UniformInterfaceException) {
+
             ClientResponse clientResponse = ((UniformInterfaceException) exception.getCause()).getResponse();
             switch (clientResponse.getClientResponseStatus()) {
                 case OK:
@@ -78,8 +88,8 @@ public class RecordRequestExceptionMapper implements ExceptionMapper<RecordReque
                     throw exception;
             }
         } else {
-            // Not an exception we care about. Pass it on down the line.
-            throw exception;
+
+            throw exception; // Not an exception we care about. Pass it on down the line.
         }
     }
 }

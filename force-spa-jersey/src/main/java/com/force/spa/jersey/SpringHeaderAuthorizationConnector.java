@@ -6,6 +6,7 @@
 package com.force.spa.jersey;
 
 import com.force.spa.AuthorizationConnector;
+import com.force.spa.AuthorizationException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -62,7 +63,7 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
         if (authorizationHeader != null) {
             return authorizationHeader;
         } else {
-            throw new RuntimeException("Missing Authorization header");
+            throw new AuthorizationException("Missing Authorization header");
         }
     }
 
@@ -78,10 +79,10 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
             try {
                 return new URI(instanceUrlHeader);
             } catch (URISyntaxException e) {
-                throw new RuntimeException("Invalid Force-Instance-Url header", e);
+                throw new AuthorizationException("Invalid Force-Instance-Url header", e);
             }
         } else {
-            throw new RuntimeException("Missing Force-Instance-Url header");
+            throw new AuthorizationException("Missing Force-Instance-Url header");
         }
     }
 }
