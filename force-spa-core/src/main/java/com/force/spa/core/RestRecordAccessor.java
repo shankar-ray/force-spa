@@ -189,23 +189,6 @@ public final class RestRecordAccessor implements RecordAccessor {
         }
     }
 
-    /**
-     * Set the "id" field of a record.
-     * <p/>
-     * This only exists to help with bridging the old Simplejpa interface to this new interface.
-     *
-     * @param record the record
-     * @param id     the id
-     */
-    public void setRecordId(Object record, String id) {
-        ObjectDescriptor descriptor = getRequiredDescriptor(record.getClass());
-        if (descriptor.hasIdMember()) {
-            RecordUtils.setId(descriptor, record, id);
-        } else {
-            throw new RecordRequestException("Record class doesn't have an id member");
-        }
-    }
-
     private <T> T get(ObjectDescriptor descriptor, String id, Class<T> recordClass) {
         String soqlTemplate = String.format("SELECT * FROM %s WHERE Id = '%s'", descriptor.getName(), id);
         List<T> records = createQuery(descriptor, soqlTemplate, recordClass).setMaxResults(1).execute();
