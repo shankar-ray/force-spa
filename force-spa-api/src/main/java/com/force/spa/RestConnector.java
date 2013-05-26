@@ -15,58 +15,61 @@ import java.util.Map;
  * This is a simple internal abstraction that allows different REST libraries to be plugged in. This means libraries
  * like Sun's Jersey or Apache HTTP.
  * <p/>
- * The methods on this interface correspond to the kinds of thing you want to do with the Salesforce REST api, not the
- * kinds of generic things you want to do with REST. In other words, this interface is not intended to be some general
- * purpose facade on top of HTTP libraries. It is, instead, very specific to the Salesforce REST task at hand.
+ * This interface is not intended to be some general purpose facade on top of HTTP libraries. It is, instead, very
+ * specific to the Salesforce REST task at hand.
  */
 public interface RestConnector {
     /**
-     * Creates a new Salesforce record.
+     * Issues a POST request to a Salesforce REST URI.
      *
-     * @param entityType the Salesforce object type
-     * @param jsonBody   the JSON encoded body for the creation request. See Salesforce REST documentation for more
-     *                   details on the format.
-     * @param headers    optional HTTP headers to add to the request.
+     * @param uri      the relative URI. The protocol, host and path information should not be present and if present
+     *                 they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
+     *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
+     * @param jsonBody the JSON encoded body for the creation request. See Salesforce REST documentation for more
+     *                 details on the format.
+     * @param headers  optional HTTP headers to add to the request.
      * @return input stream for the response body returned by Salesforce.
      */
-    InputStream doCreate(String entityType, String jsonBody, Map<String, String> headers);
+    InputStream post(URI uri, String jsonBody, Map<String, String> headers);
 
     /**
-     * Issues a GET request to an arbitrary Salesforce REST URI, usually for the purpose of picking up subsequent
-     * batches of a paged query result.
+     * Issues a GET request to a Salesforce REST URI.
      *
-     * @param uri     the URI
+     * @param uri     the relative URI. The protocol, host and path information should not be present and if present
+     *                they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                the path can be a relative path (the portion after "/services/data/vX.X"). If the path is relative
+     *                then the "/services/data/vX.X" prefix is automatically prepended.
      * @param headers optional HTTP headers to add to the request.
      * @return input stream for the response body returned by Salesforce.
      */
-    InputStream doGet(URI uri, Map<String, String> headers);
+    InputStream get(URI uri, Map<String, String> headers);
 
     /**
-     * Issues a Salesforce SOQL query.
+     * Issues a PATCH request to a Salesforce REST URI.
      *
-     * @param soql    the SOQL for the query
+     * @param uri      the relative URI. The protocol, host and path information should not be present and if present
+     *                 they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
+     *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
+     * @param jsonBody the JSON encoded body for the update request. See Salesforce REST documentation for more details
+     *                 on the format.
+     * @param headers  optional HTTP headers to add to the request.
+     */
+    void patch(URI uri, String jsonBody, Map<String, String> headers);
+
+    /**
+     * Issues a DELETE request to a Salesforce REST URI.
+     *
+     * @param uri     the relative URI. The protocol, host and path information should not be present and if present
+     *                they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                the path can be a relative path (the portion after "/services/data/vX.X"). If the path is relative
+     *                then the "/services/data/vX.X" prefix is automatically prepended.
      * @param headers optional HTTP headers to add to the request.
-     * @return input stream for the response body returned by Salesforce.
      */
-    InputStream doQuery(String soql, Map<String, String> headers);
-
-    /**
-     * Updates an existing Salesforce record.
-     *
-     * @param entityType the Salesforce object type
-     * @param id         the Salesforce ID of the record
-     * @param jsonBody   the JSON encoded body for the update request. See Salesforce REST documentation for more
-     *                   details on the format.
-     * @param headers    optional HTTP headers to add to the request.
-     */
-    void doUpdate(String entityType, String id, String jsonBody, Map<String, String> headers);
-
-    /**
-     * Deletes an existing Salesforce record.
-     *
-     * @param entityType the Salesforce object type
-     * @param id         the Salesforce ID of the record
-     * @param headers    optional HTTP headers to add to the request.
-     */
-    void doDelete(String entityType, String id, Map<String, String> headers);
+    void delete(URI uri, Map<String, String> headers);
 }

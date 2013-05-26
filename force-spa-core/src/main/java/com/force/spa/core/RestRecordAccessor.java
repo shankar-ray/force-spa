@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,8 @@ public final class RestRecordAccessor implements RecordAccessor {
 
         optionallyLogRequest("Create", descriptor.getName(), null, json);
 
-        InputStream responseStream = connector.doCreate(descriptor.getName(), json, determineHeaders(descriptor, record));
+        URI uri = URI.create("/sobjects/" + descriptor.getName());
+        InputStream responseStream = connector.post(uri, json, determineHeaders(descriptor, record));
         JsonNode responseNode = decodeJson(responseStream);
         if (!responseNode.has("success") || !responseNode.has("id")) {
             throw new RecordResponseException("JSON response is missing expected fields");
@@ -95,7 +97,8 @@ public final class RestRecordAccessor implements RecordAccessor {
 
         optionallyLogRequest("Update", descriptor.getName(), id, json);
 
-        connector.doUpdate(descriptor.getName(), id, json, determineHeaders(descriptor, record));
+        URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
+        connector.patch(uri, json, determineHeaders(descriptor, record));
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("...Updated %s %s", descriptor.getName(), id));
@@ -112,7 +115,8 @@ public final class RestRecordAccessor implements RecordAccessor {
 
         optionallyLogRequest("Patch", descriptor.getName(), id, json);
 
-        connector.doUpdate(descriptor.getName(), id, json, determineHeaders(descriptor, recordChanges));
+        URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
+        connector.patch(uri, json, determineHeaders(descriptor, recordChanges));
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("...Patched %s %s", descriptor.getName(), id));
@@ -135,7 +139,8 @@ public final class RestRecordAccessor implements RecordAccessor {
 
         optionallyLogRequest("Delete", descriptor.getName(), id, null);
 
-        connector.doDelete(descriptor.getName(), id, determineHeaders(descriptor, null));
+        URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
+        connector.delete(uri, determineHeaders(descriptor, null));
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("...Deleted %s %s", descriptor.getName(), id));
@@ -311,8 +316,10 @@ public final class RestRecordAccessor implements RecordAccessor {
                     log.debug(String.format("...Query: %s", soql));
 
                 // Issue the query and parse the first batch of results.
+
+                URI uri = URI.create("/query?q=" + URLEncoder.encode(soql, "UTF-8"));
+                InputStream responseStream = connector.get(uri, determineHeaders(descriptor, null));
                 ObjectReader objectReader = mappingContext.getObjectReader();
-                InputStream responseStream = connector.doQuery(soql, determineHeaders(descriptor, null));
                 JsonNode rootNode = objectReader.readTree(responseStream);
                 for (JsonNode node : rootNode.get("records")) {
                     if (log.isDebugEnabled()) {
@@ -328,7 +335,7 @@ public final class RestRecordAccessor implements RecordAccessor {
                 // Request additional results if they exist
                 while (rootNode.get("nextRecordsUrl") != null) {
                     URI nextRecordsUrl = URI.create(rootNode.get("nextRecordsUrl").asText());
-                    responseStream = connector.doGet(nextRecordsUrl, determineHeaders(descriptor, null));
+                    responseStream = connector.get(nextRecordsUrl, determineHeaders(descriptor, null));
                     rootNode = objectReader.readTree(responseStream);
                     for (JsonNode node : rootNode.get("records")) {
                         if (log.isDebugEnabled()) {
