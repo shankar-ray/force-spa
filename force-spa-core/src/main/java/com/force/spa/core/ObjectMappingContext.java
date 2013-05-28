@@ -104,6 +104,24 @@ final class ObjectMappingContext {
      * @param clazz the class for which a descriptor is desired
      * @return the descriptor
      */
+    public ObjectDescriptor getRequiredObjectDescriptor(Class<?> clazz) {
+        ObjectDescriptor descriptor = getObjectDescriptor(clazz);
+        if (descriptor == null) {
+            throw new IllegalArgumentException(
+                String.format("%s can't be used as a record, probably because it isn't annotated", clazz.getName()));
+        }
+        return descriptor;
+    }
+
+    /**
+     * Gets the {@link ObjectDescriptor} for the specified class.
+     * <p/>
+     * If the class has already been seen then an existing, cached descriptor is returned. Otherwise the class is
+     * introspected to build a new descriptor and the new descriptor cached for future use.
+     *
+     * @param clazz the class for which a descriptor is desired
+     * @return the descriptor or null if none applies to the object
+     */
     public ObjectDescriptor getObjectDescriptor(Class<?> clazz) {
         ObjectDescriptor descriptor = descriptors.get(clazz);
         if (descriptor != null)

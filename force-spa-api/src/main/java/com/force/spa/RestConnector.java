@@ -5,7 +5,8 @@
  */
 package com.force.spa;
 
-import java.io.InputStream;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.net.URI;
 import java.util.Map;
 
@@ -20,32 +21,41 @@ import java.util.Map;
  */
 public interface RestConnector {
     /**
-     * Issues a POST request to a Salesforce REST URI.
+     * Indicates whether this connector executes synchronously. Synchronous execution means that the request is
+     * processed immediately and the callback is invoked before the original request returns.
+     */
+    boolean isSynchronous();
+
+    /**
+     * Completes any outstanding asynchronous requests that have been queued up and not yet executed.
+     */
+    void flush();
+
+    /**
+     * Issues a DELETE request to a Salesforce REST URI.
      *
      * @param uri      the relative URI. The protocol, host and path information should not be present and if present
      *                 they are ignored. Those pieces of information are supplied from the instance url of the current
      *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
      *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
      *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
-     * @param jsonBody the JSON encoded body for the creation request. See Salesforce REST documentation for more
-     *                 details on the format.
      * @param headers  optional HTTP headers to add to the request.
-     * @return input stream for the response body returned by Salesforce.
+     * @param callback a callback that is invoked when the operation is complete
      */
-    InputStream post(URI uri, String jsonBody, Map<String, String> headers);
+    void delete(URI uri, Map<String, String> headers, Callback<Void> callback);
 
     /**
      * Issues a GET request to a Salesforce REST URI.
      *
-     * @param uri     the relative URI. The protocol, host and path information should not be present and if present
-     *                they are ignored. Those pieces of information are supplied from the instance url of the current
-     *                authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
-     *                the path can be a relative path (the portion after "/services/data/vX.X"). If the path is relative
-     *                then the "/services/data/vX.X" prefix is automatically prepended.
-     * @param headers optional HTTP headers to add to the request.
-     * @return input stream for the response body returned by Salesforce.
+     * @param uri      the relative URI. The protocol, host and path information should not be present and if present
+     *                 they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
+     *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
+     * @param headers  optional HTTP headers to add to the request.
+     * @param callback a callback that is invoked when the operation is complete
      */
-    InputStream get(URI uri, Map<String, String> headers);
+    void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback);
 
     /**
      * Issues a PATCH request to a Salesforce REST URI.
@@ -58,18 +68,33 @@ public interface RestConnector {
      * @param jsonBody the JSON encoded body for the update request. See Salesforce REST documentation for more details
      *                 on the format.
      * @param headers  optional HTTP headers to add to the request.
+     * @param callback a callback that is invoked when the operation is complete
      */
-    void patch(URI uri, String jsonBody, Map<String, String> headers);
+    void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback);
 
     /**
-     * Issues a DELETE request to a Salesforce REST URI.
+     * Issues a POST request to a Salesforce REST URI.
      *
-     * @param uri     the relative URI. The protocol, host and path information should not be present and if present
-     *                they are ignored. Those pieces of information are supplied from the instance url of the current
-     *                authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
-     *                the path can be a relative path (the portion after "/services/data/vX.X"). If the path is relative
-     *                then the "/services/data/vX.X" prefix is automatically prepended.
-     * @param headers optional HTTP headers to add to the request.
+     * @param uri      the relative URI. The protocol, host and path information should not be present and if present
+     *                 they are ignored. Those pieces of information are supplied from the instance url of the current
+     *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
+     *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
+     *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
+     * @param jsonBody the JSON encoded body for the creation request. See Salesforce REST documentation for more
+     *                 details on the format.
+     * @param headers  optional HTTP headers to add to the request.
+     * @param callback a callback that is invoked when the operation is complete
      */
-    void delete(URI uri, Map<String, String> headers);
+    void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback);
+
+    /**
+     * A Callback that is invoked with results at the end of a connector request.
+     *
+     * @param <T> The type of expected result
+     */
+    interface Callback<T> {
+        void onSuccess(T result);
+
+        void onFailure(RuntimeException exception);
+    }
 }

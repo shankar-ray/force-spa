@@ -15,7 +15,6 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -88,15 +87,19 @@ public class RecordAccessorIntegrationTest {
         accessor.delete(id, Contact.class);
         objects.remove(contact);
 
-        Contact contact3 = accessor.get(id, Contact.class);
-        assertThat(contact3, is(nullValue()));
+        try {
+            accessor.get(id, Contact.class);
+            fail("Didn't get expected RecordNotFoundException");
+        } catch (RecordNotFoundException e) {
+            // This is expected
+        }
     }
 
     @Test
     public void testDeleteNonexistentId() {
         try {
             accessor.delete("0123456789012345", Contact.class);
-            fail("Didn't get expected exception");
+            fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected
         }

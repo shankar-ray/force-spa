@@ -5,10 +5,14 @@
  */
 package com.force.spa.jersey;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.ObjectNotFoundException;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
+import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -24,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Map;
@@ -42,6 +47,7 @@ public final class JerseyRestConnector implements RestConnector {
     private final AuthorizationConnector authorizationConnector;
     private final Client client;
     private final String apiVersion;
+    private final ObjectReader objectReader;
 
     /**
      * Constructs a new instance.
@@ -55,69 +61,103 @@ public final class JerseyRestConnector implements RestConnector {
         this.authorizationConnector = authorizationConnector;
         this.client = client;
         this.apiVersion = apiVersion;
+        this.objectReader = new ObjectMapper().reader();
     }
 
     @Override
-    public InputStream post(URI uri, String jsonBody, Map<String, String> headers) {
+    public boolean isSynchronous() {
+        return true;
+    }
+
+    @Override
+    public void flush() {
+    }
+
+    @Override
+    public void delete(URI uri, Map<String, String> headers, Callback<Void> callback) {
         try {
-            return getConfiguredResource(uri, headers).post(InputStream.class, jsonBody);
-        } catch (UniformInterfaceException e) {
-            String message = String.format("Create failed: %s", extractMessage(e));
-            if (e.getResponse().getStatus() == 404) {
-                throw new ObjectNotFoundException(message, e);
-            } else {
-                throw new RecordRequestException(message, e);
+            try {
+                ClientResponse response = getConfiguredResource(uri, headers).delete(ClientResponse.class);
+                if (response.getStatus() >= 300) {
+                    throw new UniformInterfaceException(response, true);
+                }
+                callback.onSuccess(null);
+            } catch (UniformInterfaceException e) {
+                String message = String.format("Delete failed: %s", extractMessage(e));
+                if (e.getResponse().getStatus() == 404) {
+                    throw new RecordNotFoundException(message, e);
+                } else {
+                    throw new RecordRequestException(message, e);
+                }
             }
+        } catch (RuntimeException e) {
+            callback.onFailure(e);
         }
     }
 
     @Override
-    public InputStream get(URI uri, Map<String, String> headers) {
+    public void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback) {
         try {
-            return getConfiguredResource(uri, headers).get(InputStream.class);
-        } catch (UniformInterfaceException e) {
-            String message = String.format("Get failed: %s", extractMessage(e));
-            if (e.getResponse().getStatus() == 404) {
-                throw new RecordNotFoundException(message, e);
-            } else {
-                throw new RecordRequestException(message, e);
+            try {
+                InputStream resultStream = getConfiguredResource(uri, headers).get(InputStream.class);
+                JsonNode resultNode = objectReader.readTree(resultStream);
+                callback.onSuccess(resultNode);
+            } catch (UniformInterfaceException e) {
+                String message = String.format("Get failed: %s", extractMessage(e));
+                if (e.getResponse().getStatus() == 404) {
+                    throw new RecordNotFoundException(message, e);
+                } else {
+                    throw new RecordRequestException(message, e);
+                }
+            } catch (IOException e) {
+                throw new RecordResponseException("Failed to parse JSON response stream", e);
             }
+        } catch (RuntimeException e) {
+            callback.onFailure(e);
         }
     }
 
     @Override
-    public void patch(URI uri, String jsonBody, Map<String, String> headers) {
+    public void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback) {
         try {
-            ClientResponse response = getConfiguredResource(uri, headers).method("PATCH", ClientResponse.class, jsonBody);
-
-            if (response.getStatus() >= 300) {
-                throw new UniformInterfaceException(response, true);
+            try {
+                ClientResponse response = getConfiguredResource(uri, headers).method("PATCH", ClientResponse.class, jsonBody);
+                if (response.getStatus() >= 300) {
+                    throw new UniformInterfaceException(response, true);
+                }
+                callback.onSuccess(null);
+            } catch (UniformInterfaceException e) {
+                String message = String.format("Patch failed: %s", extractMessage(e));
+                if (e.getResponse().getStatus() == 404) {
+                    throw new RecordNotFoundException(message, e);
+                } else {
+                    throw new RecordRequestException(message, e);
+                }
             }
-        } catch (UniformInterfaceException e) {
-            String message = String.format("Update failed: %s", extractMessage(e));
-            if (e.getResponse().getStatus() == 404) {
-                throw new RecordNotFoundException(message, e);
-            } else {
-                throw new RecordRequestException(message, e);
-            }
+        } catch (RuntimeException e) {
+            callback.onFailure(e);
         }
     }
 
     @Override
-    public void delete(URI uri, Map<String, String> headers) {
+    public void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback) {
         try {
-            ClientResponse response = getConfiguredResource(uri, headers).delete(ClientResponse.class);
-
-            if (response.getStatus() >= 300) {
-                throw new UniformInterfaceException(response, true);
+            try {
+                InputStream resultStream = getConfiguredResource(uri, headers).post(InputStream.class, jsonBody);
+                JsonNode resultNode = objectReader.readTree(resultStream);
+                callback.onSuccess(resultNode);
+            } catch (UniformInterfaceException e) {
+                String message = String.format("Create failed: %s", extractMessage(e));
+                if (e.getResponse().getStatus() == 404) {
+                    throw new ObjectNotFoundException(message, e);
+                } else {
+                    throw new RecordRequestException(message, e);
+                }
+            } catch (IOException e) {
+                throw new RecordResponseException("Failed to parse JSON response stream", e);
             }
-        } catch (UniformInterfaceException e) {
-            String message = String.format("Delete failed: %s", extractMessage(e));
-            if (e.getResponse().getStatus() == 404) {
-                throw new RecordNotFoundException(message, e);
-            } else {
-                throw new RecordRequestException(message, e);
-            }
+        } catch (RuntimeException e) {
+            callback.onFailure(e);
         }
     }
 

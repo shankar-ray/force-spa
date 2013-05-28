@@ -29,12 +29,11 @@ public abstract class AbstractRestRecordAccessorTest {
     private String resourcePrefix = this.getClass().getPackage().getName().replace('.', '/');
 
     protected RecordAccessor accessor;
-
-    protected RestConnector mockConnector;
+    protected TestRestConnector mockConnector;
 
     @Before
     public void initializeMockEntityManager() {
-        mockConnector = mock(RestConnector.class);
+        mockConnector = mock(TestRestConnector.class);
         accessor = new RestRecordAccessor(mockConnector);
     }
 
