@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
  * <p/>
  * TODO Need a lot more description!
  */
-final class SoqlBuilder {
+public final class SoqlBuilder {
     private static final int DEFAULT_DEPTH = 5;
     private static final Pattern SPLIT_AT_LITERAL_PATTERN = Pattern.compile("([^\'\"]+)(.*)");
     private static final Pattern WILDCARD_PATTERN = Pattern.compile("([^\\*\\s]*?)\\*(\\{(\\w*)\\})?");

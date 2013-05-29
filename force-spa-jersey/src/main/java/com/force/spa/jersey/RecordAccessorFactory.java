@@ -7,7 +7,7 @@ package com.force.spa.jersey;
 
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
-import com.force.spa.core.RestRecordAccessor;
+import com.force.spa.core.rest.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 import org.apache.commons.lang.Validate;
 

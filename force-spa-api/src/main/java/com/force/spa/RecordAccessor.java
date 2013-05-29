@@ -5,6 +5,8 @@
  */
 package com.force.spa;
 
+import java.util.List;
+
 /**
  * A CRUD-based interface for interacting with persistent records in Salesforce through the use of annotated Javabeans.
  */
@@ -84,4 +86,25 @@ public interface RecordAccessor {
      * @return a {link RecordQuery} which can be executed
      */
     <T> RecordQuery<T> createQuery(String qualification, Class<T> recordClass);
+
+    /**
+     * Executes a list of record operations.
+     *
+     * @param operations the list of operations
+     */
+    void execute(List<RecordOperation<?>> operations);
+
+    CreateRecordOperation newCreateRecordOperation(Object record);
+
+    DeleteRecordOperation newDeleteRecordOperation(String id, Class<?> recordClass);
+
+    <T> GetRecordOperation<T> newGetRecordOperation(String id, Class<T> recordClass);
+
+    PatchRecordOperation newPatchRecordOperation(String id, Object record);
+
+    <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soql, Class<?> recordClass, Class<T> resultClass);
+
+    <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soql, Class<T> recordClass);
+
+    UpdateRecordOperation newUpdateRecordOperation(String id, Object record);
 }

@@ -21,17 +21,6 @@ import java.util.Map;
  */
 public interface RestConnector {
     /**
-     * Indicates whether this connector executes synchronously. Synchronous execution means that the request is
-     * processed immediately and the callback is invoked before the original request returns.
-     */
-    boolean isSynchronous();
-
-    /**
-     * Completes any outstanding asynchronous requests that have been queued up and not yet executed.
-     */
-    void flush();
-
-    /**
      * Issues a DELETE request to a Salesforce REST URI.
      *
      * @param uri      the relative URI. The protocol, host and path information should not be present and if present
@@ -86,6 +75,17 @@ public interface RestConnector {
      * @param callback a callback that is invoked when the operation is complete
      */
     void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback);
+
+    /**
+     * Indicates whether this connector executes synchronously. Synchronous execution means that the request is
+     * processed immediately and the callback is invoked before the original request returns.
+     */
+    boolean isSynchronous();
+
+    /**
+     * Completes any outstanding asynchronous requests that have been queued up and not yet executed.
+     */
+    void flush();
 
     /**
      * A Callback that is invoked with results at the end of a connector request.

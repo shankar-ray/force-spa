@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.batch;
+package com.force.spa.core.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.RestConnector;

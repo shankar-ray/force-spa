@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Utilities for working with record instances.
  */
-final class RecordUtils {
+public final class RecordUtils {
     private RecordUtils() {
         throw new UnsupportedOperationException("Can not be instantiated");
     }

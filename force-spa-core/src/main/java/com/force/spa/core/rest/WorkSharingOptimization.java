@@ -3,7 +3,10 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa.core.rest;
+
+import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.core.RecordUtils;
 
 import java.util.HashMap;
 import java.util.Map;

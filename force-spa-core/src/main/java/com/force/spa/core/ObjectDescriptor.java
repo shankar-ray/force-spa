@@ -17,7 +17,7 @@ import java.util.Map;
  * collected at the same time as the core Jackson metadata (introspection time) and references some of the standard
  * Jackson classes.
  */
-final class ObjectDescriptor {
+public final class ObjectDescriptor {
 
     private final String name;
     private final BeanPropertyDefinition idProperty;

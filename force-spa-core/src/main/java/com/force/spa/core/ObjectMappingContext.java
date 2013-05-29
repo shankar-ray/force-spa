@@ -37,8 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * This context includes the basic Jackson {@link ObjectMapper} configured appropriately as extra metadata in the form
  * of {@link ObjectDescriptor} for use in making other advanced choices related to persistence.
  */
-final class ObjectMappingContext {
-
+public final class ObjectMappingContext {
     private final ObjectMapper objectMapper;
     private final ObjectReader objectReader;
     private final ObjectWriter objectWriterForCreate;
