@@ -79,6 +79,8 @@ public interface RestConnector {
     /**
      * Indicates whether this connector executes synchronously. Synchronous execution means that the request is
      * processed immediately and the callback is invoked before the original request returns.
+     *
+     * @return an indication of whether this is a synchronous connector
      */
     boolean isSynchronous();
 
@@ -86,6 +88,16 @@ public interface RestConnector {
      * Completes any outstanding asynchronous requests that have been queued up and not yet executed.
      */
     void flush();
+
+    /**
+     * Returns a path prefix with version information which is appropriate for prefixing to relative resource paths.
+     * <p/>
+     * The version included in the path is either a configured version or the most recent version supported by the
+     * instance.
+     *
+     * @return a patch prefix with version information
+     */
+    String getVersionedDataPath();
 
     /**
      * A Callback that is invoked with results at the end of a connector request.

@@ -30,11 +30,11 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public void execute(List<RecordOperation<?>> operations) {
-        RestConnector batchedConnector = new BatchedRestConnector(connector);
+    public <T> void execute(List<RecordOperation<T>> operations) {
+        RestConnector batchedConnector = new BatchRestConnector(connector);
         for (RecordOperation<?> operation : operations) {
             if (operation instanceof RestRecordOperation) {
-                ((RestRecordOperation) operation).start(connector, getMappingContext());
+                ((RestRecordOperation) operation).start(batchedConnector, getMappingContext());
             } else {
                 throw new IllegalArgumentException("operation isn't supported because it doesn't implement RestRecordOperation");
             }

@@ -92,7 +92,7 @@ public interface RecordAccessor {
      *
      * @param operations the list of operations
      */
-    void execute(List<RecordOperation<?>> operations);
+    <T> void execute(List<RecordOperation<T>> operations);
 
     CreateRecordOperation newCreateRecordOperation(Object record);
 

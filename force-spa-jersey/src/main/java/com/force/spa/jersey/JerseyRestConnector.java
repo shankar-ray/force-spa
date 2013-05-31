@@ -65,15 +65,6 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public boolean isSynchronous() {
-        return true;
-    }
-
-    @Override
-    public void flush() {
-    }
-
-    @Override
     public void delete(URI uri, Map<String, String> headers, Callback<Void> callback) {
         try {
             try {
@@ -110,7 +101,7 @@ public final class JerseyRestConnector implements RestConnector {
                     throw new RecordRequestException(message, e);
                 }
             } catch (IOException e) {
-                throw new RecordResponseException("Failed to parse JSON response stream", e);
+                throw new RecordResponseException("Failed to parse response stream", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -147,21 +138,32 @@ public final class JerseyRestConnector implements RestConnector {
                 JsonNode resultNode = objectReader.readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Create failed: %s", extractMessage(e));
+                String message = String.format("Post failed: %s", extractMessage(e));
                 if (e.getResponse().getStatus() == 404) {
                     throw new ObjectNotFoundException(message, e);
                 } else {
                     throw new RecordRequestException(message, e);
                 }
             } catch (IOException e) {
-                throw new RecordResponseException("Failed to parse JSON response stream", e);
+                throw new RecordResponseException("Failed to parse response stream", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
         }
     }
 
-    protected String getVersionedDataPath() {
+    @Override
+    public boolean isSynchronous() {
+        return true;
+    }
+
+    @Override
+    public void flush() {
+        // Nothing to flush for a synchronous connector.
+    }
+
+    @Override
+    public String getVersionedDataPath() {
         try {
             final URI instanceUri = authorizationConnector.getInstanceUrl();
             return versionedDataPathCache.get(instanceUri, new Callable<String>() {
