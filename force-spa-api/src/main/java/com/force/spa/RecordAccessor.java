@@ -88,11 +88,28 @@ public interface RecordAccessor {
     <T> RecordQuery<T> createQuery(String qualification, Class<T> recordClass);
 
     /**
+     * Executes a record operation.
+     * <p/>
+     * Interaction with the operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
+     * status is determined by asking for the operation result (using {@link com.force.spa.RecordOperation#get()}). If
+     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
+     * is thrown.
+     *
+     * @param operation the operation
+     */
+    void execute(RecordOperation<?> operation);
+
+    /**
      * Executes a list of record operations.
+     * <p/>
+     * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
+     * status is determined by asking for the operation result (using {@link com.force.spa.RecordOperation#get()}). If
+     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
+     * is thrown.
      *
      * @param operations the list of operations
      */
-    <T> void execute(List<RecordOperation<T>> operations);
+    void execute(List<RecordOperation<?>> operations);
 
     CreateRecordOperation newCreateRecordOperation(Object record);
 

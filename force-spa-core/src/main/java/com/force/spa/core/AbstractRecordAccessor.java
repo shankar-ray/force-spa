@@ -11,7 +11,6 @@ import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
-import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
@@ -104,6 +103,30 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         return new RestRecordQuery<T>(soqlTemplate, recordClass);
     }
 
+    protected final ObjectMappingContext getMappingContext() {
+        return mappingContext;
+    }
+
+    private static RuntimeException getCauseAsRuntimeException(ExecutionException e) {
+        if (e.getCause() instanceof RuntimeException)
+            return (RuntimeException) e.getCause();
+        else
+            return new RuntimeException(e.getCause());
+    }
+
+    private String getRecordId(Object record) {
+        ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
+        if (descriptor.hasIdMember()) {
+            String id = RecordUtils.getId(descriptor, record);
+            if (StringUtils.isEmpty(id)) {
+                throw new RecordRequestException("Record bean does not have an id value set");
+            }
+            return id;
+        } else {
+            throw new RecordRequestException("Record class doesn't have an id member");
+        }
+    }
+
     private final class RestRecordQuery<T> implements RecordQuery<T> {
         private final Class<T> recordClass;
         private final String soqlTemplate;
@@ -146,32 +169,6 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         public RecordQuery<T> setFirstResult(int startPosition) {
             this.startPosition = startPosition;
             return this;
-        }
-    }
-
-    protected abstract void execute(RecordOperation<?> operation);
-
-    protected final ObjectMappingContext getMappingContext() {
-        return mappingContext;
-    }
-
-    private static RuntimeException getCauseAsRuntimeException(ExecutionException e) {
-        if (e.getCause() instanceof RuntimeException)
-            return (RuntimeException) e.getCause();
-        else
-            return new RuntimeException(e.getCause());
-    }
-
-    private String getRecordId(Object record) {
-        ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
-        if (descriptor.hasIdMember()) {
-            String id = RecordUtils.getId(descriptor, record);
-            if (StringUtils.isEmpty(id)) {
-                throw new RecordRequestException("Record bean does not have an id value set");
-            }
-            return id;
-        } else {
-            throw new RecordRequestException("Record class doesn't have an id member");
         }
     }
 }
