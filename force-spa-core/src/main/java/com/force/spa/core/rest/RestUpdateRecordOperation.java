@@ -17,13 +17,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-class RestUpdateRecordOperation extends AbstractRestRecordOperation<Void> implements UpdateRecordOperation {
+class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<Void> implements UpdateRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestUpdateRecordOperation.class);
 
     private final String id;
-    private final Object record;
+    private final T record;
 
-    public RestUpdateRecordOperation(String id, Object record) {
+    public RestUpdateRecordOperation(String id, T record) {
         if (id == null)
             throw new IllegalArgumentException("id must not be null");
         if (record == null)
@@ -39,7 +39,7 @@ class RestUpdateRecordOperation extends AbstractRestRecordOperation<Void> implem
     }
 
     @Override
-    public Object getRecord() {
+    public T getRecord() {
         return record;
     }
 

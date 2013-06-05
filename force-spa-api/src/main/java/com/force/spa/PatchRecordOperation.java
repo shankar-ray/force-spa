@@ -5,8 +5,8 @@
  */
 package com.force.spa;
 
-public interface PatchRecordOperation extends RecordOperation<Void> {
+public interface PatchRecordOperation<T> extends RecordOperation<Void> {
     String getId();
 
-    Object getRecord();
+    T getRecord();
 }

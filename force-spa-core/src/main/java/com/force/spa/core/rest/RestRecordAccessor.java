@@ -30,7 +30,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public void execute(RecordOperation<?> operation) {
+    protected void execute(RecordOperation<?> operation) {
         if (operation instanceof RestRecordOperation) {
             ((RestRecordOperation) operation).start(connector, getMappingContext());
             connector.flush();
@@ -53,13 +53,13 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public CreateRecordOperation newCreateRecordOperation(Object record) {
-        return new RestCreateRecordOperation(record);
+    public <T> CreateRecordOperation<T> newCreateRecordOperation(T record) {
+        return new RestCreateRecordOperation<T>(record);
     }
 
     @Override
-    public DeleteRecordOperation newDeleteRecordOperation(String id, Class<?> recordClass) {
-        return new RestDeleteRecordOperation(id, recordClass);
+    public <T> DeleteRecordOperation<T> newDeleteRecordOperation(String id, Class<T> recordClass) {
+        return new RestDeleteRecordOperation<T>(id, recordClass);
     }
 
     @Override
@@ -68,8 +68,8 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public PatchRecordOperation newPatchRecordOperation(String id, Object record) {
-        return new RestPatchRecordOperation(id, record);
+    public <T> PatchRecordOperation<T> newPatchRecordOperation(String id, T record) {
+        return new RestPatchRecordOperation<T>(id, record);
     }
 
     @Override
@@ -83,7 +83,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public UpdateRecordOperation newUpdateRecordOperation(String id, Object record) {
-        return new RestUpdateRecordOperation(id, record);
+    public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
+        return new RestUpdateRecordOperation<T>(id, record);
     }
 }

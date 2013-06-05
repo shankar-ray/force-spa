@@ -6,15 +6,17 @@
 package com.force.spa.jersey;
 
 import com.force.spa.CreateRecordOperation;
+import com.force.spa.GetRecordOperation;
+import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordRequestException;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,19 +47,15 @@ public class RecordAccessorBatchIntegrationTest {
         Contact contact = new Contact();
         contact.setFirstName("John");
         contact.setLastName("Smith");
-        List<RecordOperation<?>> operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
-        operations.add(createOperation);
-        accessor.execute(operations);
+        accessor.execute(createOperation);
 
         String id = createOperation.get();
         contact.setId(id);
         objects.add(contact);
 
-        operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
-        operations.add(getOperation);
-        accessor.execute(operations);
+        accessor.execute(getOperation);
         Contact contact2 = getOperation.get();
         assertThat(contact2.getId(), is(equalTo(id)));
         assertThat(contact2.getFirstName(), is(equalTo(contact.getFirstName())));
@@ -65,33 +63,31 @@ public class RecordAccessorBatchIntegrationTest {
     }
 
     @Test
+    @Ignore("Batching is not readily available yet in server")
     public void testMultiplePatches() throws Exception {
         Contact contact = new Contact();
         contact.setFirstName("John");
         contact.setLastName("Smith");
-        List<RecordOperation<?>> operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
-        operations.add(createOperation);
-        accessor.execute(operations);
+        accessor.execute(createOperation);
 
         String id = createOperation.get();
         contact.setId(id);
         objects.add(contact);
 
-        operations = new ArrayList<RecordOperation<?>>();
         contact.setEmail("john.smith@acme.com");
-        operations.add(accessor.newPatchRecordOperation(id, contact));
+        PatchRecordOperation firstPatchOperation = accessor.newPatchRecordOperation(id, contact);
 
         Contact contact2 = new Contact();
         contact2.setPhone("925-555-1212");
-        operations.add(accessor.newPatchRecordOperation(id, contact2));
+        PatchRecordOperation<Contact> secondPatchOperation = accessor.newPatchRecordOperation(id, contact2);
+        accessor.execute(firstPatchOperation, secondPatchOperation);
 
-        accessor.execute(operations);
+        firstPatchOperation.get();  // Check for exceptions
+        secondPatchOperation.get(); // Check for exceptions
 
-        operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
-        operations.add(getOperation);
-        accessor.execute(operations);
+        accessor.execute(getOperation);
 
         Contact contact3 = getOperation.get();
         assertThat(contact3.getId(), is(equalTo(id)));
@@ -102,36 +98,60 @@ public class RecordAccessorBatchIntegrationTest {
     }
 
     @Test
+    @Ignore("Batching is not readily available yet in server")
+    @SuppressWarnings("unchecked")
+    public void testLotsOfCreates() throws Exception {
+        int numberOfCreates = 25;
+        long before = System.currentTimeMillis();
+        List<RecordOperation<?>> createOperations = new ArrayList<RecordOperation<?>>();
+        for (int i = 0; i < numberOfCreates; i++) {
+            Contact contact = new Contact();
+            contact.setFirstName("John" + i);
+            contact.setLastName("Smith" + i);
+            createOperations.add(accessor.newCreateRecordOperation(contact));
+        }
+        accessor.execute(createOperations);
+        long after = System.currentTimeMillis();
+        System.out.println("Elapsed create time: " + (after - before));
+
+        List<RecordOperation<?>> getOperations = new ArrayList<RecordOperation<?>>();
+        for (int i = 0; i < numberOfCreates; i++) {
+            String id = ((CreateRecordOperation<Contact>) createOperations.get(i)).get();
+            getOperations.add(accessor.newGetRecordOperation(id, Contact.class));
+        }
+        accessor.execute(getOperations);
+
+        for (int i = 0; i < numberOfCreates; i++) {
+            Contact originalContact = ((CreateRecordOperation<Contact>) createOperations.get(i)).getRecord();
+            Contact persistentContact = ((GetRecordOperation<Contact>) getOperations.get(i)).get();
+            assertThat(originalContact.getFirstName(), is(equalTo(persistentContact.getFirstName())));
+            assertThat(originalContact.getLastName(), is(equalTo(persistentContact.getLastName())));
+        }
+    }
+
+    @Test
     public void testDelete() throws Exception {
         Contact contact = new Contact();
         contact.setFirstName("John");
         contact.setLastName("Smith");
-        List<RecordOperation<?>> operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
-        operations.add(createOperation);
-        accessor.execute(operations);
+        accessor.execute(createOperation);
 
         String id = createOperation.get();
         contact.setId(id);
         objects.add(contact);
 
-        operations = new ArrayList<RecordOperation<?>>();
         RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
-        operations.add(getOperation);
-        accessor.execute(operations);
+        accessor.execute(getOperation);
 
         Contact contact2 = getOperation.get();
         assertThat(contact2.getId(), is(equalTo(id)));
 
-        operations = new ArrayList<RecordOperation<?>>();
-        operations.add(accessor.newDeleteRecordOperation(id, Contact.class));
-        accessor.execute(operations);
+        accessor.execute(accessor.newDeleteRecordOperation(id, Contact.class));
         objects.remove(contact);
 
-        operations = new ArrayList<RecordOperation<?>>();
         getOperation = accessor.newGetRecordOperation(id, Contact.class);
-        operations.add(getOperation);
-        accessor.execute(operations);
+        accessor.execute(getOperation);
         try {
             getOperation.get();
             fail("Didn't get expected RecordNotFoundException");

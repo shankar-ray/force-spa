@@ -5,8 +5,8 @@
  */
 package com.force.spa;
 
-public interface DeleteRecordOperation extends RecordOperation<Void> {
+public interface DeleteRecordOperation<T> extends RecordOperation<Void> {
     String getId();
 
-    Class<?> getRecordClass();
+    Class<T> getRecordClass();
 }

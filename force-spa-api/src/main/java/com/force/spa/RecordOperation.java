@@ -7,7 +7,10 @@ package com.force.spa;
 
 import java.util.concurrent.ExecutionException;
 
-public interface RecordOperation<T> {
+/**
+ * @param <R> the type of result expected from the operation
+ */
+public interface RecordOperation<R> {
     /**
      * Returns an indication of whether the operation is done. Completion could be the result of successful execution or
      * an exception.
@@ -20,5 +23,5 @@ public interface RecordOperation<T> {
      * @return the operation result
      * @throws ExecutionException if the operation threw an exception
      */
-    T get() throws ExecutionException;
+    R get() throws ExecutionException;
 }

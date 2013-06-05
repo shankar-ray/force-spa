@@ -17,7 +17,7 @@ public interface RecordAccessor {
      * @param record the bean holding values to be persisted in the new record.
      * @return the id of the persisted record
      */
-    String create(Object record);
+    <T> String create(T record);
 
     /**
      * Get a record by id. Also known as "read" (the R in CRUD).
@@ -37,7 +37,7 @@ public interface RecordAccessor {
      *               record will be updated with values from the bean. A null value in a bean field will cause the
      *               corresponding field in the persistent record to be set to null.
      */
-    void update(String id, Object record);
+    <T> void update(String id, T record);
 
     /**
      * Updates all fields in an existing record.
@@ -47,7 +47,7 @@ public interface RecordAccessor {
      *               value in a bean field will cause the corresponding field in the persistent record to be set to
      *               null.
      */
-    void update(Object record);
+    <T> void update(T record);
 
     /**
      * Updates selected fields in an existing record.
@@ -57,7 +57,7 @@ public interface RecordAccessor {
      *                      the non-null fields from the bean are updated in the persistent record. A null value in a
      *                      bean field means no change is desired for that field in the persistent record.
      */
-    void patch(String id, Object recordChanges);
+    <T> void patch(String id, T recordChanges);
 
     /**
      * Deletes a record.
@@ -65,7 +65,7 @@ public interface RecordAccessor {
      * @param id          the Salesforce id of the persistent record.
      * @param recordClass the annotated class of the record's bean
      */
-    void delete(String id, Class<?> recordClass);
+    <T> void delete(String id, Class<T> recordClass);
 
     /**
      * Deletes a record.
@@ -73,7 +73,7 @@ public interface RecordAccessor {
      * @param record the bean of the record to delete. The bean must contain a populated "id" field. Other fields can be
      *               populated but are ignored.
      */
-    void delete(Object record);
+    <T> void delete(T record);
 
     /**
      * Creates an instance of {@link RecordQuery} for executing a SOQL query.
@@ -88,16 +88,16 @@ public interface RecordAccessor {
     <T> RecordQuery<T> createQuery(String qualification, Class<T> recordClass);
 
     /**
-     * Executes a record operation.
+     * Executes a list of record operations.
      * <p/>
-     * Interaction with the operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
+     * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
      * status is determined by asking for the operation result (using {@link com.force.spa.RecordOperation#get()}). If
      * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
      * is thrown.
      *
-     * @param operation the operation
+     * @param operations the operations
      */
-    void execute(RecordOperation<?> operation);
+    void execute(RecordOperation<?> ... operations);
 
     /**
      * Executes a list of record operations.
@@ -107,21 +107,21 @@ public interface RecordAccessor {
      * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
      * is thrown.
      *
-     * @param operations the list of operations
+     * @param operations the operations
      */
     void execute(List<RecordOperation<?>> operations);
 
-    CreateRecordOperation newCreateRecordOperation(Object record);
+    <T> CreateRecordOperation<T> newCreateRecordOperation(T record);
 
-    DeleteRecordOperation newDeleteRecordOperation(String id, Class<?> recordClass);
+    <T> DeleteRecordOperation<T> newDeleteRecordOperation(String id, Class<T> recordClass);
 
     <T> GetRecordOperation<T> newGetRecordOperation(String id, Class<T> recordClass);
 
-    PatchRecordOperation newPatchRecordOperation(String id, Object record);
+    <T> PatchRecordOperation<T> newPatchRecordOperation(String id, T record);
 
     <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soql, Class<?> recordClass, Class<T> resultClass);
 
     <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soql, Class<T> recordClass);
 
-    UpdateRecordOperation newUpdateRecordOperation(String id, Object record);
+    <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record);
 }

@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.Map;
 
-class RestDeleteRecordOperation extends AbstractRestRecordOperation<Void> implements DeleteRecordOperation {
+class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> implements DeleteRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestDeleteRecordOperation.class);
 
     private final String id;
-    private final Class<?> recordClass;
+    private final Class<T> recordClass;
 
-    public RestDeleteRecordOperation(String id, Class<?> recordClass) {
+    public RestDeleteRecordOperation(String id, Class<T> recordClass) {
         if (id == null)
             throw new IllegalArgumentException("id must not be null");
         if (recordClass == null)
@@ -37,7 +37,7 @@ class RestDeleteRecordOperation extends AbstractRestRecordOperation<Void> implem
     }
 
     @Override
-    public Class<?> getRecordClass() {
+    public Class<T> getRecordClass() {
         return recordClass;
     }
 

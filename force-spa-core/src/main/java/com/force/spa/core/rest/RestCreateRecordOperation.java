@@ -18,12 +18,12 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-final class RestCreateRecordOperation extends AbstractRestRecordOperation<String> implements CreateRecordOperation {
+final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<String> implements CreateRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestCreateRecordOperation.class);
 
-    private final Object record;
+    private final T record;
 
-    public RestCreateRecordOperation(Object record) {
+    public RestCreateRecordOperation(T record) {
         if (record == null)
             throw new IllegalArgumentException("record must not be null");
 
@@ -31,7 +31,7 @@ final class RestCreateRecordOperation extends AbstractRestRecordOperation<String
     }
 
     @Override
-    public Object getRecord() {
+    public T getRecord() {
         return record;
     }
 

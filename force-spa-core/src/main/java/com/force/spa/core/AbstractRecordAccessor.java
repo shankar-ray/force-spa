@@ -11,12 +11,14 @@ import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
+import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -26,9 +28,23 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     // is no reason to go through the expense of creating multiple instances. This way we get to share the cache.
     private static final ObjectMappingContext mappingContext = new ObjectMappingContext();
 
+    /**
+     * Executes a single record operation. This is used internally
+     */
+    protected abstract void execute(RecordOperation<?> operation);
+
     @Override
-    public final String create(Object record) {
-        CreateRecordOperation operation = newCreateRecordOperation(record);
+    public void execute(RecordOperation<?>... operations) {
+        if (operations.length == 1) {
+            execute(operations[0]); // Optimize for the single operation case
+        } else {
+            execute(Arrays.asList(operations));
+        }
+    }
+
+    @Override
+    public final <T> String create(T record) {
+        CreateRecordOperation<T> operation = newCreateRecordOperation(record);
         execute(operation);
         try {
             return operation.get();
@@ -49,15 +65,15 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final void update(Object record) {
+    public final <T> void update(T record) {
         Validate.notNull(record, "record must not be null");
 
         update(getRecordId(record), record);
     }
 
     @Override
-    public final void update(String id, Object record) {
-        UpdateRecordOperation operation = newUpdateRecordOperation(id, record);
+    public final <T> void update(String id, T record) {
+        UpdateRecordOperation<T> operation = newUpdateRecordOperation(id, record);
         execute(operation);
         try {
             operation.get();
@@ -67,8 +83,8 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final void patch(String id, Object recordChanges) {
-        PatchRecordOperation operation = newPatchRecordOperation(id, recordChanges);
+    public final <T> void patch(String id, T recordChanges) {
+        PatchRecordOperation<T> operation = newPatchRecordOperation(id, recordChanges);
         execute(operation);
         try {
             operation.get();
@@ -78,15 +94,15 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final void delete(Object record) {
+    public final <T> void delete(T record) {
         Validate.notNull(record, "record must not be null");
 
         delete(getRecordId(record), record.getClass());
     }
 
     @Override
-    public final void delete(String id, Class<?> recordClass) {
-        DeleteRecordOperation operation = newDeleteRecordOperation(id, recordClass);
+    public final <T> void delete(String id, Class<T> recordClass) {
+        DeleteRecordOperation<T> operation = newDeleteRecordOperation(id, recordClass);
         execute(operation);
         try {
             operation.get();
@@ -100,7 +116,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         Validate.notNull(soqlTemplate, "soqlTemplate must not be null");
         Validate.notNull(recordClass, "recordClass must not be null");
 
-        return new RestRecordQuery<T>(soqlTemplate, recordClass);
+        return new RecordQueryImpl<T>(soqlTemplate, recordClass);
     }
 
     protected final ObjectMappingContext getMappingContext() {
@@ -127,14 +143,14 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         }
     }
 
-    private final class RestRecordQuery<T> implements RecordQuery<T> {
+    private final class RecordQueryImpl<T> implements RecordQuery<T> {
         private final Class<T> recordClass;
         private final String soqlTemplate;
         private int maxResults;
         private int startPosition;
 
 
-        private RestRecordQuery(String soqlTemplate, Class<T> recordClass) {
+        private RecordQueryImpl(String soqlTemplate, Class<T> recordClass) {
             this.recordClass = recordClass;
             this.soqlTemplate = soqlTemplate;
         }
