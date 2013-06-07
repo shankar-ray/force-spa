@@ -8,18 +8,14 @@ package com.force.spa.jersey;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
-import com.force.spa.RecordAccessor;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordRequestException;
-import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -27,20 +23,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
-public class RecordAccessorBatchIntegrationTest {
-    private RecordAccessor accessor = new RecordAccessorFactory().newInstance();
-    private Set<Object> objects = new HashSet<Object>();
-
-    @After
-    public void deleteTestObjects() {
-        for (Object object : objects) {
-            try {
-                accessor.delete(object);
-            } catch (Exception e) {
-                System.err.println("Failed to clean up object: " + e.toString());
-            }
-        }
-    }
+public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIntegrationTest {
 
     @Test
     public void testSingleCreateAndGet() throws Exception {
