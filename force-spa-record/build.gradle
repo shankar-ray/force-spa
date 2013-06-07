@@ -1,8 +1,0 @@
-apply plugin: 'java'
-
-description = 'Simple Persistence API for Salesforce - Record Base Classes'
-
-dependencies {
-    compile project(":force-spa-api")
-    compile "joda-time:joda-time:2.2"
-}

@@ -24,6 +24,7 @@ configure(allprojects) {
     repositories {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+        flatDir { dirs "${rootProject.projectDir}/nonmavenlib" }
     }
 }
 
@@ -57,7 +58,7 @@ configure(rootProject) {
     }
 }
 
-configure(subprojects) {
+configure(subprojects - project(":force-spa-testschema")) {
     apply plugin: 'java'
     apply plugin: 'osgi'
     apply plugin: 'eclipse'

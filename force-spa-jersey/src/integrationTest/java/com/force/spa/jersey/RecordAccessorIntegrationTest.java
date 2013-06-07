@@ -35,60 +35,58 @@ public class RecordAccessorIntegrationTest {
 
     @Test
     public void testCreateAndFind() {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        String id = accessor.create(contact);
-        contact.setId(id);
-        objects.add(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        String id = accessor.create(guild);
+        guild.setId(id);
+        objects.add(guild);
 
-        Contact contact2 = accessor.get(id, Contact.class);
-        assertThat(contact2.getId(), is(equalTo(id)));
-        assertThat(contact2.getFirstName(), is(equalTo(contact.getFirstName())));
-        assertThat(contact2.getLastName(), is(equalTo(contact.getLastName())));
+        Guild guild2 = accessor.get(id, Guild.class);
+        assertThat(guild2.getId(), is(equalTo(id)));
+        assertThat(guild2.getName(), is(equalTo(guild.getName())));
+        assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
     }
 
     @Test
     public void testPatch() {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        String id = accessor.create(contact);
-        contact.setId(id);
-        objects.add(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        String id = accessor.create(guild);
+        guild.setId(id);
+        objects.add(guild);
 
-        contact.setEmail("john.smith@acme.com");
-        accessor.patch(id, contact);
+        guild.setName("Ultimate Speed Cyclists");
+        accessor.patch(id, guild);
 
-        Contact contact2 = new Contact();
-        contact2.setPhone("925-555-1212");
-        accessor.patch(id, contact2);
+        Guild guild2 = new Guild();
+        guild2.setDescription("A guild for really fast bicycle racers.");
+        accessor.patch(id, guild2);
 
-        Contact contact3 = accessor.get(id, Contact.class);
-        assertThat(contact3.getId(), is(equalTo(id)));
-        assertThat(contact3.getFirstName(), is(equalTo(contact.getFirstName())));
-        assertThat(contact3.getLastName(), is(equalTo(contact.getLastName())));
-        assertThat(contact3.getEmail(), is(equalTo(contact.getEmail())));
-        assertThat(contact3.getPhone(), is(equalTo(contact2.getPhone())));
+        Guild guild3 = accessor.get(id, Guild.class);
+        assertThat(guild3.getId(), is(equalTo(id)));
+        assertThat(guild3.getName(), is(equalTo(guild.getName())));
+        assertThat(guild3.getDescription(), is(equalTo(guild2.getDescription())));
     }
 
     @Test
     public void testDelete() {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        String id = accessor.create(contact);
-        contact.setId(id);
-        objects.add(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        String id = accessor.create(guild);
+        guild.setId(id);
+        objects.add(guild);
 
-        Contact contact2 = accessor.get(id, Contact.class);
-        assertThat(contact2.getId(), is(equalTo(id)));
+        Guild guild2 = accessor.get(id, Guild.class);
+        assertThat(guild2.getId(), is(equalTo(id)));
 
-        accessor.delete(id, Contact.class);
-        objects.remove(contact);
+        accessor.delete(id, Guild.class);
+        objects.remove(guild);
 
         try {
-            accessor.get(id, Contact.class);
+            accessor.get(id, Guild.class);
             fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected
@@ -98,7 +96,7 @@ public class RecordAccessorIntegrationTest {
     @Test
     public void testDeleteNonexistentId() {
         try {
-            accessor.delete("0123456789012345", Contact.class);
+            accessor.delete("0123456789012345", Guild.class);
             fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected

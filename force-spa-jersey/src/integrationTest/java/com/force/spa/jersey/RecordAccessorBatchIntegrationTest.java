@@ -44,57 +44,56 @@ public class RecordAccessorBatchIntegrationTest {
 
     @Test
     public void testSingleCreateAndGet() throws Exception {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(guild);
         accessor.execute(createOperation);
 
         String id = createOperation.get();
-        contact.setId(id);
-        objects.add(contact);
+        guild.setId(id);
+        objects.add(guild);
 
-        RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
+        RecordOperation<Guild> getOperation = accessor.newGetRecordOperation(id, Guild.class);
         accessor.execute(getOperation);
-        Contact contact2 = getOperation.get();
-        assertThat(contact2.getId(), is(equalTo(id)));
-        assertThat(contact2.getFirstName(), is(equalTo(contact.getFirstName())));
-        assertThat(contact2.getLastName(), is(equalTo(contact.getLastName())));
+        Guild guild2 = getOperation.get();
+        assertThat(guild2.getId(), is(equalTo(id)));
+        assertThat(guild2.getName(), is(equalTo(guild.getName())));
+        assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
     }
 
     @Test
     @Ignore("Batching is not readily available yet in server")
     public void testMultiplePatches() throws Exception {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(guild);
         accessor.execute(createOperation);
 
         String id = createOperation.get();
-        contact.setId(id);
-        objects.add(contact);
+        guild.setId(id);
+        objects.add(guild);
 
-        contact.setEmail("john.smith@acme.com");
-        PatchRecordOperation firstPatchOperation = accessor.newPatchRecordOperation(id, contact);
+        guild.setName("Ultimate Speed Cyclists");
+        PatchRecordOperation firstPatchOperation = accessor.newPatchRecordOperation(id, guild);
 
-        Contact contact2 = new Contact();
-        contact2.setPhone("925-555-1212");
-        PatchRecordOperation<Contact> secondPatchOperation = accessor.newPatchRecordOperation(id, contact2);
+        Guild guild2 = new Guild();
+        guild2.setDescription("A guild for really fast bicycle racers.");
+        PatchRecordOperation<Guild> secondPatchOperation = accessor.newPatchRecordOperation(id, guild2);
         accessor.execute(firstPatchOperation, secondPatchOperation);
 
         firstPatchOperation.get();  // Check for exceptions
         secondPatchOperation.get(); // Check for exceptions
 
-        RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
+        RecordOperation<Guild> getOperation = accessor.newGetRecordOperation(id, Guild.class);
         accessor.execute(getOperation);
 
-        Contact contact3 = getOperation.get();
-        assertThat(contact3.getId(), is(equalTo(id)));
-        assertThat(contact3.getFirstName(), is(equalTo(contact.getFirstName())));
-        assertThat(contact3.getLastName(), is(equalTo(contact.getLastName())));
-        assertThat(contact3.getEmail(), is(equalTo(contact.getEmail())));
-        assertThat(contact3.getPhone(), is(equalTo(contact2.getPhone())));
+        Guild guild3 = getOperation.get();
+        assertThat(guild3.getId(), is(equalTo(id)));
+        assertThat(guild3.getId(), is(equalTo(id)));
+        assertThat(guild3.getName(), is(equalTo(guild.getName())));
+        assertThat(guild3.getDescription(), is(equalTo(guild2.getDescription())));
     }
 
     @Test
@@ -105,10 +104,10 @@ public class RecordAccessorBatchIntegrationTest {
         long before = System.currentTimeMillis();
         List<RecordOperation<?>> createOperations = new ArrayList<RecordOperation<?>>();
         for (int i = 0; i < numberOfCreates; i++) {
-            Contact contact = new Contact();
-            contact.setFirstName("John" + i);
-            contact.setLastName("Smith" + i);
-            createOperations.add(accessor.newCreateRecordOperation(contact));
+            Guild guild = new Guild();
+            guild.setName("Speed Cyclists" + i);
+            guild.setDescription("A guild for bicycle racers." + i);
+            createOperations.add(accessor.newCreateRecordOperation(guild));
         }
         accessor.execute(createOperations);
         long after = System.currentTimeMillis();
@@ -116,41 +115,41 @@ public class RecordAccessorBatchIntegrationTest {
 
         List<RecordOperation<?>> getOperations = new ArrayList<RecordOperation<?>>();
         for (int i = 0; i < numberOfCreates; i++) {
-            String id = ((CreateRecordOperation<Contact>) createOperations.get(i)).get();
-            getOperations.add(accessor.newGetRecordOperation(id, Contact.class));
+            String id = ((CreateRecordOperation<Guild>) createOperations.get(i)).get();
+            getOperations.add(accessor.newGetRecordOperation(id, Guild.class));
         }
         accessor.execute(getOperations);
 
         for (int i = 0; i < numberOfCreates; i++) {
-            Contact originalContact = ((CreateRecordOperation<Contact>) createOperations.get(i)).getRecord();
-            Contact persistentContact = ((GetRecordOperation<Contact>) getOperations.get(i)).get();
-            assertThat(originalContact.getFirstName(), is(equalTo(persistentContact.getFirstName())));
-            assertThat(originalContact.getLastName(), is(equalTo(persistentContact.getLastName())));
+            Guild originalGuild = ((CreateRecordOperation<Guild>) createOperations.get(i)).getRecord();
+            Guild persistentGuild = ((GetRecordOperation<Guild>) getOperations.get(i)).get();
+            assertThat(originalGuild.getName(), is(equalTo(persistentGuild.getName())));
+            assertThat(originalGuild.getDescription(), is(equalTo(persistentGuild.getDescription())));
         }
     }
 
     @Test
     public void testDelete() throws Exception {
-        Contact contact = new Contact();
-        contact.setFirstName("John");
-        contact.setLastName("Smith");
-        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(contact);
+        Guild guild = new Guild();
+        guild.setName("Speed Cyclists");
+        guild.setDescription("A guild for bicycle racers.");
+        RecordOperation<String> createOperation = accessor.newCreateRecordOperation(guild);
         accessor.execute(createOperation);
 
         String id = createOperation.get();
-        contact.setId(id);
-        objects.add(contact);
+        guild.setId(id);
+        objects.add(guild);
 
-        RecordOperation<Contact> getOperation = accessor.newGetRecordOperation(id, Contact.class);
+        RecordOperation<Guild> getOperation = accessor.newGetRecordOperation(id, Guild.class);
         accessor.execute(getOperation);
 
-        Contact contact2 = getOperation.get();
-        assertThat(contact2.getId(), is(equalTo(id)));
+        Guild guild2 = getOperation.get();
+        assertThat(guild2.getId(), is(equalTo(id)));
 
-        accessor.execute(accessor.newDeleteRecordOperation(id, Contact.class));
-        objects.remove(contact);
+        accessor.execute(accessor.newDeleteRecordOperation(id, Guild.class));
+        objects.remove(guild);
 
-        getOperation = accessor.newGetRecordOperation(id, Contact.class);
+        getOperation = accessor.newGetRecordOperation(id, Guild.class);
         accessor.execute(getOperation);
         try {
             getOperation.get();
@@ -167,7 +166,7 @@ public class RecordAccessorBatchIntegrationTest {
     @Test
     public void testDeleteNonexistentId() {
         try {
-            accessor.delete("0123456789012345", Contact.class);
+            accessor.delete("0123456789012345", Guild.class);
             fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected
