@@ -46,7 +46,6 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     }
 
     @Test
-    @Ignore("Batching is not readily available yet in server")
     public void testMultiplePatches() throws Exception {
         Guild guild = new Guild();
         guild.setName("Speed Cyclists");
@@ -80,7 +79,6 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     }
 
     @Test
-    @Ignore("Batching is not readily available yet in server")
     @SuppressWarnings("unchecked")
     public void testLotsOfCreates() throws Exception {
         int numberOfCreates = 25;

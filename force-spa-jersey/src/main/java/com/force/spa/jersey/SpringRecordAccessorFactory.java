@@ -7,6 +7,7 @@ package com.force.spa.jersey;
 
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
+import com.force.spa.ApiVersion;
 import com.sun.jersey.api.client.Client;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> 
     @Autowired
     private AuthorizationConnector authorizationConnector;
 
-    private String apiVersion = null;
+    private ApiVersion apiVersion = null;
 
     /**
      * Sets the Salesforce API version used by the generated {@link RecordAccessor} instances.
@@ -34,10 +35,14 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> 
      * If a version is not configured with this method then the default is to use the highest version supported by the
      * Salesforce server.
      *
-     * @param apiVersion a Salesforce API version (for example: "v28.0")
+     * @param apiVersion a Salesforce API version (for example: "28.0")
      */
-    public void setApiVersion(String apiVersion) {
+    public void setApiVersion(ApiVersion apiVersion) {
         this.apiVersion = apiVersion;
+    }
+
+    ApiVersion getApiVersion() {
+        return this.apiVersion;
     }
 
     @Override

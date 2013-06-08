@@ -90,14 +90,11 @@ public interface RestConnector {
     void flush();
 
     /**
-     * Returns a path prefix with version information which is appropriate for prefixing to relative resource paths.
-     * <p/>
-     * The version included in the path is either a configured version or the most recent version supported by the
-     * instance.
+     * Returns the Salesforce API version.
      *
-     * @return a patch prefix with version information
+     * @return the Salesforce API version
      */
-    String getVersionedDataPath();
+    ApiVersion getApiVersion();
 
     /**
      * A Callback that is invoked with results at the end of a connector request.

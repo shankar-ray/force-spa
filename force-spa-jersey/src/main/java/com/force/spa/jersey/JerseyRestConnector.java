@@ -14,6 +14,7 @@ import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
+import com.force.spa.ApiVersion;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.jersey.api.client.Client;
@@ -42,11 +43,11 @@ import java.util.concurrent.TimeUnit;
 public final class JerseyRestConnector implements RestConnector {
 
     private static final Logger log = LoggerFactory.getLogger(JerseyRestConnector.class);
-    private static final Cache<URI, String> versionedDataPathCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
+    private static final Cache<URI, ApiVersion> apiVersionCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
 
     private final AuthorizationConnector authorizationConnector;
     private final Client client;
-    private final String apiVersion;
+    private final ApiVersion apiVersion;
     private final ObjectReader objectReader;
 
     /**
@@ -57,7 +58,7 @@ public final class JerseyRestConnector implements RestConnector {
      * @param apiVersion             an optional apiVersion. If specified as <code>null</code>, then the highest version
      *                               supported by the server is used.
      */
-    public JerseyRestConnector(AuthorizationConnector authorizationConnector, Client client, String apiVersion) {
+    public JerseyRestConnector(AuthorizationConnector authorizationConnector, Client client, ApiVersion apiVersion) {
         this.authorizationConnector = authorizationConnector;
         this.client = client;
         this.apiVersion = apiVersion;
@@ -163,25 +164,21 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public String getVersionedDataPath() {
+    public ApiVersion getApiVersion() {
+        final URI instanceUri = authorizationConnector.getInstanceUrl();
         try {
-            final URI instanceUri = authorizationConnector.getInstanceUrl();
-            return versionedDataPathCache.get(instanceUri, new Callable<String>() {
+            return apiVersionCache.get(instanceUri, new Callable<ApiVersion>() {
                 @Override
-                public String call() throws JSONException {
-                    if (apiVersion != null) {
-                        return "/services/data/" + apiVersion;
-                    } else {
-                        return getDataPathForHighestSupportedVersion(instanceUri);
-                    }
+                public ApiVersion call() throws JSONException {
+                    return (apiVersion != null) ? apiVersion : getHighestSupportedApiVersion(instanceUri);
                 }
             });
         } catch (Exception e) {
-            throw new RuntimeException("Failed to determine versioned data path for instance", e);
+            throw new RuntimeException(String.format("Failed to determine version for instance %s", instanceUri), e);
         }
     }
 
-    private String getDataPathForHighestSupportedVersion(URI instanceUri) throws JSONException {
+    private ApiVersion getHighestSupportedApiVersion(URI instanceUri) throws JSONException {
         log.debug(String.format("Asking %s about Salesforce API versions", instanceUri));
         JSONArray versionChoices =
             client.resource(instanceUri).path("services/data")
@@ -189,7 +186,7 @@ public final class JerseyRestConnector implements RestConnector {
                 .get(JSONArray.class);
 
         JSONObject highestVersion = (JSONObject) versionChoices.get(versionChoices.length() - 1);
-        return (String) highestVersion.get("url");
+        return new ApiVersion(highestVersion.get("version").toString());
     }
 
     private WebResource.Builder getConfiguredResource(URI relativeUri, Map<String, String> headers) {
@@ -208,7 +205,7 @@ public final class JerseyRestConnector implements RestConnector {
     private URI buildAbsoluteUri(URI relativeUri) {
         UriBuilder builder = UriBuilder.fromUri(relativeUri);
         if (!relativeUri.getPath().startsWith("/services/data")) {
-            builder.replacePath(getVersionedDataPath() + relativeUri.getPath());
+            builder.replacePath("/services/data/v" + getApiVersion() + relativeUri.getPath());
         }
         builder.uri(authorizationConnector.getInstanceUrl());
         return builder.build();

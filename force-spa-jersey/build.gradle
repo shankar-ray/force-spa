@@ -14,6 +14,8 @@ dependencies {
     compile "org.springframework:spring-web:${springVersion}", provided
 
     testCompile "junit:junit:${junitVersion}"
+    testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
+    testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
     testCompile "org.springframework:spring-test:${springVersion}"
 
     testRuntime project(":config")

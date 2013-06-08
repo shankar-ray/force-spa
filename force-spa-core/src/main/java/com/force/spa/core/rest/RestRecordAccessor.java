@@ -5,13 +5,14 @@
  */
 package com.force.spa.core.rest;
 
-import com.force.spa.RestConnector;
+import com.force.spa.ApiVersion;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordOperation;
+import com.force.spa.RestConnector;
 import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.AbstractRecordAccessor;
 
@@ -22,6 +23,8 @@ import java.util.List;
  * REST API.
  */
 public final class RestRecordAccessor extends AbstractRecordAccessor {
+
+    private final static ApiVersion MINIMUM_VERSION_FOR_BATCHING = new ApiVersion(29, 0);
 
     private final RestConnector connector;
 
@@ -41,15 +44,15 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     @Override
     public void execute(List<RecordOperation<?>> operations) {
-        RestConnector batchedConnector = new BatchRestConnector(connector);
+        RestConnector batchConnector = isBatchingSupported() ? new BatchRestConnector(connector) : connector;
         for (RecordOperation<?> operation : operations) {
             if (operation instanceof RestRecordOperation) {
-                ((RestRecordOperation) operation).start(batchedConnector, getMappingContext());
+                ((RestRecordOperation) operation).start(batchConnector, getMappingContext());
             } else {
                 throw new IllegalArgumentException("operation isn't supported because it doesn't implement RestRecordOperation");
             }
         }
-        batchedConnector.flush(); // Causes all the buffered operations to be sent (executed).
+        batchConnector.flush(); // Causes all the buffered operations to be sent (executed).
     }
 
     @Override
@@ -85,5 +88,9 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     @Override
     public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
         return new RestUpdateRecordOperation<T>(id, record);
+    }
+
+    private boolean isBatchingSupported() {
+        return MINIMUM_VERSION_FOR_BATCHING.compareTo(connector.getApiVersion()) <= 0;
     }
 }

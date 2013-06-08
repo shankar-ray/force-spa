@@ -6,6 +6,7 @@
 package com.force.spa.core.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.ApiVersion;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
@@ -53,8 +54,8 @@ public class BatchRestConnector implements RestConnector {
     }
 
     @Override
-    public String getVersionedDataPath() {
-        return connector.getVersionedDataPath();
+    public ApiVersion getApiVersion() {
+        return connector.getApiVersion();
     }
 
     @Override
@@ -126,7 +127,7 @@ public class BatchRestConnector implements RestConnector {
     private URI buildVersionedRelativeUri(URI uri) {
         String path = uri.getPath();
         if (!path.startsWith("/services/data")) {
-            path = getVersionedDataPath() + path;
+            path = "/services/data/v" + getApiVersion() + path;
         }
         try {
             return new URI(null, null, null, 0, path, uri.getQuery(), uri.getFragment());

@@ -7,6 +7,7 @@ package com.force.spa.jersey;
 
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
+import com.force.spa.ApiVersion;
 import com.force.spa.core.rest.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 import org.apache.commons.lang.Validate;
@@ -61,7 +62,7 @@ public class RecordAccessorFactory {
      * @param apiVersion             the desired Salesforce API version
      * @return a RecordAccessor
      */
-    public RecordAccessor newInstance(AuthorizationConnector authorizationConnector, Client client, String apiVersion) {
+    public RecordAccessor newInstance(AuthorizationConnector authorizationConnector, Client client, ApiVersion apiVersion) {
         Validate.notNull(authorizationConnector, "authorizationConnector must not be null");
         Validate.notNull(client, "client must not be null");
 
