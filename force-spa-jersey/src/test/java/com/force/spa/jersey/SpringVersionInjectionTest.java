@@ -6,10 +6,6 @@
 package com.force.spa.jersey;
 
 import com.force.spa.ApiVersion;
-import com.force.spa.AuthorizationConnector;
-import com.force.spa.RecordAccessor;
-import com.force.spa.core.rest.RestRecordAccessor;
-import com.sun.jersey.api.client.Client;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -20,8 +16,8 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@ContextConfiguration(locations = {"classpath:com/force/spa/jersey/versionInjectionContext.xml"})
-public class VersionInjectionTest extends AbstractJUnit4SpringContextTests {
+@ContextConfiguration(locations = {"classpath:com/force/spa/jersey/springVersionInjectionContext.xml"})
+public class SpringVersionInjectionTest extends AbstractJUnit4SpringContextTests {
 
     @Autowired
     private SpringRecordAccessorFactory accessorFactory;

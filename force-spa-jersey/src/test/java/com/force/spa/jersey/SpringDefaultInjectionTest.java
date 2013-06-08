@@ -16,8 +16,8 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-@ContextConfiguration(locations = {"classpath:com/force/spa/jersey/defaultSpringInjectionContext.xml"})
-public class DefaultSpringInjectionTest extends AbstractJUnit4SpringContextTests {
+@ContextConfiguration(locations = {"classpath:com/force/spa/jersey/springDefaultInjectionContext.xml"})
+public class SpringDefaultInjectionTest extends AbstractJUnit4SpringContextTests {
 
     @Autowired
     private AuthorizationConnector authorizationConnector;
