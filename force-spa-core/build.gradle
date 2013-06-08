@@ -20,6 +20,7 @@ dependencies {
     testCompile "joda-time:joda-time:2.2"
     testCompile "org.mockito:mockito-all:1.9.5"
 
+    testRuntime project(":config")
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
     testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
 }

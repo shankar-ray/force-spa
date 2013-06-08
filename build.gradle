@@ -1,7 +1,5 @@
 configure(allprojects) {
     apply plugin: 'idea'
-    apply plugin: 'maven'
-    apply plugin: 'signing'
 
     version = '1.0-SNAPSHOT'
     group = "net.davidbuccola.${rootProject.name}"
@@ -11,7 +9,7 @@ configure(allprojects) {
     // the version is specified symbolically here to simplify maintenance.
 
     ext {
-        gradleVersion = '1.5'
+        gradleVersion = '1.6'
         hamcrestVersion = '1.3'
         jacksonVersion = '2.1.4'
         jerseyVersion = '1.12'
@@ -58,13 +56,14 @@ configure(rootProject) {
     }
 }
 
-configure(subprojects - project(":force-spa-testschema")) {
+configure(subprojects - project(":config") - project(":force-spa-testschema")) {
     apply plugin: 'java'
     apply plugin: 'osgi'
+    apply plugin: 'maven'
     apply plugin: 'eclipse'
+    apply plugin: 'signing'
     apply plugin: 'findbugs'
     apply plugin: 'checkstyle'
-
 
     ext.gitHash = rootProject.gitHash  // So we don't execute git command multiple times
 
@@ -183,16 +182,15 @@ configure(subprojects - project(":force-spa-testschema")) {
         }
     }
 
-
     checkstyle {
         sourceSets = [sourceSets.main]
-        configFile = file("$rootProject.projectDir/config/checkstyle/checkstyle.xml")
+        configFile = file("${project(':config').projectDir}/src/main/resources/checkstyle.xml")
         toolVersion = 5.6
     }
 
     findbugs {
         sourceSets = [sourceSets.main]
-        excludeFilter = file("$rootProject.projectDir/config/findbugs/excludeFilter.xml")
+        excludeFilter = file("${project(':config').projectDir}/src/main/resources/findbugs-exclude.xml")
     }
 
     // Support for 'provided' dependencies in generated poms

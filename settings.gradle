@@ -1,5 +1,6 @@
 rootProject.name = 'force-spa'
 
+include 'config'
 include 'force-spa-api'
 include 'force-spa-core'
 include 'force-spa-jersey'

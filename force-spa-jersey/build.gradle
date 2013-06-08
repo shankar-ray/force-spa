@@ -14,7 +14,9 @@ dependencies {
     compile "org.springframework:spring-web:${springVersion}", provided
 
     testCompile "junit:junit:${junitVersion}"
+    testCompile "org.springframework:spring-test:${springVersion}"
+
+    testRuntime project(":config")
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
     testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
-    testCompile "org.springframework:spring-test:${springVersion}"
 }
