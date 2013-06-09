@@ -9,8 +9,8 @@ import com.force.spa.AuthorizationException;
 import com.force.spa.RecordRequestException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
+import org.springframework.stereotype.Component;
 
-import javax.inject.Named;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -18,8 +18,8 @@ import javax.ws.rs.ext.Provider;
 /**
  * A Jersey exception mapper that can map ({@link RecordRequestException}) into appropriate HTTP responses.
  */
-@Named
 @Provider
+@Component
 public class RecordRequestExceptionMapper implements ExceptionMapper<RecordRequestException> {
     @Override
     public Response toResponse(RecordRequestException exception) {

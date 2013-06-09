@@ -24,7 +24,7 @@ import java.util.List;
  */
 public final class RestRecordAccessor extends AbstractRecordAccessor {
 
-    private final static ApiVersion MINIMUM_VERSION_FOR_BATCHING = new ApiVersion(29, 0);
+    private static final ApiVersion MINIMUM_VERSION_FOR_BATCHING = new ApiVersion(29, 0);
 
     private final RestConnector connector;
 
