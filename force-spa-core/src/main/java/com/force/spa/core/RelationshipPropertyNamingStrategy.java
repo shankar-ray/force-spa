@@ -22,14 +22,10 @@ import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
  * The relationship field names in Salesforce differ depending on whether you want to address the "id" of the related
  * object or you want to address other fields of the related object (through its relationship name). Additionally, the
  * field names for the id and relationship differ depending on whether it is a custom field or a standard field.
+ *
+ * This naming strategy normalizes the name to refer to the relationship.
  */
-final class RelationshipNamingStrategy extends PropertyNamingStrategy {
-
-    private boolean useRelationshipNameForm;
-
-    RelationshipNamingStrategy(boolean useRelationshipNameForm) {
-        this.useRelationshipNameForm = useRelationshipNameForm;
-    }
+final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
 
     @Override
     public String nameForField(MapperConfig<?> config, AnnotatedField field, String defaultName) {
@@ -54,28 +50,28 @@ final class RelationshipNamingStrategy extends PropertyNamingStrategy {
     protected String translate(AnnotatedMember member, String propertyName) {
         if (isChildToParentRelationship(member)) {
             if (isCustomProperty(member, propertyName)) {
-                propertyName = translateCustom(member, propertyName);
+                propertyName = translateCustom(propertyName);
             } else {
-                propertyName = translateStandard(member, propertyName);
+                propertyName = translateStandard(propertyName);
             }
         }
         return propertyName;
     }
 
-    private String translateCustom(AnnotatedMember member, String propertyName) {
+    private String translateCustom(String propertyName) {
         String propertyNameSansSuffix = propertyName;
         if (isCustomSuffixPresent(propertyName))
             propertyNameSansSuffix = propertyName.substring(0, propertyName.length() - 3);
 
-        return propertyNameSansSuffix + (useRelationshipNameForm ? "__r" : "__c");
+        return propertyNameSansSuffix + "__r";
     }
 
-    private String translateStandard(AnnotatedMember member, String propertyName) {
+    private String translateStandard(String propertyName) {
         String propertyNameSansId = propertyName;
         if (propertyName.endsWith("Id"))
             propertyNameSansId = propertyName.substring(0, propertyName.length() - 2);
 
-        return useRelationshipNameForm ? propertyNameSansId : (propertyNameSansId + "Id");
+        return propertyNameSansId;
     }
 
     private boolean isCustomProperty(AnnotatedMember member, String propertyName) {

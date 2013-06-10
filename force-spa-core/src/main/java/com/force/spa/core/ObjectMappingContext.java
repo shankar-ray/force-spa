@@ -8,18 +8,15 @@ package com.force.spa.core;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import org.apache.commons.lang.StringUtils;
 
@@ -65,15 +62,15 @@ public final class ObjectMappingContext {
     private ObjectMapper newConfiguredObjectMapper() {
         DefaultDeserializationContext deserializationContext = new DefaultDeserializationContext.Impl(new SubqueryDeserializerFactory());
 
-        CustomObjectMapper objectMapper = new CustomObjectMapper(null, null, deserializationContext);
+        ObjectMapper objectMapper = new ObjectMapper(null, null, deserializationContext);
 
-        objectMapper.setSerializationPropertyNamingStrategy(new RelationshipNamingStrategy(false));
-        objectMapper.setDeserializationPropertyNamingStrategy(new RelationshipNamingStrategy(true));
+        objectMapper.setSerializerFactory(new RelationshipAwareBeanSerializerFactory(this));
+        objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy());
+        objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector());
         objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.registerModule(new JodaModule());
-        objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector(this));
 
         return objectMapper;
     }
@@ -250,30 +247,6 @@ public final class ObjectMappingContext {
             }
         } else {
             throw new IllegalArgumentException("I don't know how to deal with that kind of property definition");
-        }
-    }
-
-    /**
-     * A small extension to the standard Jackson ObjectMapper that is just a temporary hack so that we can set
-     * asymmetric property naming strategies (different for serialization and deserialization). Unfortunately Jackson
-     * 2.x changed ObjectMapper configuration in a way which prevented the public techniques that I used in 1.9.x to do
-     * this.
-     */
-    private static class CustomObjectMapper extends ObjectMapper {
-        CustomObjectMapper(JsonFactory jf, DefaultSerializerProvider sp, DefaultDeserializationContext dc) {
-            super(jf, sp, dc);
-        }
-
-        public CustomObjectMapper setSerializationPropertyNamingStrategy(PropertyNamingStrategy strategy) {
-            _serializationConfig = _serializationConfig.with(strategy);
-
-            return this;
-        }
-
-        public CustomObjectMapper setDeserializationPropertyNamingStrategy(PropertyNamingStrategy strategy) {
-            _deserializationConfig = _deserializationConfig.with(strategy);
-
-            return this;
         }
     }
 }

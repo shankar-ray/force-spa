@@ -15,7 +15,8 @@ import java.util.Set;
 public class AbstractRecordAccessorIntegrationTest {
     private static SecureRandom secureRandom = new SecureRandom(RecordAccessorIntegrationTest.class.getName().getBytes());
 
-    protected RecordAccessor accessor = new RecordAccessorFactory().newInstance();
+    protected PasswordAuthorizationConnector authorizationConnector = new PasswordAuthorizationConnector();
+    protected RecordAccessor accessor = new RecordAccessorFactory().newInstance(authorizationConnector);
     protected Set<Object> objects = new HashSet<Object>();
 
     @After

@@ -11,7 +11,6 @@ import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordRequestException;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;

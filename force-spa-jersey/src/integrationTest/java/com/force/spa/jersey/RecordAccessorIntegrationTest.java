@@ -5,14 +5,8 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.RecordAccessor;
 import com.force.spa.RecordNotFoundException;
-import org.junit.After;
 import org.junit.Test;
-
-import java.security.SecureRandom;
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -22,13 +16,53 @@ import static org.junit.Assert.fail;
 public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegrationTest {
 
     @Test
-    public void testCreateAndFind() {
+    public void testSimpleCreate() {
         Guild guild = createTestGuild();
 
         Guild guild2 = accessor.get(guild.getId(), Guild.class);
         assertThat(guild2.getId(), is(equalTo(guild.getId())));
         assertThat(guild2.getName(), is(equalTo(guild.getName())));
         assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
+    }
+
+    @Test
+    public void testCreateWithRelationshipById() {
+        Guild guild = createTestGuild();
+        GuildUser user = accessor.get(authorizationConnector.getUsedId(), GuildUser.class);
+
+        GuildMembership membership = new GuildMembership();
+        membership.setGuild(guild);
+        membership.setUser(user);
+        membership.setLevel("Apprentice");
+        String id = accessor.create(membership);
+        membership.setId(id);
+
+        GuildMembership membership2 = accessor.get(membership.getId(), GuildMembership.class);
+        assertThat(membership2.getId(), is(equalTo(membership.getId())));
+        assertThat(membership2.getLevel(), is(equalTo(membership.getLevel())));
+        assertThat(membership2.getGuild().getId(), is(equalTo(membership.getGuild().getId())));
+        assertThat(membership2.getUser().getId(), is(equalTo(membership.getUser().getId())));
+    }
+
+    @Test
+    public void testCreateWithRelationshipByExternalId() {
+        Guild guild = createTestGuild();
+        GuildUser user = accessor.get(authorizationConnector.getUsedId(), GuildUser.class);
+        GuildUser userByUsername = new GuildUser();
+        userByUsername.setUsername(user.getUsername());
+
+        GuildMembership membership = new GuildMembership();
+        membership.setGuild(guild);
+        membership.setUser(userByUsername);
+        membership.setLevel("Apprentice");
+        String id = accessor.create(membership);
+        membership.setId(id);
+
+        GuildMembership membership2 = accessor.get(membership.getId(), GuildMembership.class);
+        assertThat(membership2.getId(), is(equalTo(membership.getId())));
+        assertThat(membership2.getLevel(), is(equalTo(membership.getLevel())));
+        assertThat(membership2.getGuild().getId(), is(equalTo(membership.getGuild().getId())));
+        assertThat(membership2.getUser().getId(), is(equalTo(user.getId())));
     }
 
     @Test

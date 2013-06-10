@@ -5,10 +5,7 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.PropertyName;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
@@ -24,7 +21,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.Transient;
-import java.io.IOException;
 
 /**
  * An {@link com.fasterxml.jackson.databind.AnnotationIntrospector} which understands the special persistence
@@ -45,12 +41,6 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
     private static final Class<?>[] UPDATE_VIEWS = new Class<?>[]{SerializationViews.Update.class, SerializationViews.Patch.class};
-
-    private final transient ObjectMappingContext mappingContext;
-
-    SpaAnnotationIntrospector(ObjectMappingContext mappingContext) {
-        this.mappingContext = mappingContext;
-    }
 
     @Override
     public String findTypeName(AnnotatedClass annotatedClass) {
@@ -106,23 +96,6 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     @Override
     public String findEnumValue(Enum<?> value) {
         return value.toString(); // Use the "pretty" toString value
-    }
-
-    @Override
-    public Object findSerializer(Annotated annotated) {
-        final ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(annotated.getRawType());
-        if (IntrospectionUtils.isChildToParentRelationship(annotated) && descriptor != null) {
-            // Return a member-specific serializer that serializes just the entity's id instead of the whole entity.
-            // For serialization of relationships (headed to database.com) we just serialize the id. This is important
-            // to achieve the desired semantic for relating existing objects through the Salesforce REST API.
-            return new JsonSerializer<Object>() {
-                @Override
-                public void serialize(Object object, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-                    jgen.writeString(RecordUtils.getId(descriptor, object));
-                }
-            };
-        }
-        return super.findSerializer(annotated);
     }
 
     private static String findSalesforceObjectName(AnnotatedClass annotatedClass) {

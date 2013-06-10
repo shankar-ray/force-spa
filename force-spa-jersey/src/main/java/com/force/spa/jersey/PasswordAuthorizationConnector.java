@@ -34,7 +34,7 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
     private static final Logger log = LoggerFactory.getLogger(PasswordAuthorizationConnector.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private URI idUrl;
+    private String userId;
     private URI instanceUrl;
     private String authorization;
 
@@ -107,7 +107,7 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
                 .post(InputStream.class, form);
             JsonNode jsonTree = objectMapper.readTree(jsonStream);
 
-            idUrl = new URI(jsonTree.get("id").asText());
+            userId = extractUserId(jsonTree.get("id").asText());
             instanceUrl = new URI(jsonTree.get("instance_url").asText());
             authorization = "OAuth " + jsonTree.get("access_token").asText();
 
@@ -140,12 +140,12 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
     }
 
     /**
-     * Returns a URL for obtaining user summary information from the Salesforce ID service.
+     * Returns the user ID of the currently authenticated user.
      *
-     * @return a URL for obtaining user summary information from the Salesforce ID service
+     * @return the user ID of the currently authenticated user
      */
-    public URI getIdUrl() {
-        return idUrl;
+    public String getUsedId() {
+        return userId;
     }
 
     private static String getRequiredProperty(String name) {
@@ -184,5 +184,10 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         } catch (IOException e2) {
             return e.getMessage(); // Just use exception message
         }
+    }
+
+    private static String extractUserId(String idUrlString) {
+        Validate.notEmpty(idUrlString);
+        return idUrlString.substring(idUrlString.lastIndexOf('/') + 1);
     }
 }
