@@ -12,11 +12,12 @@ import java.util.Map;
 
 @SalesforceObject
 public class Record {
-    @SalesforceField(name = "Id")
-    private String id;
-
+    // The Salesforce server wants this to be the first field in the serialization if it is present.
     @SalesforceField(name = "attributes")
     private Map<String, String> attributes;
+
+    @SalesforceField(name = "Id")
+    private String id;
 
     public Map<String, String> getAttributes() {
         return attributes;

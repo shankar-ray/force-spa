@@ -33,12 +33,12 @@ final class IntrospectionUtils {
     // The names of standard Salesforce properties that can not be sent with record creation.
     private static final Set<String> NON_INSERTABLE_STANDARD_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(
-            "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate", "attributes")));
+            "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
 
     // The names of standard Salesforce properties that can not be sent with record update.
     private static final Set<String> NON_UPDATABLE_STANDARD_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(
-            "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate", "attributes")));
+            "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
 
     private IntrospectionUtils() {
         throw new UnsupportedOperationException("Can not be instantiated");
