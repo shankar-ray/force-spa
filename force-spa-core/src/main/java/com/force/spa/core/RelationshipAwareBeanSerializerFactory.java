@@ -19,7 +19,7 @@ import java.util.List;
 
 /**
  * A special version of {@link BeanSerializerFactory} that is aware of relationships and uses this information to build
- * a special {@link RelationshipBeanPropertyWriter} instances that can adaptively serialize the relationship correctly
+ * a special {@link RelationshipBeanPropertyWriter} instance that can adaptively serialize the relationship correctly
  * based on the content of the related object.
  */
 public final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory {
@@ -48,15 +48,19 @@ public final class RelationshipAwareBeanSerializerFactory extends BeanSerializer
     @Override
     protected List<BeanPropertyWriter> findBeanProperties(SerializerProvider prov, BeanDescription beanDesc, BeanSerializerBuilder builder) throws JsonMappingException {
         List<BeanPropertyWriter> originalWriters = super.findBeanProperties(prov, beanDesc, builder);
-        List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
-        for (BeanPropertyWriter originalWriter : originalWriters) {
-            ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(originalWriter.getPropertyType());
-            if (descriptor != null && descriptor.hasIdMember()) {
-                updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, descriptor));
-            } else {
-                updatedWriters.add(originalWriter);
+        if (originalWriters != null) {
+            List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
+            for (BeanPropertyWriter originalWriter : originalWriters) {
+                ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(originalWriter.getPropertyType());
+                if (descriptor != null && descriptor.hasIdMember()) {
+                    updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, descriptor));
+                } else {
+                    updatedWriters.add(originalWriter);
+                }
             }
+            return updatedWriters;
+        } else {
+            return originalWriters;
         }
-        return updatedWriters;
     }
 }
