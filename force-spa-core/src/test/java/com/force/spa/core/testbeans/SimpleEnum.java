@@ -5,6 +5,7 @@
  */
 package com.force.spa.core.testbeans;
 
+@SuppressWarnings("ALL")
 public enum SimpleEnum {
     FIRST,
     SECOND,

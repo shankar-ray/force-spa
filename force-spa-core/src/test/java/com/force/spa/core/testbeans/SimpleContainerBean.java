@@ -11,6 +11,7 @@ import com.force.spa.SalesforceObject;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class SimpleContainerBean {
 

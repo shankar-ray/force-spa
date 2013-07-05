@@ -10,6 +10,7 @@ import com.force.spa.SalesforceObject;
 
 import java.util.Map;
 
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class NoGetterBean {
 

@@ -11,6 +11,7 @@ import com.force.spa.SalesforceObject;
 /**
  * A test bean with fields that choose whether they are insertable or updatable.
  */
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class InsertableUpdatableBean {
 

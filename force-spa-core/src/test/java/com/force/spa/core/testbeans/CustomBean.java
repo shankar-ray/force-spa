@@ -11,6 +11,7 @@ import com.force.spa.SalesforceObject;
 
 import java.util.List;
 
+@SuppressWarnings("ALL")
 @SalesforceObject(name = "namespace__CustomBean__c")
 public class CustomBean {
 

@@ -7,6 +7,7 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 
+@SuppressWarnings("ALL")
 public class EnumBean {
 
     private State state;

@@ -12,6 +12,7 @@ import com.force.spa.SalesforceObject;
 /**
  * A test bean that is helps test recursive type references.
  */
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class RecursiveBean {
 

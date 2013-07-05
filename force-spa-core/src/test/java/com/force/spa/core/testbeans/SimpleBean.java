@@ -11,6 +11,7 @@ import com.force.spa.SalesforceObject;
 import javax.persistence.Transient;
 import java.util.Map;
 
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class SimpleBean {
 

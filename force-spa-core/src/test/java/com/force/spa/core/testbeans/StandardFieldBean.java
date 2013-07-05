@@ -14,6 +14,7 @@ import java.util.Date;
 /**
  * A test bean that includes the standard fields.
  */
+@SuppressWarnings("ALL")
 @SalesforceObject
 public class StandardFieldBean {
 
