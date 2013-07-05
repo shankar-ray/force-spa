@@ -18,7 +18,8 @@ import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
-import org.apache.commons.lang.StringUtils;
+import com.force.spa.RecordAccessorConfig;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -45,11 +46,11 @@ public final class ObjectMappingContext {
     private final Map<Class<?>, ObjectDescriptor> incompleteDescriptors = new HashMap<Class<?>, ObjectDescriptor>();
 
     public ObjectMappingContext() {
-        this(false);
+        this(new RecordAccessorConfig());
     }
 
-    public ObjectMappingContext(boolean autodetectPublicProperties) {
-        objectMapper = newConfiguredObjectMapper(autodetectPublicProperties);
+    public ObjectMappingContext(RecordAccessorConfig config) {
+        objectMapper = newConfiguredObjectMapper(config);
 
         objectReader = objectMapper.reader();
         objectWriterForCreate = objectMapper.writerWithView(SerializationViews.Create.class);
@@ -58,24 +59,24 @@ public final class ObjectMappingContext {
         // Unfortunately we need to create a completely new object mapper just for the alternate serialization
         // inclusion setting of "update". Trying to share or copy the same mapper ends up getting the wrong stuff
         // from the cache. Maybe a future change in Jackson will help.
-        ObjectMapper objectMapper2 = newConfiguredObjectMapper(autodetectPublicProperties);
+        ObjectMapper objectMapper2 = newConfiguredObjectMapper(config);
         objectMapper2.setSerializationInclusion(JsonInclude.Include.ALWAYS);
         objectWriterForUpdate = objectMapper2.writerWithView(SerializationViews.Update.class);
     }
 
-    private ObjectMapper newConfiguredObjectMapper(boolean autodetectPublicProperties) {
+    private ObjectMapper newConfiguredObjectMapper(RecordAccessorConfig config) {
         DefaultDeserializationContext deserializationContext = new DefaultDeserializationContext.Impl(new SubqueryDeserializerFactory());
 
         ObjectMapper objectMapper = new ObjectMapper(null, null, deserializationContext);
 
         objectMapper.setSerializerFactory(new RelationshipAwareBeanSerializerFactory(this));
         objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy());
-        objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector());
+        objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector(config));
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.registerModule(new JodaModule());
 
-        if (!autodetectPublicProperties) {
+        if (!config.isFieldAutodetectEnabled()) {
             objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
         }
 

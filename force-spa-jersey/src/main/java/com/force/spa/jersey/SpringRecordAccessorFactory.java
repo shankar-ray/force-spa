@@ -5,9 +5,10 @@
  */
 package com.force.spa.jersey;
 
+import com.force.spa.ApiVersion;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
-import com.force.spa.ApiVersion;
+import com.force.spa.RecordAccessorConfig;
 import com.sun.jersey.api.client.Client;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> 
 
     @Autowired
     private AuthorizationConnector authorizationConnector;
+
+    @Autowired(required = false)
+    private RecordAccessorConfig config = new RecordAccessorConfig();
 
     private ApiVersion apiVersion = null;
 
@@ -47,7 +51,7 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> 
 
     @Override
     public RecordAccessor getObject() {
-        return internalFactory.newInstance(authorizationConnector, client, apiVersion);
+        return internalFactory.newInstance(config, authorizationConnector, client, apiVersion);
     }
 
     @Override

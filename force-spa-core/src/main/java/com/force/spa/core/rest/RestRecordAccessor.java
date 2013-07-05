@@ -11,6 +11,7 @@ import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
+import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordOperation;
 import com.force.spa.RestConnector;
 import com.force.spa.UpdateRecordOperation;
@@ -28,7 +29,8 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     private final RestConnector connector;
 
-    public RestRecordAccessor(RestConnector connector) {
+    public RestRecordAccessor(RecordAccessorConfig config, RestConnector connector) {
+        super(config);
         this.connector = connector;
     }
 

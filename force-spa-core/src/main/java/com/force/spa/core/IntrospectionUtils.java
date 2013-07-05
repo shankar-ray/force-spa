@@ -32,15 +32,35 @@ final class IntrospectionUtils {
             "Id", "Name", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate", "Owner",
             "MasterLabel", "DeveloperName", "Language", "RecordType", "attributes")));
 
-    // The names of standard Salesforce properties that can not be sent with record creation.
-    private static final Set<String> NON_INSERTABLE_STANDARD_PROPERTIES = Collections.unmodifiableSet(
+    /**
+     * The names of standard Salesforce properties that can not be sent with record creation.
+     */
+    private static final Set<String> NON_INSERTABLE_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(
             "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
 
-    // The names of standard Salesforce properties that can not be sent with record update.
-    private static final Set<String> NON_UPDATABLE_STANDARD_PROPERTIES = Collections.unmodifiableSet(
+    /**
+     * The names of standard Salesforce properties that can not be sent with record creation when "CreateAuditFields"
+     * per is enabled in the org.
+     */
+    private static final Set<String> NON_INSERTABLE_PROPERTIES_AUDIT_OK = Collections.unmodifiableSet(
+        new HashSet<String>(Arrays.asList(
+            "Id")));
+
+    /**
+     * The names of standard Salesforce properties that can not be sent with record update.
+     */
+    private static final Set<String> NON_UPDATABLE_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(
             "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
+
+    /**
+     * The names of standard Salesforce properties that can not be sent with record update when "CreateAuditFields" per
+     * is enabled in the org.
+     */
+    private static final Set<String> NON_UPDATABLE_PROPERTIES_AUDIT_OK = Collections.unmodifiableSet(
+        new HashSet<String>(Arrays.asList(
+            "Id")));
 
     private IntrospectionUtils() {
         throw new UnsupportedOperationException("Can not be instantiated");
@@ -54,12 +74,20 @@ final class IntrospectionUtils {
         return STANDARD_PROPERTIES.contains(name);
     }
 
-    static boolean isNonInsertableStandardProperty(String name) {
-        return NON_INSERTABLE_STANDARD_PROPERTIES.contains(name);
+    static boolean isNonInsertableStandardProperty(String name, boolean auditFieldWritingAllowed) {
+        if (auditFieldWritingAllowed) {
+            return NON_INSERTABLE_PROPERTIES_AUDIT_OK.contains(name);
+        } else {
+            return NON_INSERTABLE_PROPERTIES.contains(name);
+        }
     }
 
-    static boolean isNonUpdatableStandardProperty(String name) {
-        return NON_UPDATABLE_STANDARD_PROPERTIES.contains(name);
+    static boolean isNonUpdatableStandardProperty(String name, boolean auditFieldWritingAllowed) {
+        if (auditFieldWritingAllowed) {
+            return NON_UPDATABLE_PROPERTIES_AUDIT_OK.contains(name);
+        } else {
+            return NON_UPDATABLE_PROPERTIES.contains(name);
+        }
     }
 
     static boolean isChildToParentRelationship(AnnotatedMember member) {

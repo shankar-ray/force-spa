@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -43,6 +44,12 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
     private static final Class<?>[] UPDATE_VIEWS = new Class<?>[]{SerializationViews.Update.class, SerializationViews.Patch.class};
+
+    private final boolean auditFieldWritingAllowed;
+
+    SpaAnnotationIntrospector(RecordAccessorConfig config) {
+        auditFieldWritingAllowed = config.isAuditFieldWritingAllowed();
+    }
 
     @Override
     public String findTypeName(AnnotatedClass annotatedClass) {
@@ -139,8 +146,8 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return null;
     }
 
-    private static boolean isInsertable(Annotated annotated) {
-        if (IntrospectionUtils.isNonInsertableStandardProperty(getPropertyName(annotated))) {
+    private boolean isInsertable(Annotated annotated) {
+        if (IntrospectionUtils.isNonInsertableStandardProperty(getPropertyName(annotated), auditFieldWritingAllowed)) {
             return false;
         }
 
@@ -165,7 +172,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     private boolean isUpdatable(Annotated annotated) {
-        if (IntrospectionUtils.isNonUpdatableStandardProperty(getPropertyName(annotated))) {
+        if (IntrospectionUtils.isNonUpdatableStandardProperty(getPropertyName(annotated), auditFieldWritingAllowed)) {
             return false;
         }
 

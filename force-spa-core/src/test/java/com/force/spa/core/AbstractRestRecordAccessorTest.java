@@ -6,6 +6,7 @@
 package com.force.spa.core;
 
 import com.force.spa.RecordAccessor;
+import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RestConnector;
 import com.force.spa.core.rest.RestRecordAccessor;
 import org.apache.commons.io.IOUtils;
@@ -35,7 +36,7 @@ public abstract class AbstractRestRecordAccessorTest {
     @Before
     public void initializeMockEntityManager() {
         mockConnector = mock(TestRestConnector.class);
-        accessor = new RestRecordAccessor(mockConnector);
+        accessor = new RestRecordAccessor(new RecordAccessorConfig(), mockConnector);
     }
 
     /**

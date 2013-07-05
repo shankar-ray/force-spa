@@ -11,22 +11,40 @@ import com.force.spa.GetRecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
+import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.Validate;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractRecordAccessor implements RecordAccessor {
 
-    // Just one mapping context is shared by all instances. It is thread-safe and configured the same every time. There
-    // is no reason to go through the expense of creating multiple instances. This way we get to share the cache.
-    private static final ObjectMappingContext mappingContext = new ObjectMappingContext();
+    /**
+     * A set of shared {@link ObjectMappingContext} instances keyed by {@link RecordAccessorConfig}. All {@link
+     * RecordAccessor} instances that share the same configuration can share the same {@link ObjectMappingContext}. The
+     * contexts are thread-safe and hold no per-accessor context. There is no reason to go through the expense of
+     * creating multiple instances. This way we get to share the cache.
+     */
+    private static final Map<RecordAccessorConfig, ObjectMappingContext> sharedMappingContexts =
+        Collections.synchronizedMap(new HashMap<RecordAccessorConfig, ObjectMappingContext>());
+
+    private final ObjectMappingContext mappingContext;
+
+    protected AbstractRecordAccessor(RecordAccessorConfig config) {
+        if (!sharedMappingContexts.containsKey(config)) {
+            sharedMappingContexts.put(config, new ObjectMappingContext(config));
+        }
+        this.mappingContext = sharedMappingContexts.get(config);
+    }
 
     /**
      * Executes a single record operation. This is used internally

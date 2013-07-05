@@ -6,6 +6,7 @@
 package com.force.spa.jersey;
 
 import com.force.spa.RecordAccessor;
+import com.force.spa.RecordAccessorConfig;
 import org.junit.After;
 
 import java.security.SecureRandom;
@@ -16,7 +17,7 @@ public class AbstractRecordAccessorIntegrationTest {
     private static SecureRandom secureRandom = new SecureRandom(RecordAccessorIntegrationTest.class.getName().getBytes());
 
     protected PasswordAuthorizationConnector authorizationConnector = new PasswordAuthorizationConnector();
-    protected RecordAccessor accessor = new RecordAccessorFactory().newInstance(authorizationConnector);
+    protected RecordAccessor accessor = new RecordAccessorFactory().newInstance(new RecordAccessorConfig(), authorizationConnector);
     protected Set<Object> objects = new HashSet<Object>();
 
     @After

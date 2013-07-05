@@ -4,6 +4,7 @@ description = 'Simple Persistence API for Salesforce - Public API'
 
 dependencies {
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
     compile "joda-time:joda-time:2.2"
 
     testCompile "junit:junit:${junitVersion}"
