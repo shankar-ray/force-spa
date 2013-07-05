@@ -5,6 +5,9 @@
  */
 package com.force.spa.core;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.force.spa.core.testbeans.CustomBean;
 import com.force.spa.core.testbeans.EnumBean;
@@ -26,6 +29,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
@@ -196,5 +200,17 @@ public class ObjectMappingContextTest {
         bean.setState(EnumBean.State.ONE);
         String serializedBean = mappingContext.getObjectWriterForCreate().writeValueAsString(bean);
         assertThat(serializedBean, is(equalTo("{\"state\":\"ONE\"}")));
+    }
+
+    @Test
+    public void testEnumBeanDeserialization() throws Exception {
+        String serializedBean = "{\"state\":\"ONE\"}";
+        ObjectReader objectReader = mappingContext.getObjectReader();
+        JsonNode jsonNode = objectReader.readTree(serializedBean);
+        JsonParser jsonParser = objectReader.treeAsTokens(jsonNode);
+        EnumBean bean = objectReader.readValue(jsonParser, EnumBean.class);
+
+        assertThat(bean, is(notNullValue()));
+        assertThat(bean.getState(), is(equalTo(EnumBean.State.ONE)));
     }
 }

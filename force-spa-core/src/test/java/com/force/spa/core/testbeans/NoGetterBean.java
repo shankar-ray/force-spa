@@ -19,6 +19,7 @@ public class NoGetterBean {
     @SalesforceField(name = "Value1")
     private String value1;
 
+    @SalesforceField(name = "attributes")
     private Map<String, String> attributes;
 
     public void setId(String id) {

@@ -18,8 +18,6 @@ public class RecursiveBean {
     @SalesforceField(name = "Id")
     private String id;
 
-    @ChildToParent
-    @SalesforceField(name = "RecursiveBean")
     private RecursiveBean recursiveBean;
 
     public String getId() {
@@ -30,6 +28,8 @@ public class RecursiveBean {
         this.id = id;
     }
 
+    @ChildToParent
+    @SalesforceField(name = "RecursiveBean")
     public RecursiveBean getRecursiveBean() {
         return recursiveBean;
     }

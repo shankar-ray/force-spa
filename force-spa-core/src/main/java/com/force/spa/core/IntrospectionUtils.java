@@ -5,19 +5,21 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.introspect.Annotated;
-import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceObject;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
-import java.lang.reflect.Field;
+import java.lang.reflect.AnnotatedElement;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -60,18 +62,13 @@ final class IntrospectionUtils {
         return NON_UPDATABLE_STANDARD_PROPERTIES.contains(name);
     }
 
-    static boolean isChildToParentRelationship(Annotated annotated) {
-        if (!(annotated instanceof AnnotatedMember))
-            return false;
+    static boolean isChildToParentRelationship(AnnotatedMember member) {
+        // Search the field, getter, and setter for relevant annotations. The given member is checked first.
+        for (AnnotatedElement element : getRelatedElements(member)) {
+            if (hasChildToParentAnnotation(element))
+                return true;
 
-        AnnotatedMember annotatedMember = (AnnotatedMember) annotated;
-        if (hasChildToParentAnnotation(annotatedMember))
-            return true;
-
-        Field relatedField = getRelatedField(annotatedMember);
-        if (relatedField != null && hasChildToParentAnnotation(relatedField))
-            return true;
-
+        }
         return false;
     }
 
@@ -89,38 +86,76 @@ final class IntrospectionUtils {
         return clazz.getSimpleName();
     }
 
-    private static boolean hasChildToParentAnnotation(Annotated annotated) {
-        return annotated.hasAnnotation(ChildToParent.class)
-            || annotated.hasAnnotation(ManyToOne.class)
-            || annotated.hasAnnotation(OneToOne.class);
-    }
-
-    private static boolean hasChildToParentAnnotation(Field field) {
-        return field.isAnnotationPresent(ChildToParent.class)
-            || field.isAnnotationPresent(ManyToOne.class)
-            || field.isAnnotationPresent(OneToOne.class);
+    private static boolean hasChildToParentAnnotation(AnnotatedElement element) {
+        return element.isAnnotationPresent(ChildToParent.class)
+            || element.isAnnotationPresent(ManyToOne.class)
+            || element.isAnnotationPresent(OneToOne.class);
     }
 
     /**
-     * Find the {@link Field} that corresponds to the annotated member. When the annotated member is a setter or getter
-     * this is used to find the corresponding field definition.
-     *
-     * @param member an annotated member
-     * @return a field that corresponds to the annotated member
+     * Find all the members that are related to the given member. Members often come in threes (field, getter, and
+     * setter). Given one, we often want to find the others so we can check certain annotations.
+     * <p/>
+     * If Jackson autodetect is turned on sometimes the member we are given will not be the one with the annotations.
+     * This helper method allows us to find the others.
      */
-    private static Field getRelatedField(AnnotatedMember member) {
-        if (member instanceof AnnotatedField)
-            return ((AnnotatedField) member).getAnnotated();
+    static List<AnnotatedElement> getRelatedElements(AnnotatedMember member) {
 
-        String methodName = member.getName();
-        if (!(methodName.startsWith("get") || methodName.startsWith("set")))
-            return null;
-
-        String relatedFieldName = Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
-        try {
-            return member.getDeclaringClass().getDeclaredField(relatedFieldName);
-        } catch (NoSuchFieldException e) {
-            return null;
+        String name = member.getName();
+        if (member instanceof AnnotatedMethod) {
+            AnnotatedMethod method = (AnnotatedMethod) member;
+            if (method.getParameterCount() == 0) {
+                name = BeanUtil.okNameForGetter(method);
+            } else {
+                name = BeanUtil.okNameForSetter(method);
+            }
         }
+
+        List<AnnotatedElement> relatedElements = new ArrayList<AnnotatedElement>();
+        relatedElements.add(member.getAnnotated()); // The given element is always first in the list.
+
+        if (name != null) {
+            String nameWithInitialUpperCase = Character.toUpperCase(name.charAt(0)) + name.substring(1);
+            try {
+                AnnotatedElement element = member.getDeclaringClass().getDeclaredField(name);
+                if (!relatedElements.contains(element)) {
+                    relatedElements.add(element);
+                }
+            } catch (NoSuchFieldException e) {
+                // Nothing to add to list
+            }
+
+            try {
+                String methodName = "get" + nameWithInitialUpperCase;
+                AnnotatedElement element = member.getDeclaringClass().getDeclaredMethod(methodName);
+                if (!relatedElements.contains(element)) {
+                    relatedElements.add(element);
+                }
+            } catch (NoSuchMethodException e) {
+                // Nothing to add to list
+            }
+
+            try {
+                String methodName = "is" + nameWithInitialUpperCase;
+                AnnotatedElement element = member.getDeclaringClass().getDeclaredMethod(methodName);
+                if (!relatedElements.contains(element)) {
+                    relatedElements.add(element);
+                }
+            } catch (NoSuchMethodException e) {
+                // Nothing to add to list
+            }
+
+            try {
+                String methodName = "set" + nameWithInitialUpperCase;
+                AnnotatedElement element = member.getDeclaringClass().getDeclaredMethod(methodName, member.getRawType());
+                if (!relatedElements.contains(element)) {
+                    relatedElements.add(element);
+                }
+            } catch (NoSuchMethodException e) {
+                // Nothing to add to list
+            }
+        }
+
+        return relatedElements;
     }
 }

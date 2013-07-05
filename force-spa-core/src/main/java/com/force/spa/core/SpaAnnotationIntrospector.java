@@ -15,12 +15,14 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import org.apache.commons.lang.StringUtils;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.Transient;
+import java.lang.reflect.AnnotatedElement;
+
+import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
 
 /**
  * An {@link com.fasterxml.jackson.databind.AnnotationIntrospector} which understands the special persistence
@@ -100,12 +102,12 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     private static String findSalesforceObjectName(AnnotatedClass annotatedClass) {
         SalesforceObject salesforceObject = annotatedClass.getAnnotation(SalesforceObject.class);
-        if (salesforceObject != null && StringUtils.isNotEmpty(salesforceObject.name())) {
+        if (salesforceObject != null) {
             return salesforceObject.name();
         }
 
         Entity entity = annotatedClass.getAnnotation(Entity.class);
-        if (entity != null && StringUtils.isNotEmpty(entity.name())) {
+        if (entity != null) {
             return entity.name();
         }
 
@@ -113,21 +115,27 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     private static String findSalesforceFieldName(Annotated annotated) {
-        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
-        if (salesforceField != null && StringUtils.isNotEmpty(salesforceField.name())) {
-            return salesforceField.name();
+        if (!(annotated instanceof AnnotatedField || annotated instanceof AnnotatedMethod)) {
+            return null;
         }
 
-        Column column = annotated.getAnnotation(Column.class);
-        if (column != null && StringUtils.isNotEmpty(column.name())) {
-            return column.name();
-        }
+        // Search the field, getter, and setter for relevant annotations.
+        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
+            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
+            if (salesforceField != null) {
+                return salesforceField.name();
+            }
 
-        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
-        if (joinColumn != null && StringUtils.isNotEmpty(joinColumn.name())) {
-            return joinColumn.name();
-        }
+            Column column = element.getAnnotation(Column.class);
+            if (column != null) {
+                return column.name();
+            }
 
+            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
+            if (joinColumn != null) {
+                return joinColumn.name();
+            }
+        }
         return null;
     }
 
@@ -136,21 +144,23 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return false;
         }
 
-        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
-        if (salesforceField != null && !salesforceField.insertable()) {
-            return false;
-        }
+        // Search the field, getter, and setter for relevant annotations.
+        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
+            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
+            if (salesforceField != null) {
+                return salesforceField.insertable();
+            }
 
-        Column column = annotated.getAnnotation(Column.class);
-        if (column != null && !column.insertable()) {
-            return false;
-        }
+            Column column = element.getAnnotation(Column.class);
+            if (column != null) {
+                return column.insertable();
+            }
 
-        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
-        if (joinColumn != null && !joinColumn.insertable()) {
-            return false;
+            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
+            if (joinColumn != null) {
+                return joinColumn.insertable();
+            }
         }
-
         return true;
     }
 
@@ -159,49 +169,41 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return false;
         }
 
-        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
-        if (salesforceField != null && !salesforceField.updatable()) {
-            return false;
-        }
+        // Search the field, getter, and setter for relevant annotations.
+        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
+            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
+            if (salesforceField != null) {
+                return salesforceField.updatable();
+            }
 
-        Column column = annotated.getAnnotation(Column.class);
-        if (column != null && !column.updatable()) {
-            return false;
-        }
+            Column column = element.getAnnotation(Column.class);
+            if (column != null) {
+                return column.updatable();
+            }
 
-        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
-        if (joinColumn != null && !joinColumn.updatable()) {
-            return false;
+            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
+            if (joinColumn != null) {
+                return joinColumn.updatable();
+            }
         }
-
         return true;
     }
 
     private static String getPropertyName(Annotated annotated) {
-        if (annotated instanceof AnnotatedField) {
-
-            AnnotatedField field = (AnnotatedField) annotated;
-            String name = findSalesforceFieldName(annotated);
-            return (name != null) ? name : field.getName();
-
-        } else if (annotated instanceof AnnotatedMethod) {
-
-            AnnotatedMethod method = (AnnotatedMethod) annotated;
-            String name = findSalesforceFieldName(method);
-            if (name == null) {
-                if (method.getParameterCount() == 0) {
-                    name = BeanUtil.okNameForGetter(method);
-                } else {
-                    name = BeanUtil.okNameForSetter(method);
-                }
-                if (name == null) {
-                    throw new IllegalStateException("Unable to figure out the property name");
-                }
-            }
+        String name = findSalesforceFieldName(annotated);
+        if (name != null) {
             return name;
-
+        } else if (annotated instanceof AnnotatedField) {
+            return annotated.getName();
+        } else if (annotated instanceof AnnotatedMethod) {
+            AnnotatedMethod method = (AnnotatedMethod) annotated;
+            if (method.getParameterCount() == 0) {
+                return BeanUtil.okNameForGetter(method);
+            } else {
+                return BeanUtil.okNameForSetter(method);
+            }
         } else {
-            throw new IllegalArgumentException("Unrecognized instance of 'Annotated'");
+            return null;
         }
     }
 }

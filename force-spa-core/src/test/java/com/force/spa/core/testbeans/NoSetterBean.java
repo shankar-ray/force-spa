@@ -19,6 +19,7 @@ public class NoSetterBean {
     @SalesforceField(name = "Value1")
     private String value1;
 
+    @SalesforceField(name = "attributes")
     private Map<String, String> attributes;
 
     public String getId() {

@@ -45,7 +45,11 @@ public final class ObjectMappingContext {
     private final Map<Class<?>, ObjectDescriptor> incompleteDescriptors = new HashMap<Class<?>, ObjectDescriptor>();
 
     public ObjectMappingContext() {
-        objectMapper = newConfiguredObjectMapper();
+        this(false);
+    }
+
+    public ObjectMappingContext(boolean autodetectPublicProperties) {
+        objectMapper = newConfiguredObjectMapper(autodetectPublicProperties);
 
         objectReader = objectMapper.reader();
         objectWriterForCreate = objectMapper.writerWithView(SerializationViews.Create.class);
@@ -54,12 +58,12 @@ public final class ObjectMappingContext {
         // Unfortunately we need to create a completely new object mapper just for the alternate serialization
         // inclusion setting of "update". Trying to share or copy the same mapper ends up getting the wrong stuff
         // from the cache. Maybe a future change in Jackson will help.
-        ObjectMapper objectMapper2 = newConfiguredObjectMapper();
+        ObjectMapper objectMapper2 = newConfiguredObjectMapper(autodetectPublicProperties);
         objectMapper2.setSerializationInclusion(JsonInclude.Include.ALWAYS);
         objectWriterForUpdate = objectMapper2.writerWithView(SerializationViews.Update.class);
     }
 
-    private ObjectMapper newConfiguredObjectMapper() {
+    private ObjectMapper newConfiguredObjectMapper(boolean autodetectPublicProperties) {
         DefaultDeserializationContext deserializationContext = new DefaultDeserializationContext.Impl(new SubqueryDeserializerFactory());
 
         ObjectMapper objectMapper = new ObjectMapper(null, null, deserializationContext);
@@ -67,10 +71,13 @@ public final class ObjectMappingContext {
         objectMapper.setSerializerFactory(new RelationshipAwareBeanSerializerFactory(this));
         objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy());
         objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector());
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.registerModule(new JodaModule());
+
+        if (!autodetectPublicProperties) {
+            objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.NONE);
+        }
 
         return objectMapper;
     }

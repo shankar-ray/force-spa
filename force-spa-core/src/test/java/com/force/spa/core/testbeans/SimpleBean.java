@@ -26,6 +26,7 @@ public class SimpleBean {
     @Transient
     private String state;
 
+    @SalesforceField(name = "attributes")
     private Map<String, String> attributes;
 
     public String getId() {

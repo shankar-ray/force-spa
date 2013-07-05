@@ -5,6 +5,8 @@
  */
 package com.force.spa.core.testbeans;
 
+import com.force.spa.SalesforceField;
+
 public class EnumBean {
 
     private State state;
@@ -13,6 +15,7 @@ public class EnumBean {
         return state;
     }
 
+    @SalesforceField
     public void setState(State state) {
         this.state = state;
     }
