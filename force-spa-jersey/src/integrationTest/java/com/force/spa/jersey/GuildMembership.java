@@ -5,21 +5,19 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 import com.force.spa.record.NamedRecord;
+import com.force.spa.record.UserBrief;
 
 @SalesforceObject(name = "GuildMembership__c")
 public class GuildMembership extends NamedRecord {
 
-    @ChildToParent
     @SalesforceField(name = "Guild__c")
     private GuildBrief guild;
 
-    @ChildToParent
     @SalesforceField(name = "User__c")
-    private GuildUserBrief user;
+    private UserBrief user;
 
     @SalesforceField(name = "Level__c")
     private String level;
@@ -40,11 +38,11 @@ public class GuildMembership extends NamedRecord {
         this.level = level;
     }
 
-    public GuildUserBrief getUser() {
+    public UserBrief getUser() {
         return user;
     }
 
-    public void setUser(GuildUserBrief user) {
+    public void setUser(UserBrief user) {
         this.user = user;
     }
 }

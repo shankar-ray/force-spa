@@ -35,7 +35,7 @@ public class AbstractRecordAccessorIntegrationTest {
         return Integer.toHexString(secureRandom.nextInt());
     }
 
-    protected Guild createTestGuild() {
+    protected Guild createGuild() {
         String uniqueSuffix = generateUniqueNumber();
 
         Guild guild = new Guild();

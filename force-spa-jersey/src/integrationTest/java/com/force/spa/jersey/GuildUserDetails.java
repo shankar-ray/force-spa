@@ -5,25 +5,21 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.ParentToChild;
 import com.force.spa.SalesforceField;
-import com.force.spa.SalesforceObject;
+import com.force.spa.record.UserBrief;
 
 import java.util.List;
 
-@SalesforceObject(name = "User")
-public class GuildUserDetails extends GuildUser {
+//TODO There should really be an intermediate "User" object here too between brief and details
+public class GuildUserDetails extends UserBrief {
 
-    @ParentToChild
-    @SalesforceField(name= "GuildMemberships__r")
+    @SalesforceField(name = "GuildMemberships__r")
     private List<GuildMembership> memberships;
 
-    @ParentToChild
-    @SalesforceField(name= "GuildApprentices__r")
+    @SalesforceField(name = "GuildApprentices__r")
     private List<GuildApprenticeship> apprentices;
 
-    @ParentToChild
-    @SalesforceField(name= "GuildMasters__r")
+    @SalesforceField(name = "GuildMasters__r")
     private List<GuildApprenticeship> masters;
 
     public List<GuildApprenticeship> getApprentices() {

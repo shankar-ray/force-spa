@@ -150,7 +150,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
     private String getRecordId(Object record) {
         ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
-        if (descriptor.hasIdMember()) {
+        if (descriptor.hasIdField()) {
             String id = RecordUtils.getId(descriptor, record);
             if (StringUtils.isEmpty(id)) {
                 throw new RecordRequestException("Record bean does not have an id value set");

@@ -5,7 +5,6 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -29,7 +28,6 @@ public class RecursiveBean {
         this.id = id;
     }
 
-    @ChildToParent
     @SalesforceField(name = "RecursiveBean")
     public RecursiveBean getRecursiveBean() {
         return recursiveBean;

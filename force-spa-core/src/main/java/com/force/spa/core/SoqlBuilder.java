@@ -140,14 +140,15 @@ public final class SoqlBuilder {
         return substitution;
     }
 
-    private static List<String> getFields(ObjectDescriptor descriptor, String prefix, int depth) {
+    private static List<String> getFields(ObjectDescriptor objectDescriptor, String prefix, int depth) {
         List<String> fields = new ArrayList<String>();
-        for (BeanPropertyDefinition property : descriptor.getBeanDescription().findProperties()) {
+        for (FieldDescriptor fieldDescriptor : objectDescriptor.getFields()) {
+            BeanPropertyDefinition property = fieldDescriptor.getProperty();
             String prefixedFieldName = prefix + property.getName();
             if (property.getName().equals("attributes")) {
                 continue;
             }
-            ObjectDescriptor relatedDescriptor = descriptor.getRelatedObjects().get(property.getInternalName());
+            ObjectDescriptor relatedDescriptor = objectDescriptor.getRelatedObjects().get(property.getInternalName());
             if (relatedDescriptor != null) {
                 if (depth > 0) {
                     if (isArrayOrCollection(property)) {

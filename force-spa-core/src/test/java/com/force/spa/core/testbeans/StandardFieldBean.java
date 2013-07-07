@@ -5,7 +5,6 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -24,21 +23,18 @@ public class StandardFieldBean {
     @SalesforceField(name = "Name")
     private String name;
 
-    @ChildToParent
     @SalesforceField(name = "CreatedBy")
     private UserMoniker createdBy;
 
     @SalesforceField(name = "CreatedDate")
     private Date createdDate;
 
-    @ChildToParent
     @SalesforceField(name = "LastModifiedBy")
     private UserMoniker lastModifiedBy;
 
     @SalesforceField(name = "LastModifiedDate")
     private Date lastModifiedDate;
 
-    @ChildToParent
     @SalesforceField(name = "Owner")
     private UserMoniker owner;
 

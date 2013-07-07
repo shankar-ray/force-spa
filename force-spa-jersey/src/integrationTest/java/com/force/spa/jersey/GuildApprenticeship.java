@@ -5,35 +5,32 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 import com.force.spa.record.NamedRecord;
+import com.force.spa.record.UserBrief;
 import org.joda.time.DateTime;
 
 @SalesforceObject(name = "GuildApprenticeship__c")
 public class GuildApprenticeship extends NamedRecord {
 
-    @ChildToParent
     @SalesforceField(name = "Guild__c")
     private GuildBrief guild;
 
-    @ChildToParent
     @SalesforceField(name = "Master__c")
-    private GuildUserBrief master;
+    private UserBrief master;
 
-    @ChildToParent
     @SalesforceField(name = "Apprentice__c")
-    private GuildUserBrief apprentice;
+    private UserBrief apprentice;
 
     @SalesforceField(name = "SinceDate__c")
     private DateTime sinceDate;
 
-    public GuildUserBrief getApprentice() {
+    public UserBrief getApprentice() {
         return apprentice;
     }
 
-    public void setApprentice(GuildUserBrief apprentice) {
+    public void setApprentice(UserBrief apprentice) {
         this.apprentice = apprentice;
     }
 
@@ -45,11 +42,11 @@ public class GuildApprenticeship extends NamedRecord {
         this.guild = guild;
     }
 
-    public GuildUserBrief getMaster() {
+    public UserBrief getMaster() {
         return master;
     }
 
-    public void setMaster(GuildUserBrief master) {
+    public void setMaster(UserBrief master) {
         this.master = master;
     }
 

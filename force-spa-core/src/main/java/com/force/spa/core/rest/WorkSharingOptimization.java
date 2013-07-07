@@ -36,7 +36,7 @@ final class WorkSharingOptimization {
     }
 
     static Map<String, String> updateHeaders(ObjectDescriptor descriptor, Object record, Map<String, String> headers) {
-        if (record != null && descriptor.hasAttributesMember()) {
+        if (record != null && descriptor.hasAttributesField()) {
             Map<String, String> attributes = RecordUtils.getAttributes(descriptor, record);
             if (attributes != null) {
                 String sharingSpecification = attributes.get(SHARING_SPECIFICATION_ATTRIBUTE_NAME);

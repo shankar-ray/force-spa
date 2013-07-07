@@ -5,7 +5,6 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.ParentToChild;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -18,11 +17,9 @@ public class SimpleContainerBean {
     @SalesforceField(name = "Id")
     private String id;
 
-    @ParentToChild
     @SalesforceField(name = "RelatedBeans")
     private List<SimpleBean> relatedBeans;
 
-    @ParentToChild
     @SalesforceField(name = "MoreRelatedBeans")
     private SimpleBean[] moreRelatedBeans;
 

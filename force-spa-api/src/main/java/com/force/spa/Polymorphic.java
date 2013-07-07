@@ -13,9 +13,14 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks a member (field or setter method) as representing a Salesforce child-to-parent relationship.
+ * Marks a member (field or setter method) as being a polymorphic field.
  */
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)
-public @interface ChildToParent {
+public @interface Polymorphic {
+
+    /**
+     * A list of possible field types for a polymorphic field.
+     */
+    Class<?>[] value();
 }

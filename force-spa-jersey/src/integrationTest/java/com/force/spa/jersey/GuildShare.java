@@ -6,7 +6,8 @@
 package com.force.spa.jersey;
 
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.Share;
 
-@SalesforceObject(name = "User")
-public class GuildUser extends GuildUserBrief {
+@SalesforceObject(name = "Guild__Share")
+public class GuildShare extends Share<GuildBrief> {
 }

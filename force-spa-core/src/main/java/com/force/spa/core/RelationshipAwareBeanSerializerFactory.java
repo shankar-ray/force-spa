@@ -52,7 +52,7 @@ public final class RelationshipAwareBeanSerializerFactory extends BeanSerializer
             List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
             for (BeanPropertyWriter originalWriter : originalWriters) {
                 ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(originalWriter.getPropertyType());
-                if (descriptor != null && descriptor.hasIdMember()) {
+                if (descriptor != null && descriptor.hasIdField()) {
                     updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, descriptor));
                 } else {
                     updatedWriters.add(originalWriter);

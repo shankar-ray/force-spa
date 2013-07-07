@@ -3,14 +3,13 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.jersey;
+package com.force.spa.record;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.NamedRecord;
 
 @SalesforceObject(name = "User")
-public class GuildUserBrief extends NamedRecord {
+public class UserBrief extends NamedRecord {
 
     @SalesforceField(name = "Username")
     private String username;
@@ -18,12 +17,10 @@ public class GuildUserBrief extends NamedRecord {
     @SalesforceField(name = "Email")
     private String email;
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+    @Override
+    @SalesforceField(name = "Name", updatable = false, insertable = false)
+    public String getName() {
+        return super.getName();
     }
 
     public String getEmail() {
@@ -33,4 +30,13 @@ public class GuildUserBrief extends NamedRecord {
     public void setEmail(String email) {
         this.email = email;
     }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }
+

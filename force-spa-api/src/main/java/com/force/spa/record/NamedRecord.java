@@ -10,9 +10,10 @@ import com.force.spa.SalesforceObject;
 
 @SalesforceObject
 public class NamedRecord extends Record {
-    @SalesforceField(name = "Name")
+
     private String name;
 
+    @SalesforceField(name = "Name")
     public String getName() {
         return name;
     }

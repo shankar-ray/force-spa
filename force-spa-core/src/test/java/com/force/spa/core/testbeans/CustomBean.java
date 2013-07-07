@@ -5,7 +5,6 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.ParentToChild;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -30,7 +29,6 @@ public class CustomBean {
     @SalesforceField(name = "Value3__c")
     private String value3;
 
-    @ParentToChild
     @SalesforceField(name = "RelatedBeans__c")
     private List<SimpleBean> relatedBeans;
 

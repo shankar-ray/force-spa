@@ -32,7 +32,6 @@ public class RecordUtilsTest {
         instance.setAttributes(attributes);
 
         assertThat(RecordUtils.getAttributes(descriptor, instance), is(sameInstance(attributes)));
-        assertThat(RecordUtils.getAttributes(descriptor.getAttributesProperty(), instance), is(sameInstance(attributes)));
     }
 
     @Test
@@ -41,7 +40,6 @@ public class RecordUtilsTest {
         NoSetterBean instance = new NoSetterBean();
 
         assertThat(RecordUtils.getAttributes(descriptor, instance), is(nullValue()));
-        assertThat(RecordUtils.getAttributes(descriptor.getAttributesProperty(), instance), is(nullValue()));
     }
 
     @Test
@@ -52,7 +50,6 @@ public class RecordUtilsTest {
         instance.setAttributes(attributes);
 
         assertThat(RecordUtils.getAttributes(descriptor, instance), is(sameInstance(attributes)));
-        assertThat(RecordUtils.getAttributes(descriptor.getAttributesProperty(), instance), is(sameInstance(attributes)));
     }
 
     @Test
@@ -63,7 +60,7 @@ public class RecordUtilsTest {
         try {
             RecordUtils.getAttributes(descriptor, instance);
             fail("Didn't get expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException e) {
             // Exception expected because no attribute property exists.
         }
     }
@@ -76,7 +73,6 @@ public class RecordUtilsTest {
         instance.setId(id);
 
         assertThat(RecordUtils.getId(descriptor, instance), is(sameInstance(id)));
-        assertThat(RecordUtils.getId(descriptor.getIdProperty(), instance), is(sameInstance(id)));
     }
 
     @Test
@@ -85,7 +81,6 @@ public class RecordUtilsTest {
         NoSetterBean instance = new NoSetterBean();
 
         assertThat(RecordUtils.getId(descriptor, instance), is(nullValue()));
-        assertThat(RecordUtils.getId(descriptor.getIdProperty(), instance), is(nullValue()));
     }
 
     @Test
@@ -96,7 +91,6 @@ public class RecordUtilsTest {
         instance.setId(id);
 
         assertThat(RecordUtils.getId(descriptor, instance), is(sameInstance(id)));
-        assertThat(RecordUtils.getId(descriptor.getIdProperty(), instance), is(sameInstance(id)));
     }
 
     @Test
@@ -107,53 +101,8 @@ public class RecordUtilsTest {
         try {
             RecordUtils.getId(descriptor, instance);
             fail("Didn't get expected exception");
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException e) {
             // Exception expected because no id property exists.
         }
     }
-
-    @Test
-    public void testSetIdSimple() {
-        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(SimpleBean.class);
-        SimpleBean instance = new SimpleBean();
-        String id = "012345678901234";
-
-        RecordUtils.setId(descriptor, instance, id);
-        assertThat(instance.getId(), is(sameInstance(id)));
-    }
-
-    @Test
-    public void testSetIdNoSetter() {
-        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(NoSetterBean.class);
-        NoSetterBean instance = new NoSetterBean();
-        String id = "012345678901234";
-
-        RecordUtils.setId(descriptor, instance, id);
-        assertThat(instance.getId(), is(sameInstance(id)));
-    }
-
-    @Test
-    public void testSetIdNoGetter() {
-        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(NoGetterBean.class);
-        NoGetterBean instance = new NoGetterBean();
-        String id = "012345678901234";
-
-        RecordUtils.setId(descriptor, instance, id);
-        assertThat(instance.id, is(sameInstance(id)));
-    }
-
-    @Test
-    public void testSetIdWhenNone() {
-        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(NoIdBean.class);
-        NoIdBean instance = new NoIdBean();
-        String id = "012345678901234";
-
-        try {
-            RecordUtils.setId(descriptor, instance, id);
-            fail("Didn't get expected exception");
-        } catch (IllegalArgumentException e) {
-            // Exception expected because no id property exists.
-        }
-    }
-
 }

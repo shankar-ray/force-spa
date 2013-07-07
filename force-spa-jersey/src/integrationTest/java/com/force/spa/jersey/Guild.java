@@ -5,24 +5,21 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.DetailedNamedRecord;
-import org.joda.time.DateTime;
+import com.force.spa.record.UserBrief;
 
 @SalesforceObject(name = "Guild__c")
 public class Guild extends GuildBrief {
 
-    @ChildToParent
     @SalesforceField(name = "President__c")
-    private GuildUserBrief president;
+    private UserBrief president;
 
-    public GuildUserBrief getPresident() {
+    public UserBrief getPresident() {
         return president;
     }
 
-    public void setPresident(GuildUserBrief president) {
+    public void setPresident(UserBrief president) {
         this.president = president;
     }
 }

@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +71,7 @@ public final class ObjectMappingContext {
         ObjectMapper objectMapper = new ObjectMapper(null, null, deserializationContext);
 
         objectMapper.setSerializerFactory(new RelationshipAwareBeanSerializerFactory(this));
-        objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy());
+        objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy(this));
         objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector(config));
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -152,15 +153,12 @@ public final class ObjectMappingContext {
             try {
                 JavaType type = objectMapper.getTypeFactory().constructType(clazz);
                 BasicBeanDescription beanDescription = objectMapper.getDeserializationConfig().introspect(type);
-                ObjectDescriptor descriptor =
-                    new ObjectDescriptor(
-                        getObjectName(beanDescription), beanDescription,
-                        getIdProperty(beanDescription), getAttributesProperty(beanDescription));
+                ObjectDescriptor descriptor = new ObjectDescriptor(getObjectName(beanDescription), beanDescription);
                 incompleteDescriptors.put(clazz, descriptor);
 
                 // Resolve related descriptors recursively
                 for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-                    ObjectDescriptor relatedDescriptor = getObjectDescriptor(getPropertyClass(property));
+                    ObjectDescriptor relatedDescriptor = getObjectDescriptor(getPropertyClass(beanDescription, property));
                     if (relatedDescriptor != null)
                         descriptor.getRelatedObjects().put(property.getInternalName(), relatedDescriptor);
                 }
@@ -187,26 +185,6 @@ public final class ObjectMappingContext {
         return beanDescription.getClassInfo().getRawType().getSimpleName();
     }
 
-    private static BeanPropertyDefinition getIdProperty(BasicBeanDescription beanDescription) {
-        for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-            if (property.getName().equalsIgnoreCase("id")) {
-                return property;
-            }
-        }
-        return null;
-    }
-
-    private static BeanPropertyDefinition getAttributesProperty(BasicBeanDescription beanDescription) {
-        for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-            if (property.getName().equals("attributes")) {
-                if (Map.class.isAssignableFrom(getPropertyClass(property))) {
-                    return property;
-                }
-            }
-        }
-        return null;
-    }
-
     private static boolean isIntrinsicJavaPackage(Package aPackage) {
         return (aPackage != null) && (aPackage.getName().startsWith("java."));
     }
@@ -224,11 +202,12 @@ public final class ObjectMappingContext {
         return ((clazz.getModifiers() & 0x4000)) != 0;
     }
 
-    private static Class<?> getPropertyClass(BeanPropertyDefinition property) {
+    private Class<?> getPropertyClass(BasicBeanDescription beanDescription, BeanPropertyDefinition property) {
+        JavaType beanType = beanDescription.getType();
         if (property.hasSetter()) {
-            return getPropertyClass(property.getSetter().getGenericParameterType(0));
+            return getPropertyClass(beanType, property.getSetter().getGenericParameterType(0));
         } else if (property.hasField()) {
-            return getPropertyClass(property.getField().getGenericType());
+            return getPropertyClass(beanType, property.getField().getGenericType());
         } else
             throw new IllegalArgumentException("I don't know how to deal with that kind of property definition");
     }
@@ -237,24 +216,53 @@ public final class ObjectMappingContext {
      * Gets the class of the related object. If the class of the property is an array or collection then it is the class
      * of the contained elements that is relevant. Otherwise the property class is the one we want.
      */
-    private static Class<?> getPropertyClass(Type propertyType) {
-        if (propertyType instanceof ParameterizedType) {
-            ParameterizedType parameterizedType = (ParameterizedType) propertyType;
-            if (Collection.class.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
-                return getPropertyClass(parameterizedType.getActualTypeArguments()[0]); // Return the element class
-            } else {
-                return getPropertyClass(parameterizedType.getRawType());
-            }
+    private Class<?> getPropertyClass(JavaType beanType, Type propertyType) {
+        if (propertyType instanceof Class) {
+            return getPropertyClassForClass(beanType, (Class<?>) propertyType);
 
-        } else if (propertyType instanceof Class) {
-            Class<?> propertyClass = (Class<?>) propertyType;
-            if (propertyClass.isArray()) {
-                return propertyClass.getComponentType(); // Return the element class
-            } else {
-                return propertyClass;
-            }
+        } else if (propertyType instanceof ParameterizedType) {
+            return getPropertyClassForParameterizedType(beanType, (ParameterizedType) propertyType);
+
+        } else if (propertyType instanceof TypeVariable) {
+            return getPropertyClassForGenericVariable(beanType, (TypeVariable) propertyType);
+
         } else {
-            throw new IllegalArgumentException("I don't know how to deal with that kind of property definition");
+            throw new IllegalArgumentException("Don't know how to deal with that kind of property definition");
         }
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    private Class<?> getPropertyClassForClass(JavaType beanType, Class<?> clazz) {
+        if (clazz.isArray()) {
+            return clazz.getComponentType(); // Return element class
+        } else {
+            return clazz;
+        }
+    }
+
+    private Class<?> getPropertyClassForParameterizedType(JavaType beanType, ParameterizedType parameterizedType) {
+        if (Collection.class.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
+            return getPropertyClass(beanType, parameterizedType.getActualTypeArguments()[0]); // Return element class
+        } else {
+            return getPropertyClass(beanType, parameterizedType.getRawType());
+        }
+    }
+
+    private Class<?> getPropertyClassForGenericVariable(JavaType beanType, TypeVariable typeVariable) {
+        Class<?> beanClass = beanType.getRawClass();
+        Class<?> genericClass = (Class<?>) typeVariable.getGenericDeclaration();
+        if (genericClass.isAssignableFrom(beanClass)) {
+            JavaType[] boundTypes = objectMapper.getTypeFactory().findTypeParameters(beanClass, genericClass);
+            TypeVariable[] typeVariables = genericClass.getTypeParameters();
+            for (int i = 0; i < typeVariables.length; i++) {
+                if (typeVariables[i].equals(typeVariable)) {
+                    return boundTypes[i].getRawClass();
+                }
+            }
+        }
+        throw new RuntimeException(
+            String.format(
+                "Don't know how to map type variable to a concrete type: variable=%s, beanClass=%s, genericClass=%s",
+                typeVariable.getName(), beanClass.getSimpleName(), genericClass.getSimpleName()));
     }
 }

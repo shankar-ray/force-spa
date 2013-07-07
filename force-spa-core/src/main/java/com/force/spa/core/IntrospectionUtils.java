@@ -8,12 +8,9 @@ package com.force.spa.core;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.util.BeanUtil;
-import com.force.spa.ChildToParent;
 import com.force.spa.SalesforceObject;
 
 import javax.persistence.Entity;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,16 +87,6 @@ final class IntrospectionUtils {
         }
     }
 
-    static boolean isChildToParentRelationship(AnnotatedMember member) {
-        // Search the field, getter, and setter for relevant annotations. The given member is checked first.
-        for (AnnotatedElement element : getRelatedElements(member)) {
-            if (hasChildToParentAnnotation(element))
-                return true;
-
-        }
-        return false;
-    }
-
     private static String getObjectName(Class<?> clazz) {
         SalesforceObject annotation = clazz.getAnnotation(SalesforceObject.class);
         if (annotation != null) {
@@ -114,12 +101,6 @@ final class IntrospectionUtils {
         return clazz.getSimpleName();
     }
 
-    private static boolean hasChildToParentAnnotation(AnnotatedElement element) {
-        return element.isAnnotationPresent(ChildToParent.class)
-            || element.isAnnotationPresent(ManyToOne.class)
-            || element.isAnnotationPresent(OneToOne.class);
-    }
-
     /**
      * Find all the members that are related to the given member. Members often come in threes (field, getter, and
      * setter). Given one, we often want to find the others so we can check certain annotations.
@@ -128,7 +109,6 @@ final class IntrospectionUtils {
      * This helper method allows us to find the others.
      */
     static List<AnnotatedElement> getRelatedElements(AnnotatedMember member) {
-
         String name = member.getName();
         if (member instanceof AnnotatedMethod) {
             AnnotatedMethod method = (AnnotatedMethod) member;

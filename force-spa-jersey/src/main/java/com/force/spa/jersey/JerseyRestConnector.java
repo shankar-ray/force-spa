@@ -8,19 +8,20 @@ package com.force.spa.jersey;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.force.spa.ApiVersion;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.ObjectNotFoundException;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
-import com.force.spa.ApiVersion;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -75,7 +76,7 @@ public final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Delete failed: %s", extractMessage(e));
+                String message = String.format("Delete failed: %s", buildErrorMessage(e));
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
@@ -95,7 +96,7 @@ public final class JerseyRestConnector implements RestConnector {
                 JsonNode resultNode = objectReader.readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Get failed: %s", extractMessage(e));
+                String message = String.format("Get failed: %s", buildErrorMessage(e));
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
@@ -119,7 +120,7 @@ public final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Patch failed: %s", extractMessage(e));
+                String message = String.format("Patch failed: %s", buildErrorMessage(e));
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
@@ -139,7 +140,7 @@ public final class JerseyRestConnector implements RestConnector {
                 JsonNode resultNode = objectReader.readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Post failed: %s", extractMessage(e));
+                String message = String.format("Post failed: %s", buildErrorMessage(e));
                 if (e.getResponse().getStatus() == 404) {
                     throw new ObjectNotFoundException(message, e);
                 } else {
@@ -211,14 +212,39 @@ public final class JerseyRestConnector implements RestConnector {
         return builder.build();
     }
 
-    private static String extractMessage(UniformInterfaceException e) {
+    private static String buildErrorMessage(UniformInterfaceException e) {
         try {
+            StringBuilder builder = new StringBuilder(80);
             JSONArray jsonResponse = e.getResponse().getEntity(JSONArray.class);
-            JSONObject errorObject = (JSONObject) jsonResponse.get(0);
-            return errorObject.getString("message");
+            for (int i = 0, limit = jsonResponse.length(); i < limit; i++) {
+                JSONObject error = (JSONObject) jsonResponse.get(i);
+                if (builder.length() > 0) {
+                    builder.append("\n");
+                }
+                String errorCode = StringUtils.defaultIfEmpty(error.has("errorCode") ? error.getString("errorCode") : null, null);
+                if (errorCode != null) {
+                    builder.append(errorCode);
+                }
+                String message = StringUtils.defaultIfEmpty(error.has("message") ? error.getString("message") : null, null);
+                if (message != null) {
+                    if (builder.length() > 0)
+                        builder.append(": ");
+                    builder.append(message);
+                }
+                String fields = StringUtils.defaultIfEmpty(error.has("fields") ? error.get("fields").toString() : null, null);
+                if (fields != null && !(fields.equals("[]"))) {
+                    if (builder.length() > 0)
+                        builder.append(": ");
+                    builder.append(fields);
+                }
+            }
+            if (builder.length() > 0) {
+                return builder.toString();
+            } else {
+                return e.toString();
+            }
         } catch (Exception e1) {
-            // Failed to extract Salesforce error message. There probably was none. Just return exception message.
-            return e.getMessage();
+            return e.toString(); // Failed to extract a Salesforce message. Just return exception message.
         }
     }
 }

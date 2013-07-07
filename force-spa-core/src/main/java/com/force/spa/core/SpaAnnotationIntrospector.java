@@ -5,14 +5,21 @@
  */
 package com.force.spa.core;
 
+import com.fasterxml.jackson.annotation.JsonTypeId;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyName;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.AnnotatedClass;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.force.spa.Polymorphic;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
@@ -22,6 +29,8 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.Transient;
 import java.lang.reflect.AnnotatedElement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
 
@@ -53,12 +62,12 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     @Override
     public String findTypeName(AnnotatedClass annotatedClass) {
-        return findSalesforceObjectName(annotatedClass);
+        return findSpecifiedSalesforceObjectName(annotatedClass.getAnnotated());
     }
 
     @Override
     public PropertyName findRootName(AnnotatedClass annotatedClass) {
-        String simpleName = findSalesforceObjectName(annotatedClass);
+        String simpleName = findSpecifiedSalesforceObjectName(annotatedClass.getAnnotated());
         return (simpleName == null) ? null : new PropertyName(simpleName);
     }
 
@@ -107,18 +116,70 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return value.toString(); // Use the "pretty" toString value
     }
 
-    private static String findSalesforceObjectName(AnnotatedClass annotatedClass) {
-        SalesforceObject salesforceObject = annotatedClass.getAnnotation(SalesforceObject.class);
+    @Override
+    public Boolean isTypeId(AnnotatedMember member) {
+        return member.hasAnnotation(JsonTypeId.class);
+    }
+
+    @Override
+    public List<NamedType> findSubtypes(Annotated annotated) {
+        Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
+        if (polymorphic == null || polymorphic.value() == null || polymorphic.value().length == 0) {
+            return null;
+        }
+
+        ArrayList<NamedType> result = new ArrayList<NamedType>();
+        for (Class<?> type : polymorphic.value()) {
+            result.add(new NamedType(type, findSalesforceObjectName(type)));
+        }
+        return result;
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
+        return findTypeResolver(config, (Annotated) ac, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType baseType) {
+        return findTypeResolver(config, am, baseType);
+    }
+
+    @Override
+    public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
+        return findTypeResolver(config, am, containerType);
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
+        Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
+        if (polymorphic == null || polymorphic.value() == null || polymorphic.value().length == 0) {
+            return null;
+        }
+
+        return new SpaTypeResolverBuilder()
+            .init(JsonTypeInfo.Id.CUSTOM, null)
+            .typeIdVisibility(true);
+    }
+
+    private static String findSpecifiedSalesforceObjectName(Class<?> clazz) {
+        SalesforceObject salesforceObject = clazz.getAnnotation(SalesforceObject.class);
         if (salesforceObject != null) {
             return salesforceObject.name();
         }
-
-        Entity entity = annotatedClass.getAnnotation(Entity.class);
+        Entity entity = clazz.getAnnotation(Entity.class);
         if (entity != null) {
             return entity.name();
         }
-
         return null;
+    }
+
+    private static String findSalesforceObjectName(Class<?> clazz) {
+        String name = findSpecifiedSalesforceObjectName(clazz);
+        if (name == null) {
+            name = clazz.getSimpleName();
+        }
+        return name;
     }
 
     private static String findSalesforceFieldName(Annotated annotated) {
