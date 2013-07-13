@@ -157,9 +157,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return null;
         }
 
-        return new SpaTypeResolverBuilder()
-            .init(JsonTypeInfo.Id.CUSTOM, null)
-            .typeIdVisibility(true);
+        return new SpaTypeResolverBuilder().init(JsonTypeInfo.Id.NAME, null);
     }
 
     private static String findSpecifiedSalesforceObjectName(Class<?> clazz) {

@@ -53,7 +53,7 @@ public abstract class AbstractRestRecordOperation<T> extends AbstractRecordOpera
             try {
                 return objectReader.readValue(objectReader.treeAsTokens(node), recordClass);
             } catch (IOException e) {
-                throw new RecordResponseException("Failed to decode record from JSON", e);
+                throw new RecordResponseException("Failed to decode JSON record", e);
             }
         }
     }

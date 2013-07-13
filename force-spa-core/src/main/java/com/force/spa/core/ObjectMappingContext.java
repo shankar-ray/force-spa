@@ -13,10 +13,13 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
 import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.force.spa.RecordAccessorConfig;
 import org.apache.commons.lang3.StringUtils;
@@ -24,8 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -113,7 +118,7 @@ public final class ObjectMappingContext {
         ObjectDescriptor descriptor = getObjectDescriptor(clazz);
         if (descriptor == null) {
             throw new IllegalArgumentException(
-                String.format("%s can't be used as a record, probably because it isn't annotated", clazz.getName()));
+                String.format("%s can't be used as an object, probably because it isn't annotated", clazz.getName()));
         }
         return descriptor;
     }
@@ -151,9 +156,17 @@ public final class ObjectMappingContext {
 
             boolean recursiveCall = incompleteDescriptors.size() > 0;
             try {
+                SerializationConfig config = objectMapper.getSerializationConfig();
                 JavaType type = objectMapper.getTypeFactory().constructType(clazz);
-                BasicBeanDescription beanDescription = objectMapper.getDeserializationConfig().introspect(type);
-                ObjectDescriptor descriptor = new ObjectDescriptor(getObjectName(beanDescription), beanDescription);
+                BasicBeanDescription beanDescription = config.introspect(type);
+
+                List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>();
+                for (BeanPropertyDefinition property : beanDescription.findProperties()) {
+                    Collection<NamedType> subtypes = isPolymorphic(property, config) ? getSubtypes(property, config) : null;
+                    fields.add(new FieldDescriptor(property, subtypes));
+                }
+
+                ObjectDescriptor descriptor = new ObjectDescriptor(getObjectName(beanDescription), fields);
                 incompleteDescriptors.put(clazz, descriptor);
 
                 // Resolve related descriptors recursively
@@ -164,8 +177,8 @@ public final class ObjectMappingContext {
                 }
 
                 if (!recursiveCall)
-                    for (Class<?> key : incompleteDescriptors.keySet())
-                        descriptors.put(key, incompleteDescriptors.get(key));
+                    for (Class<?> descriptorClass : incompleteDescriptors.keySet())
+                        descriptors.put(descriptorClass, incompleteDescriptors.get(descriptorClass));
 
                 return descriptor;
 
@@ -174,6 +187,15 @@ public final class ObjectMappingContext {
                     incompleteDescriptors.clear();
             }
         }
+    }
+
+    private static boolean isPolymorphic(BeanPropertyDefinition property, MapperConfig<?> config) {
+        return config.getAnnotationIntrospector().findPropertyTypeResolver(config, property.getAccessor(), null) != null;
+    }
+
+    private static Collection<NamedType> getSubtypes(BeanPropertyDefinition property, MapperConfig<?> config) {
+        return config.getSubtypeResolver().collectAndResolveSubtypes(
+            property.getAccessor(), config, config.getAnnotationIntrospector(), null);
     }
 
     private String getObjectName(BasicBeanDescription beanDescription) {

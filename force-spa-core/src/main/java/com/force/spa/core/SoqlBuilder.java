@@ -142,8 +142,8 @@ public final class SoqlBuilder {
 
     private static List<String> getFields(ObjectDescriptor objectDescriptor, String prefix, int depth) {
         List<String> fields = new ArrayList<String>();
-        for (FieldDescriptor fieldDescriptor : objectDescriptor.getFields()) {
-            BeanPropertyDefinition property = fieldDescriptor.getProperty();
+        for (FieldDescriptor field : objectDescriptor.getFields()) {
+            BeanPropertyDefinition property = field.getProperty();
             String prefixedFieldName = prefix + property.getName();
             if (property.getName().equals("attributes")) {
                 continue;

@@ -6,10 +6,8 @@
 package com.force.spa.core;
 
 
-import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -29,15 +27,9 @@ public final class ObjectDescriptor {
     private final Map<String, FieldDescriptor> fieldsByName;
     private final Map<String, ObjectDescriptor> relatedObjects;
 
-    //TODO Where does name come from. Can I get it more simply?
-    ObjectDescriptor(String name, BasicBeanDescription beanDescription) {
+    ObjectDescriptor(String name, List<FieldDescriptor> fields) {
         this.name = name;
         this.relatedObjects = new HashMap<String, ObjectDescriptor>();
-
-        List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>(beanDescription.findProperties().size());
-        for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-            fields.add(new FieldDescriptor(property));
-        }
         this.fields = Collections.unmodifiableList(fields);
 
         this.fieldsByName = new HashMap<String, FieldDescriptor>();
@@ -61,7 +53,7 @@ public final class ObjectDescriptor {
     public FieldDescriptor getField(String name) {
         FieldDescriptor descriptor = fieldsByName.get(name);
         if (descriptor == null) {
-            throw new IllegalStateException(String.format("The record does not have an \'%s\' field", name));
+            throw new IllegalStateException(String.format("The object does not have an \'%s\' field", name));
         }
         return descriptor;
     }
@@ -84,5 +76,14 @@ public final class ObjectDescriptor {
 
     public Map<String, ObjectDescriptor> getRelatedObjects() {
         return relatedObjects;
+    }
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+            .append(name)
+            .append(fields)
+            .append(relatedObjects)
+            .build();
     }
 }

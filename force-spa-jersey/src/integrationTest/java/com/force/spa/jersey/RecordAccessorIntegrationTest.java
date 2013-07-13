@@ -140,7 +140,8 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
 
     @Test
     public void testFeedItemPolymorphism() {
-        Guild guild = createGuild();
+//        Guild guild = createGuild();
+        Guild guild = new Guild();
 
         FeedItem feedItem = new FeedItem();
         feedItem.setParent(guild);
