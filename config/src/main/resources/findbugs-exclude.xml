@@ -1,3 +1,5 @@
 <FindBugsFilter>
-    <!-- No exclusions defined yet. -->
+    <Match>
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
 </FindBugsFilter>
