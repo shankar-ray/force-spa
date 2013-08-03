@@ -21,9 +21,13 @@ public class FieldDescriptor {
     private final BeanPropertyDefinition property;
     private final Collection<NamedType> subtypes;
 
+    FieldDescriptor(BeanPropertyDefinition property) {
+        this(property, null);
+    }
+
     FieldDescriptor(BeanPropertyDefinition property, Collection<NamedType> subtypes) {
         this.property = property;
-        this.subtypes = Collections.unmodifiableCollection(subtypes);
+        this.subtypes = subtypes != null ? Collections.unmodifiableCollection(subtypes) : null;
     }
 
     public BeanPropertyDefinition getProperty() {

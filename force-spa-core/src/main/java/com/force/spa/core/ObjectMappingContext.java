@@ -162,8 +162,11 @@ public final class ObjectMappingContext {
 
                 List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>();
                 for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-                    Collection<NamedType> subtypes = isPolymorphic(property, config) ? getSubtypes(property, config) : null;
-                    fields.add(new FieldDescriptor(property, subtypes));
+                    if (isPolymorphic(property, config)) {
+                        fields.add(new FieldDescriptor(property, getSubtypes(property, config)));
+                    } else {
+                        fields.add(new FieldDescriptor(property));
+                    }
                 }
 
                 ObjectDescriptor descriptor = new ObjectDescriptor(getObjectName(beanDescription), fields);

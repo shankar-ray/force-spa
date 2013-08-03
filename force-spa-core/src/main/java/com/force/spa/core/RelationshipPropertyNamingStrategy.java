@@ -26,6 +26,8 @@ import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
  */
 final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
 
+    private static final long serialVersionUID = -2489422892963688271L;
+
     private final transient ObjectMappingContext mappingContext;
 
     public RelationshipPropertyNamingStrategy(ObjectMappingContext mappingContext) {
