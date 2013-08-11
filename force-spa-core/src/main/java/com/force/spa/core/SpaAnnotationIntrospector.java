@@ -168,14 +168,12 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         }
     }
 
-    @SuppressWarnings("UnusedParameters")
-    private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
-        Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
-        if (polymorphic == null || polymorphic.value() == null || polymorphic.value().length == 0) {
-            return null;
+    static String findSalesforceObjectName(Class<?> clazz) {
+        String name = findSpecifiedSalesforceObjectName(clazz);
+        if (name == null) {
+            name = clazz.getSimpleName();
         }
-
-        return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
+        return name;
     }
 
     private static String findSpecifiedSalesforceObjectName(Class<?> clazz) {
@@ -188,14 +186,6 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return entity.name();
         }
         return null;
-    }
-
-    private static String findSalesforceObjectName(Class<?> clazz) {
-        String name = findSpecifiedSalesforceObjectName(clazz);
-        if (name == null) {
-            name = clazz.getSimpleName();
-        }
-        return name;
     }
 
     private static String findSalesforceFieldName(Annotated annotated) {
@@ -289,5 +279,15 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         } else {
             return null;
         }
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
+        Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
+        if (polymorphic == null || polymorphic.value() == null || polymorphic.value().length == 0) {
+            return null;
+        }
+
+        return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
     }
 }

@@ -86,7 +86,7 @@ public abstract class TestRestConnector implements RestConnector {
         }
     }
 
-    private ObjectReader getObjectReader() throws IOException {
+    private ObjectReader getObjectReader() {
         if (objectReader == null) {
             objectReader = new ObjectMapper().reader();
         }

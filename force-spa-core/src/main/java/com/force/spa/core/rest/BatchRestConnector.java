@@ -67,7 +67,7 @@ public class BatchRestConnector implements RestConnector {
         flush(false);
     }
 
-    public void flush(final boolean haltOnError) {
+    void flush(final boolean haltOnError) {
         URI uri = URI.create("/connect/batch");
         while (pendingRequests.size() > 0) {
             final int batchSize = Math.min(pendingRequests.size(), MAX_BATCH_SIZE);

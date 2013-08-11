@@ -36,7 +36,7 @@ final class AttributesSerializer extends JsonSerializer<Map<String, String>> {
         typeForInclusionInAttributes.set(name);
     }
 
-    static String consumeTypeForInclusionInAttributes() {
+    private static String consumeTypeForInclusionInAttributes() {
         String name = typeForInclusionInAttributes.get();
         typeForInclusionInAttributes.set(null);
         return name;

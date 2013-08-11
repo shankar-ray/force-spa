@@ -78,7 +78,7 @@ public class ObjectMappingContextTest {
         assertThat(descriptor.getName(), is(equalTo("namespace__CustomBean__c")));
         assertThat(descriptor.getIdField(), is(not(nullValue())));
         assertThat(descriptor.getIdField(), hasFieldName("Id"));
-        assertThat(descriptor.getField("RelatedBeans__c").isRelationship(), is(true));
+        assertThat(descriptor.getField("RelatedBeans__r").isRelationship(), is(true));
         assertThat(descriptor.getFields(), is(not(nullValue())));
         assertThat(
             descriptor.getFields(),
@@ -89,7 +89,7 @@ public class ObjectMappingContextTest {
                 hasFieldName("namespace__Value1__c"),
                 hasFieldName("namespace__Value2__c"),
                 hasFieldName("Value3__c"),
-                hasFieldName("RelatedBeans__c")));
+                hasFieldName("RelatedBeans__r")));
     }
 
     @Test

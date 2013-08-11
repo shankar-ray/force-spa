@@ -24,7 +24,7 @@ public class CustomBean extends NamedRecord {
     @SalesforceField(name = "Value3__c")
     private String value3;
 
-    @SalesforceField(name = "RelatedBeans__c")
+    @SalesforceField(name = "RelatedBeans__r")
     private List<SimpleBean> relatedBeans;
 
     public List<SimpleBean> getRelatedBeans() {

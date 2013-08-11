@@ -12,7 +12,8 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
 
-import static com.force.spa.core.IntrospectionUtils.isPropertyOfCustomEntity;
+import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
+import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
 import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
 
 /**
@@ -27,12 +28,6 @@ import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
 final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
 
     private static final long serialVersionUID = -2489422892963688271L;
-
-    private final ObjectMappingContext mappingContext;
-
-    public RelationshipPropertyNamingStrategy(ObjectMappingContext mappingContext) {
-        this.mappingContext = mappingContext;
-    }
 
     @Override
     public String nameForField(MapperConfig<?> config, AnnotatedField field, String defaultName) {
@@ -54,59 +49,42 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
         return translate(ctorParam, defaultName);
     }
 
-    protected String translate(AnnotatedMember member, String propertyName) {
-        if (isRelationshipProperty(member)) {
-            if (isCustomProperty(member, propertyName)) {
-                propertyName = translateCustom(propertyName);
+    String translate(AnnotatedMember member, String name) {
+        if (canBeSalesforceObject(getConcreteClass(member), false)) {
+            if (isCustomProperty(member, name)) {
+                return translateCustomName(name);
             } else {
-                propertyName = translateStandard(propertyName);
+                return translateStandardName(name);
             }
         }
-        return propertyName;
+        return name;
     }
 
-    private boolean isRelationshipProperty(AnnotatedMember member) {
-        Class<?> propertyClass = getPropertyClass(member);
-        Class<?> beanClass = member.getDeclaringClass();
-        if (propertyClass != beanClass) {
-            ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(propertyClass);
-            return (descriptor != null) && descriptor.hasIdField();
-        } else {
-            return true; // Recursive reference
-        }
-    }
-
-    public static Class<?> getPropertyClass(AnnotatedMember member) {
-        if (member instanceof AnnotatedMethod) {
-            AnnotatedMethod method = (AnnotatedMethod) member;
-            if (method.getParameterCount() > 0) {
-                return method.getRawParameterType(0);
-            }
-        }
-        return member.getRawType();
-    }
-
-    private String translateCustom(String propertyName) {
-        String propertyNameSansSuffix = propertyName;
-        if (isCustomSuffixPresent(propertyName))
-            propertyNameSansSuffix = propertyName.substring(0, propertyName.length() - 3);
+    private String translateCustomName(String name) {
+        String propertyNameSansSuffix = name;
+        if (isCustomSuffixPresent(name))
+            propertyNameSansSuffix = name.substring(0, name.length() - 3);
 
         return propertyNameSansSuffix + "__r";
     }
 
-    private String translateStandard(String propertyName) {
-        String propertyNameSansId = propertyName;
-        if (propertyName.endsWith("Id"))
-            propertyNameSansId = propertyName.substring(0, propertyName.length() - 2);
+    private String translateStandardName(String name) {
+        String propertyNameSansId = name;
+        if (name.endsWith("Id"))
+            propertyNameSansId = name.substring(0, name.length() - 2);
 
         return propertyNameSansId;
     }
 
-    private boolean isCustomProperty(AnnotatedMember member, String propertyName) {
-        return isCustomSuffixPresent(propertyName) || (isPropertyOfCustomEntity(member) && !isStandardProperty(propertyName));
+    private static boolean isCustomProperty(AnnotatedMember member, String name) {
+        return isCustomSuffixPresent(name) || (isPropertyOfCustomEntity(member) && !isStandardProperty(name));
     }
 
-    private boolean isCustomSuffixPresent(String propertyName) {
-        return propertyName.endsWith("__c") || propertyName.endsWith("__r");
+    private static boolean isCustomSuffixPresent(String name) {
+        return name.endsWith("__c") || name.endsWith("__r");
+    }
+
+    private static boolean isPropertyOfCustomEntity(AnnotatedMember member) {
+        return SpaAnnotationIntrospector.findSalesforceObjectName(member.getDeclaringClass()).endsWith("__c");
     }
 }

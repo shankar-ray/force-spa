@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.SalesforceObject;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -34,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
+import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
 
 /**
  * Context for mapping annotated persistent objects to and from the JSON representations of the Salesforce generic REST
@@ -83,7 +85,7 @@ public final class ObjectMappingContext implements Serializable {
         ObjectMapper objectMapper = new ObjectMapper(null, null, deserializationContext);
 
         objectMapper.setSerializerFactory(new RelationshipAwareBeanSerializerFactory(this));
-        objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy(this));
+        objectMapper.setPropertyNamingStrategy(new RelationshipPropertyNamingStrategy());
         objectMapper.setAnnotationIntrospector(new SpaAnnotationIntrospector(this, config));
         objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -148,28 +150,12 @@ public final class ObjectMappingContext implements Serializable {
             return null;
         }
 
-        if (canBeSalesforceObject(type)) {
+        if (canBeSalesforceObject(type, config.isObjectAnnotationRequired())) {
             return createObjectDescriptor(type);
         } else {
             rejectedClasses.add(type);
             return null;
         }
-    }
-
-    private boolean canBeSalesforceObject(Class<?> type) {
-        if (type.isPrimitive() || isIntrinsicJavaPackage(type.getPackage()) || isJodaTimePackage(type.getPackage())) {
-            return false;
-        }
-
-        if (isEnum(type)) {
-            return false;
-        }
-
-        return hasSalesforceObjectAnnotation(type) || !config.isObjectAnnotationRequired();
-    }
-
-    private boolean hasSalesforceObjectAnnotation(Class<?> type) {
-        return type.getAnnotation(SalesforceObject.class) != null;
     }
 
     /**
@@ -226,7 +212,7 @@ public final class ObjectMappingContext implements Serializable {
     private List<FieldDescriptor> buildFieldDescriptors(BasicBeanDescription beanDescription) {
         List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>();
         for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-            Class<?> type = JacksonUtils.getPropertyClass(beanDescription, property);
+            Class<?> type = getConcreteClass(beanDescription, property);
             ObjectDescriptor relatedObject = getRelatedObject(type);
             List<ObjectDescriptor> polymorphicChoices = getPolymorphicChoices(property, type);
             fields.add(new FieldDescriptor(property.getName(), property.getAccessor(), type, relatedObject, polymorphicChoices));
@@ -261,22 +247,5 @@ public final class ObjectMappingContext implements Serializable {
         SerializationConfig config = objectMapper.getSerializationConfig();
         return config.getSubtypeResolver().collectAndResolveSubtypes(
             property.getAccessor(), config, config.getAnnotationIntrospector(), null);
-    }
-
-    private static boolean isIntrinsicJavaPackage(Package aPackage) {
-        return (aPackage != null) && (aPackage.getName().startsWith("java."));
-    }
-
-    private static boolean isJodaTimePackage(Package aPackage) {
-        return (aPackage != null) && (aPackage.getName().startsWith("org.joda.time"));
-    }
-
-    /*
-     * An enhanced check for "isEnum" because the standard Class.isEnum() isn't always enough. When an enum includes
-     * abstract methods an inner anonymous class arises and even though that class has the enum modifier bit set,
-     * Class.isEnum() returns false which is not the answer we need.
-     */
-    private static boolean isEnum(Class<?> type) {
-        return ((type.getModifiers() & 0x4000)) != 0;
     }
 }
