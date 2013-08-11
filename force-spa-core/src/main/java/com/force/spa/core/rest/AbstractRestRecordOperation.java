@@ -22,18 +22,12 @@ import java.util.Map;
 public abstract class AbstractRestRecordOperation<T> extends AbstractRecordOperation<T> implements RestRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(AbstractRestRecordOperation.class);
 
+//TODO Remove this Work.com specific header stuff.
     /**
      * Determine any entity-specific headers that we want to attach to the outbound REST request to Salesforce.
      */
     protected Map<String, String> determineHeaders(ObjectDescriptor descriptor, Object record) {
-        Map<String, String> headers = null;
-        headers = WorkSharingOptimization.updateHeaders(descriptor, record, headers);
-
-        if (headers != null && log.isDebugEnabled()) {
-            log.debug(String.format("...With Headers: %s", headers.toString()));
-        }
-
-        return headers;
+        return null;
     }
 
     protected static String encodeParameter(String value) {
@@ -45,13 +39,13 @@ public abstract class AbstractRestRecordOperation<T> extends AbstractRecordOpera
     }
 
     @SuppressWarnings("unchecked")
-    protected static <T> T decodeRecord(ObjectMappingContext mappingContext, JsonNode node, Class<T> recordClass) {
-        if (recordClass.equals(JsonNode.class)) {
+    protected static <T> T decodeRecord(ObjectMappingContext mappingContext, JsonNode node, Class<T> type) {
+        if (type.equals(JsonNode.class)) {
             return (T) node;
         } else {
             ObjectReader objectReader = mappingContext.getObjectReader();
             try {
-                return objectReader.readValue(objectReader.treeAsTokens(node), recordClass);
+                return objectReader.readValue(objectReader.treeAsTokens(node), type);
             } catch (IOException e) {
                 throw new RecordResponseException("Failed to decode JSON record", e);
             }

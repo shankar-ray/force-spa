@@ -35,11 +35,11 @@ class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
 
     @Override
     public void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception {
-        Object value = get(bean);
-        if (value != null) {
-            ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(value.getClass());
-            String id = RecordUtils.getId(descriptor, value);
-            if (id != null) {
+        Object record = get(bean);
+        if (record != null) {
+            ObjectDescriptor object = mappingContext.getRequiredObjectDescriptor(record.getClass());
+            if (object.hasIdField()) {
+                String id = object.getIdField().getValue(record);
                 jgen.writeStringField(idPropertyName, id);
                 return;
             }

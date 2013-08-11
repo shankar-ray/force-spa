@@ -5,9 +5,10 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -16,29 +17,30 @@ import java.util.List;
  * collected at the same time as the core Jackson metadata (introspection time) and references some of the standard
  * Jackson classes.
  */
-public final class FieldDescriptor {
-    private final BeanPropertyDefinition property;
-    private final Class<?> fieldClass;
+public final class FieldDescriptor implements Serializable {
+
+    private static final long serialVersionUID = -7449364275029415469L;
+
+    private final String name;
+    private final Class<?> type;
+    private final AnnotatedMember accessor;
     private final ObjectDescriptor relatedObject;
     private final List<ObjectDescriptor> polymorphicChoices;
 
-    FieldDescriptor(BeanPropertyDefinition property, Class<?> fieldClass, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
-        this.property = property;
-        this.fieldClass = fieldClass;
+    FieldDescriptor(String name, AnnotatedMember accessor, Class<?> type, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
+        this.name = name;
+        this.accessor = accessor;
+        this.type = type;
         this.relatedObject = relatedObject;
         this.polymorphicChoices = polymorphicChoices;
     }
 
     public String getName() {
-        return property.getName();
+        return name;
     }
 
-    public BeanPropertyDefinition getProperty() {
-        return property;
-    }
-
-    public Class<?> getFieldClass() {
-        return fieldClass;
+    public Class<?> getType() {
+        return type;
     }
 
     public ObjectDescriptor getRelatedObject() {
@@ -50,7 +52,7 @@ public final class FieldDescriptor {
     }
 
     public boolean isArrayOrCollection() {
-        return fieldClass.isArray() || Collection.class.isAssignableFrom(fieldClass);
+        return type.isArray() || Collection.class.isAssignableFrom(type);
     }
 
     public boolean isRelationship() {
@@ -59,6 +61,11 @@ public final class FieldDescriptor {
 
     public boolean isPolymorphic() {
         return polymorphicChoices != null && polymorphicChoices.size() > 0;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getValue(Object record) {
+        return (T) accessor.getValue(record);
     }
 
     @Override

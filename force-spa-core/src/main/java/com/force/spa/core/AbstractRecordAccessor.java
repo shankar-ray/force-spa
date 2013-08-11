@@ -72,8 +72,8 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final <T> T get(String id, Class<T> recordClass) {
-        GetRecordOperation<T> operation = newGetRecordOperation(id, recordClass);
+    public final <T> T get(String id, Class<T> type) {
+        GetRecordOperation<T> operation = newGetRecordOperation(id, type);
         execute(operation);
         try {
             return operation.get();
@@ -119,8 +119,8 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final <T> void delete(String id, Class<T> recordClass) {
-        DeleteRecordOperation<T> operation = newDeleteRecordOperation(id, recordClass);
+    public final <T> void delete(String id, Class<T> type) {
+        DeleteRecordOperation<T> operation = newDeleteRecordOperation(id, type);
         execute(operation);
         try {
             operation.get();
@@ -130,11 +130,11 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final <T> RecordQuery<T> createQuery(final String soqlTemplate, final Class<T> recordClass) {
+    public final <T> RecordQuery<T> createQuery(final String soqlTemplate, final Class<T> type) {
         Validate.notNull(soqlTemplate, "soqlTemplate must not be null");
-        Validate.notNull(recordClass, "recordClass must not be null");
+        Validate.notNull(type, "type must not be null");
 
-        return new RecordQueryImpl<T>(soqlTemplate, recordClass);
+        return new RecordQueryImpl<T>(soqlTemplate, type);
     }
 
     protected final ObjectMappingContext getMappingContext() {
@@ -149,9 +149,9 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     private String getRecordId(Object record) {
-        ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
-        if (descriptor.hasIdField()) {
-            String id = RecordUtils.getId(descriptor, record);
+        ObjectDescriptor object = mappingContext.getRequiredObjectDescriptor(record.getClass());
+        if (object.hasIdField()) {
+            String id = object.getIdField().getValue(record);
             if (StringUtils.isEmpty(id)) {
                 throw new RecordRequestException("Record bean does not have an id value set");
             }
@@ -162,25 +162,25 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     private final class RecordQueryImpl<T> implements RecordQuery<T> {
-        private final Class<T> recordClass;
+        private final Class<T> type;
         private final String soqlTemplate;
         private int maxResults;
         private int startPosition;
 
 
-        private RecordQueryImpl(String soqlTemplate, Class<T> recordClass) {
-            this.recordClass = recordClass;
+        private RecordQueryImpl(String soqlTemplate, Class<T> type) {
+            this.type = type;
             this.soqlTemplate = soqlTemplate;
         }
 
         @Override
         public List<T> execute() {
-            return execute(recordClass);
+            return execute(type);
         }
 
         @Override
         public <R> List<R> execute(Class<R> resultClass) {
-            QueryRecordsOperation<R> operation = newQueryRecordsOperation(soqlTemplate, recordClass, resultClass);
+            QueryRecordsOperation<R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
             if (startPosition != 0)
                 operation.setStartPosition(startPosition);
             if (maxResults != 0)

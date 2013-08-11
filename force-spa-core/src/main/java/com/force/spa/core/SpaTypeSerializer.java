@@ -106,9 +106,9 @@ class SpaTypeSerializer extends TypeSerializerBase {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
-    private static boolean hasAttributes(ObjectDescriptor descriptor, Object instance) {
-        if (descriptor.hasAttributesField()) {
-            Map<String, String> attributes = RecordUtils.getAttributes(descriptor, instance);
+    private static boolean hasAttributes(ObjectDescriptor object, Object record) {
+        if (object.hasAttributesField()) {
+            Map<String, String> attributes = object.getAttributesField().getValue(record);
             if (attributes != null && attributes.size() > 0)
                 return true;
         }

@@ -49,11 +49,11 @@ final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory
     protected List<BeanPropertyWriter> findBeanProperties(SerializerProvider prov, BeanDescription beanDesc, BeanSerializerBuilder builder) throws JsonMappingException {
         List<BeanPropertyWriter> originalWriters = super.findBeanProperties(prov, beanDesc, builder);
         if (originalWriters != null) {
-            ObjectDescriptor objectDescriptor = mappingContext.getObjectDescriptor(beanDesc.getBeanClass());
+            ObjectDescriptor object = mappingContext.getObjectDescriptor(beanDesc.getBeanClass());
             List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
             for (BeanPropertyWriter originalWriter : originalWriters) {
-                FieldDescriptor fieldDescriptor = objectDescriptor.getField(originalWriter.getName());
-                if (fieldDescriptor.isRelationship()) {
+                FieldDescriptor field = object.getField(originalWriter.getName());
+                if (field.isRelationship()) {
                     updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, mappingContext));
                 } else {
                     updatedWriters.add(originalWriter);

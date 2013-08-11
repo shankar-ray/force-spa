@@ -9,6 +9,7 @@ package com.force.spa.core;
 import com.force.spa.ObjectDefinitionException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +20,10 @@ import java.util.Map;
  * collected at the same time as the core Jackson metadata (introspection time) and references some of the standard
  * Jackson classes.
  */
-public final class ObjectDescriptor {
+public final class ObjectDescriptor implements Serializable {
+
+    private static final long serialVersionUID = 1998217301661330641L;
+
     public static final String ID_FIELD_NAME = "Id";
     public static final String ATTRIBUTES_FIELD_NAME = "attributes";
 
@@ -45,12 +49,12 @@ public final class ObjectDescriptor {
         }
 
         if (hasAttributesField()) {
-            if (!Map.class.isAssignableFrom(getAttributesField().getFieldClass()))
+            if (!Map.class.isAssignableFrom(getAttributesField().getType()))
                 throw new ObjectDefinitionException(name, "'attributes' field has wrong Java type, must be Map<String, String>");
         }
 
         if (hasIdField()) {
-            if (!String.class.isAssignableFrom(getIdField().getFieldClass()))
+            if (!String.class.isAssignableFrom(getIdField().getType()))
                 throw new ObjectDefinitionException(name, "'id' field has wrong Java type, must be String");
         }
     }
@@ -68,11 +72,11 @@ public final class ObjectDescriptor {
     }
 
     public FieldDescriptor getField(String name) {
-        FieldDescriptor descriptor = fieldsByName.get(name);
-        if (descriptor == null) {
+        FieldDescriptor field = fieldsByName.get(name);
+        if (field == null) {
             throw new IllegalStateException(String.format("The object does not have a \'%s\' field", name));
         }
-        return descriptor;
+        return field;
     }
 
     public FieldDescriptor getIdField() {
@@ -93,9 +97,6 @@ public final class ObjectDescriptor {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-            .append(name)
-            .append(fields)
-            .build();
+        return new ToStringBuilder(this).append(name).append(fields).build();
     }
 }

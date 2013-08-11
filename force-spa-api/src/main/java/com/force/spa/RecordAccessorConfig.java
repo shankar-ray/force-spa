@@ -15,6 +15,7 @@ import java.io.Serializable;
  * Tunable configuration for {@link RecordAccessor} instances.
  */
 public final class RecordAccessorConfig implements Serializable {
+
     private static final long serialVersionUID = -697566942312359870L;
 
     private final boolean auditFieldWritingAllowed;

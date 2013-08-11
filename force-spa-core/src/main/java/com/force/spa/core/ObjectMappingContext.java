@@ -24,6 +24,7 @@ import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceObject;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +42,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * This context includes the basic Jackson {@link ObjectMapper} configured appropriately as extra metadata in the form
  * of {@link ObjectDescriptor} for use in making other advanced choices related to persistence.
  */
-public final class ObjectMappingContext {
+public final class ObjectMappingContext implements Serializable {
+
+    private static final long serialVersionUID = 138801020026711582L;
+
     private final RecordAccessorConfig config;
     private final ObjectMapper objectMapper;
     private final ObjectReader objectReader;
@@ -114,14 +118,14 @@ public final class ObjectMappingContext {
      * If the class has already been seen then an existing, cached descriptor is returned. Otherwise the class is
      * introspected to build a new descriptor and the new descriptor cached for future use.
      *
-     * @param clazz the class for which a descriptor is desired
+     * @param type the class for which a descriptor is desired
      * @return the descriptor
      */
-    public ObjectDescriptor getRequiredObjectDescriptor(Class<?> clazz) {
-        ObjectDescriptor descriptor = getObjectDescriptor(clazz);
+    public ObjectDescriptor getRequiredObjectDescriptor(Class<?> type) {
+        ObjectDescriptor descriptor = getObjectDescriptor(type);
         if (descriptor == null) {
             throw new IllegalArgumentException(
-                String.format("%s can't be used as a Salesforce object, probably because it isn't annotated", clazz.getName()));
+                String.format("%s can't be used as a Salesforce object, probably because it isn't annotated", type.getName()));
         }
         return descriptor;
     }
@@ -132,40 +136,40 @@ public final class ObjectMappingContext {
      * If the class has already been seen then an existing, cached descriptor is returned. Otherwise the class is
      * introspected to build a new descriptor and the new descriptor cached for future use.
      *
-     * @param clazz the class for which a descriptor is desired
+     * @param type the class for which a descriptor is desired
      * @return the descriptor or null if none applies to the object
      */
-    public ObjectDescriptor getObjectDescriptor(Class<?> clazz) {
-        ObjectDescriptor descriptor = descriptors.get(clazz);
+    public ObjectDescriptor getObjectDescriptor(Class<?> type) {
+        ObjectDescriptor descriptor = descriptors.get(type);
         if (descriptor != null)
             return descriptor;
 
-        if (rejectedClasses.contains(clazz)) {
+        if (rejectedClasses.contains(type)) {
             return null;
         }
 
-        if (canBeSalesforceObject(clazz)) {
-            return createObjectDescriptor(clazz);
+        if (canBeSalesforceObject(type)) {
+            return createObjectDescriptor(type);
         } else {
-            rejectedClasses.add(clazz);
+            rejectedClasses.add(type);
             return null;
         }
     }
 
-    private boolean canBeSalesforceObject(Class<?> clazz) {
-        if (clazz.isPrimitive() || isIntrinsicJavaPackage(clazz.getPackage()) || isJodaTimePackage(clazz.getPackage())) {
+    private boolean canBeSalesforceObject(Class<?> type) {
+        if (type.isPrimitive() || isIntrinsicJavaPackage(type.getPackage()) || isJodaTimePackage(type.getPackage())) {
             return false;
         }
 
-        if (isEnum(clazz)) {
+        if (isEnum(type)) {
             return false;
         }
 
-        return hasSalesforceObjectAnnotation(clazz) || !config.isObjectAnnotationRequired();
+        return hasSalesforceObjectAnnotation(type) || !config.isObjectAnnotationRequired();
     }
 
-    private boolean hasSalesforceObjectAnnotation(Class<?> clazz) {
-        return clazz.getAnnotation(SalesforceObject.class) != null;
+    private boolean hasSalesforceObjectAnnotation(Class<?> type) {
+        return type.getAnnotation(SalesforceObject.class) != null;
     }
 
     /**
@@ -189,8 +193,8 @@ public final class ObjectMappingContext {
                 descriptor.initializeFields(buildFieldDescriptors(beanDescription));
 
                 if (!recursiveCall)
-                    for (Class<?> descriptorClass : incompleteDescriptors.keySet())
-                        descriptors.put(descriptorClass, incompleteDescriptors.get(descriptorClass));
+                    for (Class<?> key : incompleteDescriptors.keySet())
+                        descriptors.put(key, incompleteDescriptors.get(key));
 
                 return descriptor;
 
@@ -220,14 +224,14 @@ public final class ObjectMappingContext {
     }
 
     private List<FieldDescriptor> buildFieldDescriptors(BasicBeanDescription beanDescription) {
-        List<FieldDescriptor> fieldDescriptors = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>();
         for (BeanPropertyDefinition property : beanDescription.findProperties()) {
-            Class<?> propertyClass = JacksonUtils.getPropertyClass(beanDescription, property);
-            ObjectDescriptor relatedObject = getRelatedObject(propertyClass);
-            List<ObjectDescriptor> polymorphicChoices = getPolymorphicChoices(property, propertyClass);
-            fieldDescriptors.add(new FieldDescriptor(property, propertyClass, relatedObject, polymorphicChoices));
+            Class<?> type = JacksonUtils.getPropertyClass(beanDescription, property);
+            ObjectDescriptor relatedObject = getRelatedObject(type);
+            List<ObjectDescriptor> polymorphicChoices = getPolymorphicChoices(property, type);
+            fields.add(new FieldDescriptor(property.getName(), property.getAccessor(), type, relatedObject, polymorphicChoices));
         }
-        return fieldDescriptors;
+        return fields;
     }
 
     private List<ObjectDescriptor> getPolymorphicChoices(BeanPropertyDefinition property, Class<?> propertyClass) {
@@ -244,8 +248,8 @@ public final class ObjectMappingContext {
         }
     }
 
-    private ObjectDescriptor getRelatedObject(Class<?> propertyClass) {
-        return getObjectDescriptor(propertyClass);
+    private ObjectDescriptor getRelatedObject(Class<?> type) {
+        return getObjectDescriptor(type);
     }
 
     private boolean isPolymorphic(BeanPropertyDefinition property) {
@@ -272,7 +276,7 @@ public final class ObjectMappingContext {
      * abstract methods an inner anonymous class arises and even though that class has the enum modifier bit set,
      * Class.isEnum() returns false which is not the answer we need.
      */
-    private static boolean isEnum(Class<?> clazz) {
-        return ((clazz.getModifiers() & 0x4000)) != 0;
+    private static boolean isEnum(Class<?> type) {
+        return ((type.getModifiers() & 0x4000)) != 0;
     }
 }
