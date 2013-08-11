@@ -5,14 +5,10 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,23 +30,23 @@ import java.util.regex.Pattern;
 public final class SoqlBuilder {
     private static final int DEFAULT_DEPTH = 5;
     private static final Pattern SPLIT_AT_LITERAL_PATTERN = Pattern.compile("([^\'\"]+)(.*)");
-    private static final Pattern WILDCARD_PATTERN = Pattern.compile("([^\\*\\s]*?)\\*(\\{(\\w*)\\})?");
+    private static final Pattern WILDCARD_PATTERN = Pattern.compile("([^\\*\\s]*?)\\.?\\*");
 
-    private static final Map<CacheKey, String> cachedWildcardSubstitutions = new ConcurrentHashMap<CacheKey, String>();
+    private static final Map<CacheKey, String> cachedExpansions = new ConcurrentHashMap<CacheKey, String>();
 
-    private ObjectDescriptor rootDescriptor;
-    private String soqlTemplate;
+    private final ObjectDescriptor rootObject;
+    private String template;
     private int offset = 0;
     private int limit = 0;
     private int depth = DEFAULT_DEPTH;
 
-    public SoqlBuilder(ObjectDescriptor rootDescriptor) {
-        this.rootDescriptor = rootDescriptor;
+    public SoqlBuilder(ObjectDescriptor rootObject) {
+        this.rootObject = rootObject;
     }
 
-    public SoqlBuilder soqlTemplate(String soqlTemplate) {
-        Validate.notEmpty(soqlTemplate, "No soqlTemplate was specified");
-        this.soqlTemplate = soqlTemplate;
+    public SoqlBuilder soqlTemplate(String template) {
+        Validate.notEmpty(template, "No template was specified");
+        this.template = template;
         return this;
     }
 
@@ -70,7 +66,7 @@ public final class SoqlBuilder {
     }
 
     public String build() {
-        StringBuilder sb = replaceFieldWildcards(soqlTemplate);
+        StringBuilder sb = expandWildcards();
         if (limit > 0)
             sb.append(" LIMIT ").append(limit);
         if (offset > 0)
@@ -78,110 +74,98 @@ public final class SoqlBuilder {
         return sb.toString();
     }
 
-    private StringBuilder replaceFieldWildcards(String soqlTemplate) {
+    private StringBuilder expandWildcards() {
 
-        // Use a simple algorithm to make our job easy (remember this is simple JPA, not full JPA). Quoted literals
-        // are a headache in Regex and we really don't want to bite off full SOQL parsing at this point. Simplify by
-        // assuming that all of our wildcard substitutions will show up before any literals are encountered. Parts of
-        // the SOQL that show up after the first literal should not need substitution. With this simplifying
-        // assumption we can split the line up into two parts: the front part in which we perform substitutions
-        // and the back part (which contains literals) and which we leave alone.
-        Matcher splitMatcher = SPLIT_AT_LITERAL_PATTERN.matcher(soqlTemplate);
+        // Use a simple algorithm to make our job easy. Quoted literals are a headache in Regex and we really don't want
+        // to bite off full SOQL parsing at this point. Simplify by assuming that all wildcard substitutions will show
+        // up before any literals are encountered. Parts of the SOQL that show up after the first literal should not
+        // need substitution. With this simplifying assumption we can split the line up into two parts: the front part
+        // in which we perform substitutions and the back part (which contains literals) and which we leave alone.
+        Matcher splitMatcher = SPLIT_AT_LITERAL_PATTERN.matcher(template);
         splitMatcher.find();
         String partToScanForWildcards = splitMatcher.group(1);
         String partToLeaveAlone = splitMatcher.group(2);
 
         // Replace wildcards with concrete field lists.
         int lastEnd = 0;
-        StringBuilder sb = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
         Matcher wildcardMatcher = WILDCARD_PATTERN.matcher(partToScanForWildcards);
         while (wildcardMatcher.find()) {
-            sb.append(partToScanForWildcards.substring(lastEnd, wildcardMatcher.start()));
+            builder.append(partToScanForWildcards.substring(lastEnd, wildcardMatcher.start()));
             String prefix = wildcardMatcher.group(1);
-            String objectName = wildcardMatcher.group(3);
-            sb.append(getWildcardSubstitution(getDescriptor(objectName), prefix, depth));
+            builder.append(expandObject(rootObject, prefix, depth));
             lastEnd = wildcardMatcher.end();
         }
-        sb.append(partToScanForWildcards.substring(lastEnd));
-        sb.append(partToLeaveAlone);
-        return sb;
+        builder.append(partToScanForWildcards.substring(lastEnd));
+        builder.append(partToLeaveAlone);
+        return builder;
     }
 
-    private ObjectDescriptor getDescriptor(String name) {
-        ObjectDescriptor descriptor = getDescriptor(rootDescriptor, name);
-        if (descriptor != null)
-            return descriptor;
+    private static String expandObject(ObjectDescriptor object, String prefix, int remainingDepth) {
+        CacheKey cacheKey = new CacheKey(object, prefix);       //TODO depth matters too
+        String expansion = cachedExpansions.get(cacheKey);
+        if (expansion != null)
+            return expansion;
 
-        throw new IllegalArgumentException(
-            String.format("Wildcard substitution for '%s' cannot be resolved", name));
-    }
-
-    private static ObjectDescriptor getDescriptor(ObjectDescriptor candidateDescriptor, String name) {
-        if (StringUtils.isEmpty(name) || candidateDescriptor.getName().equals(name))
-            return candidateDescriptor;
-
-        // Search through the related entities for a match.
-        for (ObjectDescriptor relatedDescriptor : candidateDescriptor.getRelatedObjects().values()) {
-            ObjectDescriptor descriptor = getDescriptor(relatedDescriptor, name);
-            if (descriptor != null)
-                return descriptor;
-        }
-        return null; // Nothing found
-    }
-
-    private static String getWildcardSubstitution(ObjectDescriptor descriptor, String prefix, int depth) {
-        CacheKey cacheKey = new CacheKey(descriptor, prefix);
-        String substitution = cachedWildcardSubstitutions.get(cacheKey);
-        if (substitution != null)
-            return substitution;
-
-        substitution = StringUtils.join(getFields(descriptor, prefix, depth), ',');
-        cachedWildcardSubstitutions.put(cacheKey, substitution);
-        return substitution;
-    }
-
-    private static List<String> getFields(ObjectDescriptor objectDescriptor, String prefix, int depth) {
-        List<String> fields = new ArrayList<String>();
-        for (FieldDescriptor field : objectDescriptor.getFields()) {
-            BeanPropertyDefinition property = field.getProperty();
-            String prefixedFieldName = prefix + property.getName();
-            if (property.getName().equals("attributes")) {
-                continue;
-            }
-            ObjectDescriptor relatedDescriptor = objectDescriptor.getRelatedObjects().get(property.getInternalName());
-            if (relatedDescriptor != null) {
-                if (depth > 0) {
-                    if (isArrayOrCollection(property)) {
-                        fields.add(getSubquery(relatedDescriptor, prefixedFieldName, depth - 1));
-                    } else {
-                        fields.addAll(getFields(relatedDescriptor, prefixedFieldName + ".", depth - 1));
+        if (remainingDepth >= 0) {
+            List<String> accumulator = new ArrayList<String>();
+            for (FieldDescriptor field : object.getFields()) {
+                if (!(object.hasAttributesField() && field.equals(object.getAttributesField()))) {
+                    String expandedField = expandField(field, prefix, remainingDepth);
+                    if (expandedField != null) {
+                        accumulator.add(expandedField);
                     }
                 }
-            } else {
-                fields.add(prefixedFieldName);
             }
+            expansion = StringUtils.join(accumulator, ",");
+            cachedExpansions.put(cacheKey, expansion);
         }
-        return fields;
+
+        return expansion;
     }
 
-    private static boolean isArrayOrCollection(BeanPropertyDefinition property) {
-        Type type = property.getAccessor().getGenericType();
-        if (type instanceof Class && ((Class<?>) type).isArray()) {
-            return true;
+    private static String expandField(FieldDescriptor field, String prefix, int remainingDepth) {
+        if (field.isRelationship()) {
+            return expandRelationshipField(field, prefix, remainingDepth);
+        } else {
+            return expandSimpleField(field, prefix);
         }
-
-        if (type instanceof ParameterizedType) {
-            Type rawType = ((ParameterizedType) type).getRawType();
-            if (rawType instanceof Class && Collection.class.isAssignableFrom((Class<?>) rawType))
-                return true;
-        }
-        return false;
     }
 
-    private static String getSubquery(ObjectDescriptor descriptor, String fieldName, int depth) {
-        return new SoqlBuilder(descriptor)
-            .soqlTemplate("(SELECT * from " + fieldName + ")")
-            .depth(depth)
+    private static String expandSimpleField(FieldDescriptor field, String prefix) {
+        return StringUtils.isEmpty(prefix) ? field.getName() : prefix + "." + field.getName();
+    }
+
+    private static String expandRelationshipField(FieldDescriptor field, String prefix, int remainingDepth) {
+        if (field.isPolymorphic()) {
+            return expandPolymorphicField(field, prefix, remainingDepth);
+        } else if (field.isArrayOrCollection()) {
+            return expandCollectionField(field, prefix, remainingDepth);
+        } else {
+            return expandObject(field.getRelatedObject(), expandSimpleField(field, prefix), remainingDepth - 1);
+        }
+    }
+
+    private static String expandPolymorphicField(FieldDescriptor field, String prefix, int remainingDepth) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("TYPEOF ").append(expandSimpleField(field, prefix));
+        for (ObjectDescriptor object : field.getPolymorphicChoices()) {
+            builder.append(" WHEN ").append(object.getName()).append(" THEN ");
+            builder.append(expandObject(object, null, remainingDepth - 1));
+        }
+        if (field.getRelatedObject() != null) {
+            builder.append(" ELSE ");
+            builder.append(expandObject(field.getRelatedObject(), null, remainingDepth - 1));
+        }
+        builder.append(" END");
+
+        return builder.toString();
+    }
+
+    private static String expandCollectionField(FieldDescriptor field, String prefix, int remainingDepth) {
+        return new SoqlBuilder(field.getRelatedObject())
+            .soqlTemplate("(SELECT * from " + expandSimpleField(field, prefix) + ")")
+            .depth(remainingDepth - 1)
             .build();
     }
 

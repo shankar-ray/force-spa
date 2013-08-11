@@ -11,18 +11,13 @@ import org.joda.time.DateTime;
 
 @SalesforceObject
 public class DetailedNamedRecord extends NamedRecord {
-    @SalesforceField(name = "CreatedBy")
+
     private NamedRecord createdBy;
-
-    @SalesforceField(name = "CreatedDate")
     private DateTime createdDate;
-
-    @SalesforceField(name = "LastModifiedBy")
     private NamedRecord lastModifiedBy;
-
-    @SalesforceField(name = "LastModifiedDate")
     private DateTime lastModifiedDate;
 
+    @SalesforceField(name = "CreatedBy")
     public NamedRecord getCreatedBy() {
         return createdBy;
     }
@@ -31,6 +26,7 @@ public class DetailedNamedRecord extends NamedRecord {
         this.createdBy = createdBy;
     }
 
+    @SalesforceField(name = "CreatedDate")
     public DateTime getCreatedDate() {
         return createdDate;
     }
@@ -39,6 +35,7 @@ public class DetailedNamedRecord extends NamedRecord {
         this.createdDate = createdDate;
     }
 
+    @SalesforceField(name = "LastModifiedBy")
     public NamedRecord getLastModifiedBy() {
         return lastModifiedBy;
     }
@@ -47,6 +44,7 @@ public class DetailedNamedRecord extends NamedRecord {
         this.lastModifiedBy = lastModifiedBy;
     }
 
+    @SalesforceField(name = "LastModifiedDate")
     public DateTime getLastModifiedDate() {
         return lastModifiedDate;
     }

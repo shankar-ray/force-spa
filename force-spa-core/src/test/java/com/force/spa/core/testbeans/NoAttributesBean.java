@@ -1,23 +1,21 @@
 /*
- * Copyright, 2013, SALESFORCE.com 
+ * Copyright, 2012-2013, SALESFORCE.com
  * All Rights Reserved
  * Company Confidential
  */
 package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
 
-public class UserMoniker {
+@SalesforceObject
+public class NoAttributesBean {
 
     @SalesforceField(name = "Id")
     private String id;
 
     @SalesforceField(name = "Name")
     private String name;
-
-    public UserMoniker(String id) {
-        this.id = id;
-    }
 
     public String getId() {
         return id;

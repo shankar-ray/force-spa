@@ -10,19 +10,19 @@ package com.force.spa.core;
  */
 class SerializationViews {
     /**
-     * View that is specified when serializing an object for {@link RecordAccessor#create(Object)}.
+     * View that is specified when serializing an object for {@link com.force.spa.RecordAccessor#create(Object)}.
      */
     static class Create {
     }
 
     /**
-     * View that is specified when serializing an object for {@link RecordAccessor#update(Object)}}.
+     * View that is specified when serializing an object for {@link com.force.spa.RecordAccessor#update(Object)}}.
      */
     static class Update {
     }
 
     /**
-     * View that is specified when serializing an object for {@link RecordAccessor#patch(String,Object)}}.
+     * View that is specified when serializing an object for {@link com.force.spa.RecordAccessor#patch(String,Object)}}.
      */
     static class Patch {
     }

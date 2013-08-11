@@ -14,11 +14,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class AbstractRecordAccessorIntegrationTest {
-    private static SecureRandom secureRandom = new SecureRandom(RecordAccessorIntegrationTest.class.getName().getBytes());
+    private static final SecureRandom secureRandom = new SecureRandom(RecordAccessorIntegrationTest.class.getName().getBytes());
 
-    protected PasswordAuthorizationConnector authorizationConnector = new PasswordAuthorizationConnector();
-    protected RecordAccessor accessor = new RecordAccessorFactory().newInstance(new RecordAccessorConfig(), authorizationConnector);
-    protected Set<Object> objects = new HashSet<Object>();
+    protected final PasswordAuthorizationConnector authorizationConnector = new PasswordAuthorizationConnector();
+    protected final RecordAccessor accessor = new RecordAccessorFactory().newInstance(new RecordAccessorConfig(), authorizationConnector);
+    protected final Set<Object> objects = new HashSet<Object>();
 
     @After
     public void deleteTestObjects() {

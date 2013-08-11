@@ -5,15 +5,8 @@
  */
 package com.force.spa.core.testbeans;
 
+import com.force.spa.SalesforceObject;
+
+@SalesforceObject
 public class NoIdBean {
-
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

@@ -7,31 +7,16 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.Record;
 
-import java.util.Map;
-
-@SuppressWarnings("ALL")
+@SuppressWarnings({"UnusedDeclaration", "FieldCanBeLocal"})
 @SalesforceObject
-public class NoGetterBean {
-
-    @SalesforceField(name = "Id")
-    public String id;
+public class NoGetterBean extends Record {
 
     @SalesforceField(name = "Value1")
     private String value1;
 
-    @SalesforceField(name = "attributes")
-    private Map<String, String> attributes;
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public void setValue1(String value1) {
         this.value1 = value1;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
     }
 }

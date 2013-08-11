@@ -5,6 +5,7 @@
  */
 package com.force.spa.core;
 
+import com.force.spa.core.testbeans.NoAttributesBean;
 import com.force.spa.core.testbeans.NoGetterBean;
 import com.force.spa.core.testbeans.NoIdBean;
 import com.force.spa.core.testbeans.NoSetterBean;
@@ -22,7 +23,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 public class RecordUtilsTest {
-    private ObjectMappingContext mappingContext = new ObjectMappingContext();
+    private final ObjectMappingContext mappingContext = new ObjectMappingContext();
 
     @Test
     public void testGetAttributesSimple() {
@@ -54,8 +55,8 @@ public class RecordUtilsTest {
 
     @Test
     public void testGetAttributesWhenNone() {
-        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(UnannotatedBean.class);
-        UnannotatedBean instance = new UnannotatedBean();
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(NoAttributesBean.class);
+        NoAttributesBean instance = new NoAttributesBean();
 
         try {
             RecordUtils.getAttributes(descriptor, instance);

@@ -7,16 +7,14 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.Record;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 import java.util.Date;
 
 @SalesforceObject
-public class DateTimeBean {
-
-    @SalesforceField(name = "Id")
-    private String id;
+public class DateTimeBean extends Record {
 
     @SalesforceField(name = "JavaDateAndTime")
     private Date javaDateAndTime;
@@ -29,14 +27,6 @@ public class DateTimeBean {
 
     @SalesforceField(name = "JodaDateOnly")
     private LocalDate jodaDateOnly;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public Date getJavaDateAndTime() {
         return javaDateAndTime;

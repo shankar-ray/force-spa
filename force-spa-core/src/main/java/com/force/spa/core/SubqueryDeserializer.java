@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 class SubqueryDeserializer extends JsonDeserializer<Object> implements ContextualDeserializer {
 
-    private JsonDeserializer<?> delegate;
+    private final JsonDeserializer<?> delegate;
 
     /**
      * Constructs a new instance which wraps a standard Jackson deserializer that knows how to deal with the array of

@@ -13,16 +13,13 @@ import java.util.Map;
 @SalesforceObject
 public class Record {
 
-    private Map<String, String> attributes;  // The server wants this to be the first field in the serialization
     private String id;
+    private Map<String, String> attributes;
 
-    @SalesforceField(name = "attributes")
-    public Map<String, String> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public static Record withId(String id) {
+        Record record = new Record();
+        record.setId(id);
+        return record;
     }
 
     @SalesforceField(name = "Id")
@@ -32,5 +29,14 @@ public class Record {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @SalesforceField(name = "attributes")
+    public Map<String, String> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(Map<String, String> attributes) {
+        this.attributes = attributes;
     }
 }

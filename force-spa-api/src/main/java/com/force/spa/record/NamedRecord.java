@@ -13,6 +13,18 @@ public class NamedRecord extends Record {
 
     private String name;
 
+    public static NamedRecord withId(String id) {
+        NamedRecord record = new NamedRecord();
+        record.setId(id);
+        return record;
+    }
+
+    public static NamedRecord withName(String name) {
+        NamedRecord record = new NamedRecord();
+        record.setName(name);
+        return record;
+    }
+
     @SalesforceField(name = "Name")
     public String getName() {
         return name;

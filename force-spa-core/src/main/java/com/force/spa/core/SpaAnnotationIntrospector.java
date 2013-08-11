@@ -50,14 +50,18 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     private static final long serialVersionUID = -6877076662700362622L;
 
+    private static final String[] STARTING_PROPERTY_ORDER = new String[]{"attributes", "Id", "Name"};
+
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
     private static final Class<?>[] UPDATE_VIEWS = new Class<?>[]{SerializationViews.Update.class, SerializationViews.Patch.class};
 
     private final boolean auditFieldWritingAllowed;
+    private final ObjectMappingContext mappingContext;
 
-    SpaAnnotationIntrospector(RecordAccessorConfig config) {
-        auditFieldWritingAllowed = config.isAuditFieldWritingAllowed();
+    SpaAnnotationIntrospector(ObjectMappingContext mappingContext, RecordAccessorConfig config) {
+        this.auditFieldWritingAllowed = config.isAuditFieldWritingAllowed();
+        this.mappingContext = mappingContext;
     }
 
     @Override
@@ -150,6 +154,20 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return findTypeResolver(config, am, containerType);
     }
 
+    @Override
+    public String[] findSerializationPropertyOrder(AnnotatedClass ac) {
+        return STARTING_PROPERTY_ORDER; // The order for a few fields we want at the front (if they exist).
+    }
+
+    @Override
+    public Object findSerializer(Annotated annotated) {
+        if ("attributes".equals(findSalesforceFieldName(annotated))) {
+            return new AttributesSerializer();
+        } else {
+            return super.findSerializer(annotated);
+        }
+    }
+
     @SuppressWarnings("UnusedParameters")
     private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
         Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
@@ -157,7 +175,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return null;
         }
 
-        return new SpaTypeResolverBuilder().init(JsonTypeInfo.Id.NAME, null);
+        return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
     }
 
     private static String findSpecifiedSalesforceObjectName(Class<?> clazz) {

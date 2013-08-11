@@ -22,14 +22,14 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
  * Salesforce id of the object up front. Details on the feature are beyond the scope if this doc. For more information
  * on this external id lookup algorithm you can refer to the Salesforce SOAP API documentation.
  */
-public class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
+class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
 
-    private final ObjectDescriptor descriptor;
+    private final ObjectMappingContext mappingContext;
     private final String idPropertyName;
 
-    public RelationshipBeanPropertyWriter(BeanPropertyWriter base, ObjectDescriptor descriptor) {
+    RelationshipBeanPropertyWriter(BeanPropertyWriter base, ObjectMappingContext mappingContext) {
         super(base);
-        this.descriptor = descriptor;
+        this.mappingContext = mappingContext;
         this.idPropertyName = translateToIdName(base.getName());
     }
 
@@ -37,6 +37,7 @@ public class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
     public void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception {
         Object value = get(bean);
         if (value != null) {
+            ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(value.getClass());
             String id = RecordUtils.getId(descriptor, value);
             if (id != null) {
                 jgen.writeStringField(idPropertyName, id);

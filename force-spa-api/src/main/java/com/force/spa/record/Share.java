@@ -8,18 +8,13 @@ package com.force.spa.record;
 import com.force.spa.SalesforceField;
 
 public class Share<T extends Record> extends Record {
-    @SalesforceField(name = "AccessLevel")
+
     private AccessLevel accessLevel;
-
-    @SalesforceField(name = "Parent")
     private T parent;
-
-    @SalesforceField(name = "RowCause")
     private RowCause rowCause;
-
-    @SalesforceField(name = "UserOrGroupId")
     private String userOrGroupId;
 
+    @SalesforceField(name = "AccessLevel")
     public AccessLevel getAccessLevel() {
         return accessLevel;
     }
@@ -28,6 +23,7 @@ public class Share<T extends Record> extends Record {
         this.accessLevel = accessLevel;
     }
 
+    @SalesforceField(name = "Parent")
     public T getParent() {
         return parent;
     }
@@ -36,6 +32,7 @@ public class Share<T extends Record> extends Record {
         this.parent = parent;
     }
 
+    @SalesforceField(name = "RowCause")
     public RowCause getRowCause() {
         return rowCause;
     }
@@ -44,6 +41,7 @@ public class Share<T extends Record> extends Record {
         this.rowCause = rowCause;
     }
 
+    @SalesforceField(name = "UserOrGroupId")
     public String getUserOrGroupId() {
         return userOrGroupId;
     }

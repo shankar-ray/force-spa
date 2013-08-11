@@ -11,10 +11,12 @@ import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.core.testbeans.DateTimeBean;
 import com.force.spa.core.testbeans.InsertableUpdatableBean;
+import com.force.spa.core.testbeans.NoAttributesBean;
+import com.force.spa.core.testbeans.PolymorphicFieldBean;
 import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
 import com.force.spa.core.testbeans.StandardFieldBean;
-import com.force.spa.core.testbeans.UserMoniker;
+import com.force.spa.record.NamedRecord;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -47,7 +49,6 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean bean = new SimpleBean();
         bean.setName("Name 1");
         bean.setDescription("Description 1");
-        bean.setState("This is transient");
 
         when(
             mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
@@ -99,11 +100,11 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     public void testStandardFieldCreate() throws Exception {
         StandardFieldBean bean = new StandardFieldBean();
         bean.setName("Name 1");
-        bean.setCreatedBy(new UserMoniker("a01i00000000201"));
-        bean.setCreatedDate(new Date());
-        bean.setLastModifiedBy(new UserMoniker("a01i00000000202"));
-        bean.setLastModifiedDate(new Date());
-        bean.setOwner(new UserMoniker("a01i00000000203"));
+        bean.setCreatedBy(NamedRecord.withId("a01i00000000201"));
+        bean.setCreatedDate(new DateTime());
+        bean.setLastModifiedBy(NamedRecord.withId("a01i00000000202"));
+        bean.setLastModifiedDate(new DateTime());
+        bean.setOwner(NamedRecord.withId("a01i00000000203"));
 
         when(
             mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
@@ -186,11 +187,11 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     public void testStandardFieldPatch() throws Exception {
         StandardFieldBean beanChanges = new StandardFieldBean();
         beanChanges.setName("Name 1");
-        beanChanges.setCreatedBy(new UserMoniker("a01i00000000201"));
-        beanChanges.setCreatedDate(new Date());
-        beanChanges.setLastModifiedBy(new UserMoniker("a01i00000000202"));
-        beanChanges.setLastModifiedDate(new Date());
-        beanChanges.setOwner(new UserMoniker("a01i00000000203"));
+        beanChanges.setCreatedBy(NamedRecord.withId("a01i00000000201"));
+        beanChanges.setCreatedDate(new DateTime());
+        beanChanges.setLastModifiedBy(NamedRecord.withId("a01i00000000202"));
+        beanChanges.setLastModifiedDate(new DateTime());
+        beanChanges.setOwner(NamedRecord.withId("a01i00000000203"));
 
         doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
         accessor.patch("a01i00000000001AAC", beanChanges);
@@ -395,5 +396,47 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(bean.getJavaDateOnly(), is(equalTo(javaDateOnly)));
         assertThat(bean.getJodaDateAndTime(), is(equalTo(jodaDateAndTime)));
         assertThat(bean.getJodaDateOnly(), is(equalTo(jodaDateOnly)));
+    }
+
+    @Test
+    public void testPolymorphicIdCreate() throws Exception {
+        PolymorphicFieldBean polymorphicFieldBean = new PolymorphicFieldBean();
+        SimpleBean simpleBean = new SimpleBean();
+        simpleBean.setId("a01i00000000202");
+        polymorphicFieldBean.setValue1(simpleBean);
+        NoAttributesBean noAttributesBean = new NoAttributesBean();
+        noAttributesBean.setId("a01i00000000303");
+        polymorphicFieldBean.setValue2(noAttributesBean);
+
+        when(
+            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(polymorphicFieldBean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(mockConnector).post(
+            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicIdCreateRequest.json"), null);
+    }
+
+    @Test
+    public void testPolymorphicKeyLookupCreate() throws Exception {
+        PolymorphicFieldBean polymorphicFieldBean = new PolymorphicFieldBean();
+        SimpleBean simpleBean = new SimpleBean();
+        simpleBean.setName("Name 1");
+        polymorphicFieldBean.setValue1(simpleBean);
+        NoAttributesBean noAttributesBean = new NoAttributesBean();
+        noAttributesBean.setName("Name 2");
+        polymorphicFieldBean.setValue2(noAttributesBean);
+
+        when(
+            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(polymorphicFieldBean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(mockConnector).post(
+            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicKeyLookupCreateRequest.json"), null);
     }
 }

@@ -19,9 +19,15 @@ import com.fasterxml.jackson.databind.jsontype.impl.TypeNameIdResolver;
 
 import java.util.Collection;
 
-public class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolverBuilder> {
-    private TypeIdResolver customIdResolver = null;
+class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolverBuilder> {
+
     private Class<?> defaultImpl = null;
+    private TypeIdResolver customIdResolver = null;
+    private final ObjectMappingContext mappingContext;
+
+    SpaTypeResolverBuilder(ObjectMappingContext mappingContext) {
+        this.mappingContext = mappingContext;
+    }
 
     @Override
     public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
@@ -32,7 +38,7 @@ public class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolv
     @Override
     public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
         TypeIdResolver idResolver = getIdResolver(config, baseType, subtypes, true);
-        return new SpaTypeSerializer(idResolver);
+        return new SpaTypeSerializer(mappingContext, idResolver);
     }
 
     @Override

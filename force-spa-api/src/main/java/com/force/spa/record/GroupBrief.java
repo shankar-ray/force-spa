@@ -11,12 +11,11 @@ import com.force.spa.SalesforceObject;
 @SalesforceObject(name = "Group")
 public class GroupBrief extends NamedRecord {
 
-    @SalesforceField(name = "DeveloperName")
     private String developerName;
 
-    @SalesforceField(name = "Type")
     private String type;
 
+    @SalesforceField(name = "DeveloperName")
     public String getDeveloperName() {
         return developerName;
     }
@@ -25,6 +24,7 @@ public class GroupBrief extends NamedRecord {
         this.developerName = developerName;
     }
 
+    @SalesforceField(name = "Type")
     public String getType() {
         return type;
     }

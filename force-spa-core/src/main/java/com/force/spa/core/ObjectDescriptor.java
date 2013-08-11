@@ -6,6 +6,7 @@
 package com.force.spa.core;
 
 
+import com.force.spa.ObjectDefinitionException;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collections;
@@ -19,22 +20,38 @@ import java.util.Map;
  * Jackson classes.
  */
 public final class ObjectDescriptor {
-    private static final String ID_FIELD = "Id";
-    private static final String ATTRIBUTES_FIELD = "attributes";
+    public static final String ID_FIELD_NAME = "Id";
+    public static final String ATTRIBUTES_FIELD_NAME = "attributes";
 
     private final String name;
-    private final List<FieldDescriptor> fields;
+    private List<FieldDescriptor> fields;
     private final Map<String, FieldDescriptor> fieldsByName;
-    private final Map<String, ObjectDescriptor> relatedObjects;
 
-    ObjectDescriptor(String name, List<FieldDescriptor> fields) {
+    ObjectDescriptor(String name) {
         this.name = name;
-        this.relatedObjects = new HashMap<String, ObjectDescriptor>();
-        this.fields = Collections.unmodifiableList(fields);
-
+        this.fields = Collections.emptyList();
         this.fieldsByName = new HashMap<String, FieldDescriptor>();
-        for (FieldDescriptor field : fields) {
-            fieldsByName.put(field.getName(), field);
+    }
+
+    void initializeFields(List<FieldDescriptor> fields) {
+        if (this.fields.equals(Collections.emptyList())) {
+            this.fields = Collections.unmodifiableList(fields);
+
+            for (FieldDescriptor field : fields) {
+                fieldsByName.put(field.getName(), field);
+            }
+        } else {
+            throw new IllegalStateException("Fields have already been initialized");
+        }
+
+        if (hasAttributesField()) {
+            if (!Map.class.isAssignableFrom(getAttributesField().getFieldClass()))
+                throw new ObjectDefinitionException(name, "'attributes' field has wrong Java type, must be Map<String, String>");
+        }
+
+        if (hasIdField()) {
+            if (!String.class.isAssignableFrom(getIdField().getFieldClass()))
+                throw new ObjectDefinitionException(name, "'id' field has wrong Java type, must be String");
         }
     }
 
@@ -43,27 +60,27 @@ public final class ObjectDescriptor {
     }
 
     public boolean hasAttributesField() {
-        return hasField(ATTRIBUTES_FIELD);
+        return hasField(ATTRIBUTES_FIELD_NAME);
     }
 
     public boolean hasIdField() {
-        return hasField(ID_FIELD);
+        return hasField(ID_FIELD_NAME);
     }
 
     public FieldDescriptor getField(String name) {
         FieldDescriptor descriptor = fieldsByName.get(name);
         if (descriptor == null) {
-            throw new IllegalStateException(String.format("The object does not have an \'%s\' field", name));
+            throw new IllegalStateException(String.format("The object does not have a \'%s\' field", name));
         }
         return descriptor;
     }
 
     public FieldDescriptor getIdField() {
-        return getField(ID_FIELD);
+        return getField(ID_FIELD_NAME);
     }
 
     public FieldDescriptor getAttributesField() {
-        return getField(ATTRIBUTES_FIELD);
+        return getField(ATTRIBUTES_FIELD_NAME);
     }
 
     public String getName() {
@@ -74,16 +91,11 @@ public final class ObjectDescriptor {
         return fields;
     }
 
-    public Map<String, ObjectDescriptor> getRelatedObjects() {
-        return relatedObjects;
-    }
-
     @Override
     public String toString() {
         return new ToStringBuilder(this)
             .append(name)
             .append(fields)
-            .append(relatedObjects)
             .build();
     }
 }

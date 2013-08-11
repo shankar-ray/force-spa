@@ -28,7 +28,7 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
 
     private static final long serialVersionUID = -2489422892963688271L;
 
-    private final transient ObjectMappingContext mappingContext;
+    private final ObjectMappingContext mappingContext;
 
     public RelationshipPropertyNamingStrategy(ObjectMappingContext mappingContext) {
         this.mappingContext = mappingContext;

@@ -1,21 +1,17 @@
 /*
- * Copyright, 2012-2013, SALESFORCE.com
+ * Copyright, 2013, SALESFORCE.com
  * All Rights Reserved
  * Company Confidential
  */
 package com.force.spa;
 
-/**
- * Thrown to indicate a problem issuing the request to access records. The request probably did not make it to the
- * server or failed so severely that the server couldn't even begin to process it.
- */
-public class RecordRequestException extends SpaException {
-    private static final long serialVersionUID = 4845607308105128355L;
+public class SpaException extends RuntimeException {
+    private static final long serialVersionUID = -966474393052365313L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.
      */
-    public RecordRequestException() {
+    public SpaException() {
         super();
     }
 
@@ -24,7 +20,7 @@ public class RecordRequestException extends SpaException {
      *
      * @param message the detail message
      */
-    public RecordRequestException(String message) {
+    public SpaException(String message) {
         super(message);
     }
 
@@ -35,7 +31,7 @@ public class RecordRequestException extends SpaException {
      *
      * @param cause the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public RecordRequestException(Throwable cause) {
+    public SpaException(Throwable cause) {
         super(cause);
     }
 
@@ -45,7 +41,7 @@ public class RecordRequestException extends SpaException {
      * @param message the detail message
      * @param cause   the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public RecordRequestException(String message, Throwable cause) {
+    public SpaException(String message, Throwable cause) {
         super(message, cause);
     }
 }

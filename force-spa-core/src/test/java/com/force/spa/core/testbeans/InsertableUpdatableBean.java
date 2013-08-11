@@ -7,19 +7,10 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.NamedRecord;
 
-/**
- * A test bean with fields that choose whether they are insertable or updatable.
- */
-@SuppressWarnings("ALL")
 @SalesforceObject
-public class InsertableUpdatableBean {
-
-    @SalesforceField(name = "Id")
-    private String id;
-
-    @SalesforceField(name = "Name")
-    private String name;
+public class InsertableUpdatableBean extends NamedRecord {
 
     @SalesforceField(name = "NotInsertable", insertable = false)
     private String notInsertable;
@@ -29,22 +20,6 @@ public class InsertableUpdatableBean {
 
     @SalesforceField(name = "NotInsertableOrUpdatable", insertable = false, updatable = false)
     private String notInsertableOrUpdatable;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getNotInsertable() {
         return notInsertable;

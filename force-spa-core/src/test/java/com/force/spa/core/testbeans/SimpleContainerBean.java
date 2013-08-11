@@ -7,29 +7,19 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.Record;
 
 import java.util.List;
 
-@SuppressWarnings("ALL")
 @SalesforceObject
-public class SimpleContainerBean {
-
-    @SalesforceField(name = "Id")
-    private String id;
+@SuppressWarnings("UnusedDeclaration")
+public class SimpleContainerBean extends Record {
 
     @SalesforceField(name = "RelatedBeans")
     private List<SimpleBean> relatedBeans;
 
     @SalesforceField(name = "MoreRelatedBeans")
     private SimpleBean[] moreRelatedBeans;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public List<SimpleBean> getRelatedBeans() {
         return relatedBeans;

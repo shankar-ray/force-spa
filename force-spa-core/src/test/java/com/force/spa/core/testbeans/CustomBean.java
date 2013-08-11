@@ -7,18 +7,13 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.record.NamedRecord;
 
 import java.util.List;
 
-@SuppressWarnings("ALL")
+@SuppressWarnings("UnusedDeclaration")
 @SalesforceObject(name = "namespace__CustomBean__c")
-public class CustomBean {
-
-    @SalesforceField(name = "Id")
-    private String id;
-
-    @SalesforceField(name = "Name")
-    private String name;
+public class CustomBean extends NamedRecord {
 
     @SalesforceField(name = "namespace__Value1__c")
     private String value1;
@@ -31,22 +26,6 @@ public class CustomBean {
 
     @SalesforceField(name = "RelatedBeans__c")
     private List<SimpleBean> relatedBeans;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public List<SimpleBean> getRelatedBeans() {
         return relatedBeans;

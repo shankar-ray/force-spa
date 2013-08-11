@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -140,8 +141,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
 
     @Test
     public void testFeedItemPolymorphism() {
-//        Guild guild = createGuild();
-        Guild guild = new Guild();
+        Guild guild = createGuild();
 
         FeedItem feedItem = new FeedItem();
         feedItem.setParent(guild);
@@ -149,8 +149,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         String feedItemId = accessor.create(feedItem);
 
         FeedItem feedItem2 = accessor.get(feedItemId, FeedItem.class);
-        System.out.println(feedItem2);
-
+        assertThat(feedItem2.getParent(), is(instanceOf(GuildBrief.class)));
     }
 
     private GroupBrief getAllInternalUsersGroup() {

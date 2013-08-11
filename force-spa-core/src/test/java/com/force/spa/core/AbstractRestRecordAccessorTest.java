@@ -28,7 +28,7 @@ import static org.mockito.Mockito.mock;
  * Also included are some utility routines for reading mock network requests and responses from resources.
  */
 public abstract class AbstractRestRecordAccessorTest {
-    private String resourcePrefix = this.getClass().getPackage().getName().replace('.', '/');
+    private final String resourcePrefix = this.getClass().getPackage().getName().replace('.', '/');
 
     protected RecordAccessor accessor;
     protected TestRestConnector mockConnector;

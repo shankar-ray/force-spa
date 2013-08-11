@@ -5,37 +5,32 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.force.spa.core.testbeans.CustomBean;
 import com.force.spa.core.testbeans.EnumBean;
+import com.force.spa.core.testbeans.EnumWithAbstractMethod;
 import com.force.spa.core.testbeans.ExplicitlyNamedBean;
 import com.force.spa.core.testbeans.NoGetterBean;
 import com.force.spa.core.testbeans.NoSetterBean;
 import com.force.spa.core.testbeans.RecursiveBean;
 import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
-import com.force.spa.core.testbeans.SimpleEnum;
+import com.force.spa.core.testbeans.TransientFieldBean;
 import com.force.spa.core.testbeans.UnannotatedBean;
 import org.junit.Test;
 
 import static com.force.spa.core.HasFieldName.hasFieldName;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
 @SuppressWarnings("unchecked")
 public class ObjectMappingContextTest {
-    private ObjectMappingContext mappingContext = new ObjectMappingContext();
+    private final ObjectMappingContext mappingContext = new ObjectMappingContext();
 
     @Test
     public void testSimpleBean() {
@@ -46,7 +41,6 @@ public class ObjectMappingContextTest {
         assertThat(descriptor.getAttributesField(), hasFieldName("attributes"));
         assertThat(descriptor.getIdField(), is(not(nullValue())));
         assertThat(descriptor.getIdField(), hasFieldName("Id"));
-        assertThat(descriptor.getRelatedObjects().size(), is(equalTo(0)));
         assertThat(descriptor.getFields(), is(not(nullValue())));
         assertThat(
             descriptor.getFields(),
@@ -62,17 +56,17 @@ public class ObjectMappingContextTest {
         ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(SimpleContainerBean.class);
         assertThat(descriptor, is(not(nullValue())));
         assertThat(descriptor.getName(), is(equalTo("SimpleContainerBean")));
-        assertThat(descriptor.hasAttributesField(), is(false));
+        assertThat(descriptor.hasAttributesField(), is(true));
         assertThat(descriptor.getIdField(), is(not(nullValue())));
         assertThat(descriptor.getIdField(), hasFieldName("Id"));
-        assertThat(descriptor.getRelatedObjects().size(), is(equalTo(2)));
-        assertThat(descriptor.getRelatedObjects(), hasKey("relatedBeans"));
-        assertThat(descriptor.getRelatedObjects(), hasKey("moreRelatedBeans"));
+        assertThat(descriptor.getField("RelatedBeans").isRelationship(), is(true));
+        assertThat(descriptor.getField("MoreRelatedBeans").isRelationship(), is(true));
         assertThat(descriptor.getFields(), is(not(nullValue())));
         assertThat(
             descriptor.getFields(),
             containsInAnyOrder(
                 hasFieldName("Id"),
+                hasFieldName("attributes"),
                 hasFieldName("RelatedBeans"),
                 hasFieldName("MoreRelatedBeans")));
     }
@@ -84,13 +78,13 @@ public class ObjectMappingContextTest {
         assertThat(descriptor.getName(), is(equalTo("namespace__CustomBean__c")));
         assertThat(descriptor.getIdField(), is(not(nullValue())));
         assertThat(descriptor.getIdField(), hasFieldName("Id"));
-        assertThat(descriptor.getRelatedObjects().size(), is(equalTo(1)));
-        assertThat(descriptor.getRelatedObjects(), hasKey("relatedBeans"));
+        assertThat(descriptor.getField("RelatedBeans__c").isRelationship(), is(true));
         assertThat(descriptor.getFields(), is(not(nullValue())));
         assertThat(
             descriptor.getFields(),
             containsInAnyOrder(
                 hasFieldName("Id"),
+                hasFieldName("attributes"),
                 hasFieldName("Name"),
                 hasFieldName("namespace__Value1__c"),
                 hasFieldName("namespace__Value2__c"),
@@ -122,8 +116,8 @@ public class ObjectMappingContextTest {
             descriptor.getFields(),
             containsInAnyOrder(
                 hasFieldName("Id"),
-                hasFieldName("Value1"),
-                hasFieldName("attributes")));
+                hasFieldName("attributes"),
+                hasFieldName("Value1")));
     }
 
     @Test
@@ -146,8 +140,8 @@ public class ObjectMappingContextTest {
         assertThat(descriptor, is(not(nullValue())));
         assertThat(descriptor.getName(), is(equalTo("RecursiveBean")));
         assertThat(descriptor.getFields(), is(not(nullValue())));
-        assertThat(descriptor.getRelatedObjects().size(), is(equalTo(1)));
-        assertThat(descriptor.getRelatedObjects().get("recursiveBean"), is(sameInstance(descriptor)));
+        assertThat(descriptor.getField("RecursiveBean").isRelationship(), is(true));
+        assertThat(descriptor.getField("RecursiveBean").getRelatedObject(), is(sameInstance(descriptor)));
     }
 
     @Test
@@ -159,7 +153,7 @@ public class ObjectMappingContextTest {
 
     @Test
     public void testNoDescriptorForEnums() {
-        assertThat(mappingContext.getObjectDescriptor(SimpleEnum.class), is(nullValue()));
+        assertThat(mappingContext.getObjectDescriptor(EnumWithAbstractMethod.class), is(nullValue()));
     }
 
     @Test
@@ -189,26 +183,28 @@ public class ObjectMappingContextTest {
         ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(EnumBean.class);
         assertThat(descriptor, is(not(nullValue())));
         assertThat(descriptor.getName(), is(equalTo("EnumBean")));
-        assertThat(descriptor.getFields(), contains(hasFieldName("state")));
+        assertThat(
+            descriptor.getFields(),
+            containsInAnyOrder(
+                hasFieldName("Id"),
+                hasFieldName("attributes"),
+                hasFieldName("value")));
     }
 
     @Test
-    public void testEnumBeanSerialization() throws Exception {
-        EnumBean bean = new EnumBean();
-        bean.setState(EnumBean.State.ONE);
-        String serializedBean = mappingContext.getObjectWriterForCreate().writeValueAsString(bean);
-        assertThat(serializedBean, is(equalTo("{\"state\":\"ONE\"}")));
-    }
-
-    @Test
-    public void testEnumBeanDeserialization() throws Exception {
-        String serializedBean = "{\"state\":\"ONE\"}";
-        ObjectReader objectReader = mappingContext.getObjectReader();
-        JsonNode jsonNode = objectReader.readTree(serializedBean);
-        JsonParser jsonParser = objectReader.treeAsTokens(jsonNode);
-        EnumBean bean = objectReader.readValue(jsonParser, EnumBean.class);
-
-        assertThat(bean, is(notNullValue()));
-        assertThat(bean.getState(), is(equalTo(EnumBean.State.ONE)));
+    public void testTransientFieldBean() {
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(TransientFieldBean.class);
+        assertThat(descriptor, is(not(nullValue())));
+        assertThat(descriptor.getName(), is(equalTo("TransientFieldBean")));
+        assertThat(descriptor.getAttributesField(), is(not(nullValue())));
+        assertThat(descriptor.getAttributesField(), hasFieldName("attributes"));
+        assertThat(descriptor.getIdField(), is(not(nullValue())));
+        assertThat(descriptor.getIdField(), hasFieldName("Id"));
+        assertThat(descriptor.getFields(), is(not(nullValue())));
+        assertThat(
+            descriptor.getFields(),
+            containsInAnyOrder(
+                hasFieldName("Id"),
+                hasFieldName("attributes")));
     }
 }

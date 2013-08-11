@@ -9,7 +9,7 @@ package com.force.spa;
  * Thrown to indicate a problem accessing records was returned in the response from the Salesforce server. The request
  * was successfully issued and the error is coming from the server.
  */
-public class RecordResponseException extends RuntimeException {
+public class RecordResponseException extends SpaException {
     private static final long serialVersionUID = 634661220360809866L;
 
     /**

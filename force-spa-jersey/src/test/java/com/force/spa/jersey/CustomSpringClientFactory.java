@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * A sample custom client factory.
  */
 public class CustomSpringClientFactory implements FactoryBean<Client> {
-    private ClientFactory internalFactory = new ClientFactory();
+    private final ClientFactory internalFactory = new ClientFactory();
 
     @Autowired
     private AuthorizationConnector authorizationConnector;

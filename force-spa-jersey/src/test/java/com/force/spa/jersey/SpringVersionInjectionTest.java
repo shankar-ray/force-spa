@@ -12,9 +12,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 @ContextConfiguration(locations = {"classpath:com/force/spa/jersey/springVersionInjectionContext.xml"})
 public class SpringVersionInjectionTest extends AbstractJUnit4SpringContextTests {
@@ -25,6 +26,6 @@ public class SpringVersionInjectionTest extends AbstractJUnit4SpringContextTests
     @Test
     public void testVersionInjection() {
         assertThat(accessorFactory, is(not(nullValue())));
-        assertThat(accessorFactory.getApiVersion(), is(equalTo(new ApiVersion(27,0))));
+        assertThat(accessorFactory.getApiVersion(), is(equalTo(new ApiVersion(27, 0))));
     }
 }

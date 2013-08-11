@@ -11,18 +11,17 @@ import com.force.spa.SalesforceObject;
 @SalesforceObject(name = "User")
 public class UserBrief extends NamedRecord {
 
-    @SalesforceField(name = "Username")
+    private String email;
     private String username;
 
-    @SalesforceField(name = "Email")
-    private String email;
-
     @Override
+    @SuppressWarnings("EmptyMethod")
     @SalesforceField(name = "Name", updatable = false, insertable = false)
     public String getName() {
         return super.getName();
     }
 
+    @SalesforceField(name = "Email")
     public String getEmail() {
         return email;
     }
@@ -31,6 +30,7 @@ public class UserBrief extends NamedRecord {
         this.email = email;
     }
 
+    @SalesforceField(name = "Username")
     public String getUsername() {
         return username;
     }

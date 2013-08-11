@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.util.TokenBuffer;
 
 import java.io.IOException;
 
-public class SpaTypeDeserializer extends TypeDeserializerBase {
+class SpaTypeDeserializer extends TypeDeserializerBase {
     private static final long serialVersionUID = 4715905537436577142L;
 
-    public SpaTypeDeserializer(JavaType baseType, TypeIdResolver idResolver, Class<?> defaultImpl) {
-        super(baseType, idResolver, "attributes", true, defaultImpl);
+    SpaTypeDeserializer(JavaType baseType, TypeIdResolver idResolver, Class<?> defaultImpl) {
+        super(baseType, idResolver, ObjectDescriptor.ATTRIBUTES_FIELD_NAME, true, defaultImpl);
     }
 
     private SpaTypeDeserializer(SpaTypeDeserializer source, BeanProperty property) {
@@ -75,7 +75,7 @@ public class SpaTypeDeserializer extends TypeDeserializerBase {
             String name = parser.getCurrentName();
             tokenBuffer.writeFieldName(name);
             parser.nextToken();
-            if (name.equals("attributes")) {
+            if (name.equals(ObjectDescriptor.ATTRIBUTES_FIELD_NAME)) {
                 if (parser.getCurrentToken() == JsonToken.START_OBJECT) {
                     tokenBuffer.writeStartObject();
                     parser.nextToken();

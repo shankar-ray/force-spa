@@ -22,12 +22,12 @@ import java.util.List;
  * a special {@link RelationshipBeanPropertyWriter} instance that can adaptively serialize the relationship correctly
  * based on the content of the related object.
  */
-public final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory {
+final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory {
     private static final long serialVersionUID = 91029020789141671L;
 
-    private final transient ObjectMappingContext mappingContext;
+    private final ObjectMappingContext mappingContext;
 
-    public RelationshipAwareBeanSerializerFactory(ObjectMappingContext mappingContext) {
+    RelationshipAwareBeanSerializerFactory(ObjectMappingContext mappingContext) {
         this(mappingContext, null);
     }
 
@@ -49,11 +49,12 @@ public final class RelationshipAwareBeanSerializerFactory extends BeanSerializer
     protected List<BeanPropertyWriter> findBeanProperties(SerializerProvider prov, BeanDescription beanDesc, BeanSerializerBuilder builder) throws JsonMappingException {
         List<BeanPropertyWriter> originalWriters = super.findBeanProperties(prov, beanDesc, builder);
         if (originalWriters != null) {
+            ObjectDescriptor objectDescriptor = mappingContext.getObjectDescriptor(beanDesc.getBeanClass());
             List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
             for (BeanPropertyWriter originalWriter : originalWriters) {
-                ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(originalWriter.getPropertyType());
-                if (descriptor != null && descriptor.hasIdField()) {
-                    updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, descriptor));
+                FieldDescriptor fieldDescriptor = objectDescriptor.getField(originalWriter.getName());
+                if (fieldDescriptor.isRelationship()) {
+                    updatedWriters.add(new RelationshipBeanPropertyWriter(originalWriter, mappingContext));
                 } else {
                     updatedWriters.add(originalWriter);
                 }

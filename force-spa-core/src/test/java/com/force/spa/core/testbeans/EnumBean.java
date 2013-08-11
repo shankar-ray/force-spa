@@ -6,32 +6,20 @@
 package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
+import com.force.spa.record.Record;
 
-@SuppressWarnings("ALL")
-public class EnumBean {
-
-    private State state;
-
-    public State getState() {
-        return state;
-    }
+@SalesforceObject
+public class EnumBean extends Record {
 
     @SalesforceField
-    public void setState(State state) {
-        this.state = state;
+    private EnumWithAbstractMethod value;
+
+    public EnumWithAbstractMethod getValue() {
+        return value;
     }
 
-    // An enum that includes an abstract method (because it triggers a corner case).
-    public static enum State {
-        ONE {
-            @Override
-            public void bar() {}
-        },
-        TWO {
-            @Override
-            public void bar() {}
-        };
-
-        public abstract void bar();
+    public void setValue(EnumWithAbstractMethod value) {
+        this.value = value;
     }
 }

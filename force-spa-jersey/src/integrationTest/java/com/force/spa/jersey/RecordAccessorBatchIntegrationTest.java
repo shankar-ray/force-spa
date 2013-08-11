@@ -135,6 +135,7 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
             getOperation.get();
             fail("Didn't get expected RecordNotFoundException");
         } catch (ExecutionException e) {
+            //noinspection StatementWithEmptyBody
             if (e.getCause() instanceof RecordRequestException) {
                 // This is expected.
             } else {

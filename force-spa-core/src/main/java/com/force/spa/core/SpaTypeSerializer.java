@@ -13,15 +13,20 @@ import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
 
 import java.io.IOException;
+import java.util.Map;
 
-public class SpaTypeSerializer extends TypeSerializerBase {
+class SpaTypeSerializer extends TypeSerializerBase {
 
-    public SpaTypeSerializer(TypeIdResolver idResolver) {
+    private final ObjectMappingContext mappingContext;
+
+    SpaTypeSerializer(ObjectMappingContext mappingContext, TypeIdResolver idResolver) {
         super(idResolver, null);
+        this.mappingContext = mappingContext;
     }
 
     private SpaTypeSerializer(SpaTypeSerializer source, BeanProperty property) {
         super(source._idResolver, property);
+        this.mappingContext = source.mappingContext;
     }
 
     @Override
@@ -40,8 +45,15 @@ public class SpaTypeSerializer extends TypeSerializerBase {
     }
 
     @Override
-    public void writeTypePrefixForObject(Object value, JsonGenerator generator) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void writeTypePrefixForObject(Object instance, JsonGenerator generator) throws IOException {
+        generator.writeStartObject();
+
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(instance.getClass());
+        if (hasAttributes(descriptor, instance)) {
+            AttributesSerializer.setTypeForInclusionInAttributes(descriptor.getName());
+        } else {
+            writeAttributesWithTypeNow(generator, descriptor);
+        }
     }
 
     @Override
@@ -56,7 +68,7 @@ public class SpaTypeSerializer extends TypeSerializerBase {
 
     @Override
     public void writeTypeSuffixForObject(Object value, JsonGenerator generator) throws IOException {
-        throw new UnsupportedOperationException("Not implemented yet");
+        generator.writeEndObject();
     }
 
     @Override
@@ -92,5 +104,21 @@ public class SpaTypeSerializer extends TypeSerializerBase {
     @Override
     public void writeCustomTypeSuffixForArray(Object value, JsonGenerator generator, String typeId) throws IOException {
         throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    private static boolean hasAttributes(ObjectDescriptor descriptor, Object instance) {
+        if (descriptor.hasAttributesField()) {
+            Map<String, String> attributes = RecordUtils.getAttributes(descriptor, instance);
+            if (attributes != null && attributes.size() > 0)
+                return true;
+        }
+        return false;
+    }
+
+    private static void writeAttributesWithTypeNow(JsonGenerator generator, ObjectDescriptor descriptor) throws IOException {
+        generator.writeFieldName(ObjectDescriptor.ATTRIBUTES_FIELD_NAME);
+        generator.writeStartObject();
+        generator.writeStringField("type", descriptor.getName());
+        generator.writeEndObject();
     }
 }
