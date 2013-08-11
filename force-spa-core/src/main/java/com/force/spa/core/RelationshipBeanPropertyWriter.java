@@ -8,6 +8,7 @@ package com.force.spa.core;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A property bean writer which helps with the subtleties of serializing Salesforce relationships.
@@ -40,8 +41,10 @@ class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
             ObjectDescriptor object = mappingContext.getRequiredObjectDescriptor(record.getClass());
             if (object.hasIdField()) {
                 String id = object.getIdField().getValue(record);
-                jgen.writeStringField(idPropertyName, id);
-                return;
+                if (StringUtils.isNotEmpty(id)) {
+                    jgen.writeStringField(idPropertyName, id);
+                    return;
+                }
             }
         }
         super.serializeAsField(bean, jgen, prov);

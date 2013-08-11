@@ -6,9 +6,9 @@
 package com.force.spa.core.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.CreateRecordOperation;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
-import com.force.spa.CreateRecordOperation;
 import com.force.spa.core.ObjectDescriptor;
 import com.force.spa.core.ObjectMappingContext;
 import org.slf4j.Logger;
@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 
 final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<String> implements CreateRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestCreateRecordOperation.class);
@@ -40,14 +39,13 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<Str
         final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
 
         URI uri = URI.create("/sobjects/" + descriptor.getName());
-        Map<String, String> headers = determineHeaders(descriptor, record);
         String json = encodeRecordForCreate(mappingContext, record);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Create %s: %s", descriptor.getName(), json));
         }
 
-        connector.post(uri, json, headers, new RestConnector.Callback<JsonNode>() {
+        connector.post(uri, json, new RestConnector.Callback<JsonNode>() {
             @Override
             public void onSuccess(JsonNode result) {
                 if (!result.has("success") || !result.has("id")) {

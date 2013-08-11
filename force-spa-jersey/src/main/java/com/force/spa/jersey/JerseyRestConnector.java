@@ -33,7 +33,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -67,10 +66,10 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public void delete(URI uri, Map<String, String> headers, Callback<Void> callback) {
+    public void delete(URI uri, Callback<Void> callback) {
         try {
             try {
-                ClientResponse response = getConfiguredResource(uri, headers).delete(ClientResponse.class);
+                ClientResponse response = getConfiguredResource(uri).delete(ClientResponse.class);
                 if (response.getStatus() >= 300) {
                     throw new UniformInterfaceException(response, true);
                 }
@@ -89,10 +88,10 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback) {
+    public void get(URI uri, Callback<JsonNode> callback) {
         try {
             try {
-                InputStream resultStream = getConfiguredResource(uri, headers).get(InputStream.class);
+                InputStream resultStream = getConfiguredResource(uri).get(InputStream.class);
                 JsonNode resultNode = objectReader.readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
@@ -111,10 +110,10 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback) {
+    public void patch(URI uri, String jsonBody, Callback<Void> callback) {
         try {
             try {
-                ClientResponse response = getConfiguredResource(uri, headers).method("PATCH", ClientResponse.class, jsonBody);
+                ClientResponse response = getConfiguredResource(uri).method("PATCH", ClientResponse.class, jsonBody);
                 if (response.getStatus() >= 300) {
                     throw new UniformInterfaceException(response, true);
                 }
@@ -133,10 +132,10 @@ public final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback) {
+    public void post(URI uri, String jsonBody, Callback<JsonNode> callback) {
         try {
             try {
-                InputStream resultStream = getConfiguredResource(uri, headers).post(InputStream.class, jsonBody);
+                InputStream resultStream = getConfiguredResource(uri).post(InputStream.class, jsonBody);
                 JsonNode resultNode = objectReader.readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
@@ -190,17 +189,10 @@ public final class JerseyRestConnector implements RestConnector {
         return new ApiVersion(highestVersion.get("version").toString());
     }
 
-    private WebResource.Builder getConfiguredResource(URI relativeUri, Map<String, String> headers) {
-        WebResource.Builder resourceBuilder =
-            client.resource(buildAbsoluteUri(relativeUri))
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .type(MediaType.APPLICATION_JSON_TYPE);
-        if (headers != null) {
-            for (Map.Entry<String, String> entry : headers.entrySet()) {
-                resourceBuilder = resourceBuilder.header(entry.getKey(), entry.getValue());
-            }
-        }
-        return resourceBuilder;
+    private WebResource.Builder getConfiguredResource(URI relativeUri) {
+        return client.resource(buildAbsoluteUri(relativeUri))
+            .accept(MediaType.APPLICATION_JSON_TYPE)
+            .type(MediaType.APPLICATION_JSON_TYPE);
     }
 
     private URI buildAbsoluteUri(URI relativeUri) {

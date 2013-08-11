@@ -9,27 +9,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.force.spa.RecordResponseException;
 import com.force.spa.core.AbstractRecordOperation;
-import com.force.spa.core.ObjectDescriptor;
 import com.force.spa.core.ObjectMappingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Map;
 
 public abstract class AbstractRestRecordOperation<T> extends AbstractRecordOperation<T> implements RestRecordOperation<T> {
-    private static final Logger log = LoggerFactory.getLogger(AbstractRestRecordOperation.class);
-
-//TODO Remove this Work.com specific header stuff.
-    /**
-     * Determine any entity-specific headers that we want to attach to the outbound REST request to Salesforce.
-     */
-    protected Map<String, String> determineHeaders(ObjectDescriptor descriptor, Object record) {
-        return null;
-    }
-
     protected static String encodeParameter(String value) {
         try {
             return URLEncoder.encode(value, "UTF-8");

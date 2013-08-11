@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMapOf;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
@@ -51,13 +50,13 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         bean.setDescription("Description 1");
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createSuccessResponse.json"));
 
         String id = accessor.create(bean);
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
-        verify(mockConnector).post(URI.create("/sobjects/SimpleBean"), getResourceString("simpleCreateRequest.json"), null);
+        verify(mockConnector).post(URI.create("/sobjects/SimpleBean"), getResourceString("simpleCreateRequest.json"));
     }
 
     @Test
@@ -67,7 +66,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         bean.setDescription("Description 1");
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createErrorResponse.json"));
 
         try {
@@ -85,7 +84,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         bean.setDescription("Description 1");
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createInvalidResponse.json"));
 
         try {
@@ -107,14 +106,14 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         bean.setOwner(NamedRecord.withId("a01i00000000203"));
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createSuccessResponse.json"));
 
         String id = accessor.create(bean);
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
         verify(mockConnector).post(
-            URI.create("/sobjects/StandardFieldBean"), getResourceString("standardFieldCreateRequest.json"), null);
+            URI.create("/sobjects/StandardFieldBean"), getResourceString("standardFieldCreateRequest.json"));
     }
 
     @Test
@@ -126,14 +125,14 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         bean.setNotInsertableOrUpdatable("Not insertable or updatable value");
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createSuccessResponse.json"));
 
         String id = accessor.create(bean);
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
         verify(mockConnector).post(
-            URI.create("/sobjects/InsertableUpdatableBean"), getResourceString("createInsertableUpdatableRequest.json"), null);
+            URI.create("/sobjects/InsertableUpdatableBean"), getResourceString("createInsertableUpdatableRequest.json"));
     }
 
     @Test
@@ -141,11 +140,11 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean beanChanges = new SimpleBean();
         beanChanges.setDescription("Description 1");
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         accessor.patch("a01i00000000001AAC", beanChanges);
 
         verify(mockConnector).patch(
-            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simplePatchRequest.json"), null);
+            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simplePatchRequest.json"));
     }
 
     @Test
@@ -153,20 +152,20 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean beanChanges = new SimpleBean();
         beanChanges.setName("Name 2");
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         accessor.update("a01i00000000001AAC", beanChanges);
 
         verify(mockConnector).patch(
-            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simpleUpdateRequest.json"), null);
+            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simpleUpdateRequest.json"));
 
         SimpleBean beanChanges2 = new SimpleBean();
         beanChanges2.setDescription("Description 1");
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         accessor.patch("a01i00000000001AAC", beanChanges2);
 
         verify(mockConnector).patch(
-            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simplePatchRequest.json"), null);
+            URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), getResourceString("simplePatchRequest.json"));
     }
 
     @Test
@@ -174,7 +173,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean beanChanges = new SimpleBean();
         beanChanges.setDescription("Description 1");
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         try {
             accessor.update(beanChanges);
             fail("Didn't get expected exception");
@@ -193,11 +192,11 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         beanChanges.setLastModifiedDate(new DateTime());
         beanChanges.setOwner(NamedRecord.withId("a01i00000000203"));
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         accessor.patch("a01i00000000001AAC", beanChanges);
 
         verify(mockConnector).patch(
-            URI.create("/sobjects/StandardFieldBean/a01i00000000001AAC"), getResourceString("standardFieldPatchRequest.json"), null);
+            URI.create("/sobjects/StandardFieldBean/a01i00000000001AAC"), getResourceString("standardFieldPatchRequest.json"));
     }
 
     @Test
@@ -205,18 +204,18 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean bean = new SimpleBean();
         bean.setId("a01i00000000001AAC");
 
-        doNothing().when(mockConnector).delete(any(URI.class), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).delete(any(URI.class));
         accessor.delete(bean);
 
-        verify(mockConnector).delete(URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), null);
+        verify(mockConnector).delete(URI.create("/sobjects/SimpleBean/a01i00000000001AAC"));
     }
 
     @Test
     public void testSimpleDelete() throws Exception {
-        doNothing().when(mockConnector).delete(any(URI.class), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).delete(any(URI.class));
         accessor.delete("a01i00000000001AAC", SimpleBean.class);
 
-        verify(mockConnector).delete(URI.create("/sobjects/SimpleBean/a01i00000000001AAC"), null);
+        verify(mockConnector).delete(URI.create("/sobjects/SimpleBean/a01i00000000001AAC"));
     }
 
     @Test
@@ -224,7 +223,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         SimpleBean bean = new SimpleBean();
         bean.setDescription("Description 1");
 
-        doNothing().when(mockConnector).delete(any(URI.class), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).delete(any(URI.class));
 
         try {
             accessor.delete(bean);
@@ -236,7 +235,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
     public void testSimpleGet() throws Exception {
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
 
         SimpleBean bean = accessor.get("a01i00000000001AAC", SimpleBean.class);
 
@@ -251,7 +250,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
     public void testSimpleQuery() throws Exception {
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
 
         List<SimpleBean> beans = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute();
 
@@ -274,7 +273,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
     public void testSubquery() throws Exception {
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("simpleSubqueryResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("simpleSubqueryResponse.json"));
 
         List<SimpleContainerBean> containerBeans =
             accessor.createQuery("select * from SimpleContainerBean", SimpleContainerBean.class).execute();
@@ -317,7 +316,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
     public void testAggregateQueryToJsonNode() throws Exception {
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
 
         RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
         List<JsonNode> jsonNodes = query.execute(JsonNode.class);
@@ -336,7 +335,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testAggregateQueryToMap() throws Exception {
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
 
         RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
         List<Map> maps = query.execute(Map.class);
@@ -366,11 +365,11 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         beanChanges.setJodaDateAndTime(new DateTime(beanChanges.getJavaDateAndTime().getTime(), DateTimeZone.UTC));
         beanChanges.setJodaDateOnly(LocalDate.parse("1999-04-01"));
 
-        doNothing().when(mockConnector).patch(any(URI.class), anyString(), anyMapOf(String.class, String.class));
+        doNothing().when(mockConnector).patch(any(URI.class), anyString());
         accessor.patch("a01i00000000001AAC", beanChanges);
 
         verify(mockConnector).patch(
-            URI.create("/sobjects/DateTimeBean/a01i00000000001AAC"), getResourceString("dateTimePatchRequest.json"), null);
+            URI.create("/sobjects/DateTimeBean/a01i00000000001AAC"), getResourceString("dateTimePatchRequest.json"));
     }
 
     @Test
@@ -386,7 +385,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         DateTime jodaDateAndTime = new DateTime(javaDateAndTime.getTime(), DateTimeZone.UTC);
         LocalDate jodaDateOnly = LocalDate.parse("1999-04-01");
 
-        when(mockConnector.get(any(URI.class), anyMapOf(String.class, String.class))).thenReturn(getResourceStream("dateTimeQueryResponse.json"));
+        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("dateTimeQueryResponse.json"));
 
         DateTimeBean bean = accessor.get("a01i00000000001AAC", DateTimeBean.class);
 
@@ -409,14 +408,14 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         polymorphicFieldBean.setValue2(noAttributesBean);
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createSuccessResponse.json"));
 
         String id = accessor.create(polymorphicFieldBean);
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
         verify(mockConnector).post(
-            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicIdCreateRequest.json"), null);
+            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicIdCreateRequest.json"));
     }
 
     @Test
@@ -430,13 +429,13 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         polymorphicFieldBean.setValue2(noAttributesBean);
 
         when(
-            mockConnector.post(any(URI.class), anyString(), anyMapOf(String.class, String.class)))
+            mockConnector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("createSuccessResponse.json"));
 
         String id = accessor.create(polymorphicFieldBean);
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
         verify(mockConnector).post(
-            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicKeyLookupCreateRequest.json"), null);
+            URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicKeyLookupCreateRequest.json"));
     }
 }

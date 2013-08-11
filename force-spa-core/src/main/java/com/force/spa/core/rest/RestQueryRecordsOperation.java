@@ -19,7 +19,6 @@ import javax.xml.ws.Holder;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<List<T>> implements QueryRecordsOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestQueryRecordsOperation.class);
@@ -90,12 +89,11 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
 
         String soql = new SoqlBuilder(descriptor).soqlTemplate(soqlTemplate).offset(startPosition).limit(maxResults).build();
         URI uri = URI.create("/query?q=" + encodeParameter(soql));
-        Map<String, String> headers = determineHeaders(descriptor, null);
 
         if (log.isDebugEnabled())
             log.debug(String.format("Query: %s", soql));
 
-        connector.get(uri, headers, new RestConnector.Callback<JsonNode>() {
+        connector.get(uri, new RestConnector.Callback<JsonNode>() {
             @Override
             public void onSuccess(JsonNode result) {
                 final List<T> records = new ArrayList<T>();
@@ -122,8 +120,7 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
                 if (connector.isSynchronous()) {
                     final Holder<JsonNode> resultHolder = new Holder<JsonNode>();
                     URI nextRecordsUri = URI.create(nextRecordsUrlNode.asText());
-                    Map<String, String> headers = determineHeaders(descriptor, null);
-                    connector.get(nextRecordsUri, headers, new RestConnector.Callback<JsonNode>() {
+                    connector.get(nextRecordsUri, new RestConnector.Callback<JsonNode>() {
                         @Override
                         public void onSuccess(JsonNode result) {
                             for (JsonNode node : result.get("records")) {

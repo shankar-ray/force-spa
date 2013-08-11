@@ -6,9 +6,9 @@
 package com.force.spa.core.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RestConnector;
-import com.force.spa.GetRecordOperation;
 import com.force.spa.core.ObjectDescriptor;
 import com.force.spa.core.ObjectMappingContext;
 import com.force.spa.core.SoqlBuilder;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Map;
 
 class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implements GetRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestGetRecordOperation.class);
@@ -51,13 +50,12 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implement
         String soqlTemplate = String.format("SELECT * FROM %s WHERE Id = '%s'", descriptor.getName(), id);
         String soql = new SoqlBuilder(descriptor).soqlTemplate(soqlTemplate).limit(1).build();
         URI uri = URI.create("/query?q=" + encodeParameter(soql));
-        Map<String, String> headers = determineHeaders(descriptor, null);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Get %s %s: %s", descriptor.getName(), id, soql));
         }
 
-        connector.get(uri, headers, new RestConnector.Callback<JsonNode>() {
+        connector.get(uri, new RestConnector.Callback<JsonNode>() {
             @Override
             public void onSuccess(JsonNode result) {
                 JsonNode recordNode = result.get("records").get(0);

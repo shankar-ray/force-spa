@@ -18,7 +18,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class BatchRestConnector implements RestConnector {
     private static final Logger log = LoggerFactory.getLogger(BatchRestConnector.class);
@@ -34,23 +33,23 @@ public class BatchRestConnector implements RestConnector {
     }
 
     @Override
-    public void delete(URI uri, Map<String, String> headers, Callback<Void> callback) {
-        pendingRequests.add(new DeleteRequest(buildVersionedRelativeUri(uri), headers, callback));
+    public void delete(URI uri, Callback<Void> callback) {
+        pendingRequests.add(new DeleteRequest(buildVersionedRelativeUri(uri), callback));
     }
 
     @Override
-    public void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback) {
-        pendingRequests.add(new GetRequest(buildVersionedRelativeUri(uri), headers, callback));
+    public void get(URI uri, Callback<JsonNode> callback) {
+        pendingRequests.add(new GetRequest(buildVersionedRelativeUri(uri), callback));
     }
 
     @Override
-    public void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback) {
-        pendingRequests.add(new PatchRequest(buildVersionedRelativeUri(uri), jsonBody, headers, callback));
+    public void patch(URI uri, String jsonBody, Callback<Void> callback) {
+        pendingRequests.add(new PatchRequest(buildVersionedRelativeUri(uri), jsonBody, callback));
     }
 
     @Override
-    public void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback) {
-        pendingRequests.add(new PostRequest(buildVersionedRelativeUri(uri), jsonBody, headers, callback));
+    public void post(URI uri, String jsonBody, Callback<JsonNode> callback) {
+        pendingRequests.add(new PostRequest(buildVersionedRelativeUri(uri), jsonBody, callback));
     }
 
     @Override
@@ -79,7 +78,7 @@ public class BatchRestConnector implements RestConnector {
                 log.debug(String.format("Posting Batch of %d requests", batchSize));
             }
 
-            connector.post(uri, batchJson, null, new Callback<JsonNode>() {
+            connector.post(uri, batchJson, new Callback<JsonNode>() {
                 @Override
                 public void onSuccess(JsonNode result) {
 
@@ -187,12 +186,12 @@ public class BatchRestConnector implements RestConnector {
         private final String method;
         private final String requestJson;
 
-        BatchRequest(String method, URI uri, Map<String, String> headers) {
+        BatchRequest(String method, URI uri) {
             this.method = method;
             this.requestJson = String.format("{\"url\":\"%s\",\"method\":\"%s\"}", uri.toString(), method);
         }
 
-        BatchRequest(String method, URI uri, String richInput, Map<String, String> headers) {
+        BatchRequest(String method, URI uri, String richInput) {
             this.method = method;
             this.requestJson = String.format("{\"url\":\"%s\",\"method\":\"%s\",\"richInput\": %s}", uri.toString(), method, richInput);
         }
@@ -221,8 +220,8 @@ public class BatchRestConnector implements RestConnector {
     private static class DeleteRequest extends BatchRequest {
         private final Callback<Void> callback;
 
-        DeleteRequest(URI uri, Map<String, String> headers, Callback<Void> callback) {
-            super("Delete", uri, headers);
+        DeleteRequest(URI uri, Callback<Void> callback) {
+            super("Delete", uri);
             this.callback = callback;
         }
 
@@ -246,8 +245,8 @@ public class BatchRestConnector implements RestConnector {
     private static class GetRequest extends BatchRequest {
         private final Callback<JsonNode> callback;
 
-        GetRequest(URI uri, Map<String, String> headers, Callback<JsonNode> callback) {
-            super("Get", uri, headers);
+        GetRequest(URI uri, Callback<JsonNode> callback) {
+            super("Get", uri);
             this.callback = callback;
         }
 
@@ -271,8 +270,8 @@ public class BatchRestConnector implements RestConnector {
     private static class PatchRequest extends BatchRequest {
         private final Callback<Void> callback;
 
-        PatchRequest(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback) {
-            super("Patch", uri, jsonBody, headers);
+        PatchRequest(URI uri, String jsonBody, Callback<Void> callback) {
+            super("Patch", uri, jsonBody);
             this.callback = callback;
         }
 
@@ -296,8 +295,8 @@ public class BatchRestConnector implements RestConnector {
     private static class PostRequest extends BatchRequest {
         private final Callback<JsonNode> callback;
 
-        PostRequest(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback) {
-            super("Post", uri, jsonBody, headers);
+        PostRequest(URI uri, String jsonBody, Callback<JsonNode> callback) {
+            super("Post", uri, jsonBody);
             this.callback = callback;
         }
 

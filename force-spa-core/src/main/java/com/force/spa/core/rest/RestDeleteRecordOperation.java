@@ -5,15 +5,14 @@
  */
 package com.force.spa.core.rest;
 
-import com.force.spa.RestConnector;
 import com.force.spa.DeleteRecordOperation;
+import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
 import com.force.spa.core.ObjectMappingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Map;
 
 class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> implements DeleteRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestDeleteRecordOperation.class);
@@ -46,13 +45,12 @@ class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> imp
         final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(recordClass);
 
         URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
-        Map<String, String> headers = determineHeaders(descriptor, null);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Delete %s %s", descriptor.getName(), id));
         }
 
-        connector.delete(uri, headers, new RestConnector.Callback<Void>() {
+        connector.delete(uri, new RestConnector.Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 if (log.isDebugEnabled()) {

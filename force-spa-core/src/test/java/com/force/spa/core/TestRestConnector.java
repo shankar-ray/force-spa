@@ -13,7 +13,6 @@ import com.force.spa.RestConnector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Map;
 
 /**
  * A {@link RestConnector} implementation that is designed for use in unit tests. The asynchronous callback interface of
@@ -24,13 +23,13 @@ public abstract class TestRestConnector implements RestConnector {
 
     private ObjectReader objectReader;
 
-    public abstract void delete(URI uri, Map<String, String> headers);
+    public abstract void delete(URI uri);
 
-    public abstract InputStream get(URI uri, Map<String, String> headers);
+    public abstract InputStream get(URI uri);
 
-    public abstract void patch(URI uri, String jsonBody, Map<String, String> headers);
+    public abstract void patch(URI uri, String jsonBody);
 
-    public abstract InputStream post(URI uri, String jsonBody, Map<String, String> headers);
+    public abstract InputStream post(URI uri, String jsonBody);
 
     @Override
     public final boolean isSynchronous() {
@@ -42,9 +41,9 @@ public abstract class TestRestConnector implements RestConnector {
     }
 
     @Override
-    public final void delete(URI uri, Map<String, String> headers, Callback<Void> callback) {
+    public final void delete(URI uri, Callback<Void> callback) {
         try {
-            delete(uri, headers);
+            delete(uri);
             callback.onSuccess(null);
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -52,9 +51,9 @@ public abstract class TestRestConnector implements RestConnector {
     }
 
     @Override
-    public final void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback) {
+    public final void get(URI uri, Callback<JsonNode> callback) {
         try {
-            InputStream resultStream = get(uri, headers);
+            InputStream resultStream = get(uri);
             JsonNode result = getObjectReader().readTree(resultStream);
             callback.onSuccess(result);
         } catch (RuntimeException e) {
@@ -65,9 +64,9 @@ public abstract class TestRestConnector implements RestConnector {
     }
 
     @Override
-    public final void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback) {
+    public final void patch(URI uri, String jsonBody, Callback<Void> callback) {
         try {
-            patch(uri, jsonBody, headers);
+            patch(uri, jsonBody);
             callback.onSuccess(null);
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -75,9 +74,9 @@ public abstract class TestRestConnector implements RestConnector {
     }
 
     @Override
-    public final void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback) {
+    public final void post(URI uri, String jsonBody, Callback<JsonNode> callback) {
         try {
-            InputStream resultStream = post(uri, jsonBody, headers);
+            InputStream resultStream = post(uri, jsonBody);
             JsonNode result = getObjectReader().readTree(resultStream);
             callback.onSuccess(result);
         } catch (RuntimeException e) {

@@ -8,7 +8,6 @@ package com.force.spa;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.net.URI;
-import java.util.Map;
 
 /**
  * A connector which knows how to issue requests to the Salesforce "data" REST API.
@@ -28,10 +27,9 @@ public interface RestConnector {
      *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
      *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
      *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
-     * @param headers  optional HTTP headers to add to the request.
      * @param callback a callback that is invoked when the operation is complete
      */
-    void delete(URI uri, Map<String, String> headers, Callback<Void> callback);
+    void delete(URI uri, Callback<Void> callback);
 
     /**
      * Issues a GET request to a Salesforce REST URI.
@@ -41,10 +39,9 @@ public interface RestConnector {
      *                 authentication context. The path can be an absolute path starting with "/services/data/vX.X" or
      *                 the path can be a relative path (the portion after "/services/data/vX.X"). If the path is
      *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
-     * @param headers  optional HTTP headers to add to the request.
      * @param callback a callback that is invoked when the operation is complete
      */
-    void get(URI uri, Map<String, String> headers, Callback<JsonNode> callback);
+    void get(URI uri, Callback<JsonNode> callback);
 
     /**
      * Issues a PATCH request to a Salesforce REST URI.
@@ -56,10 +53,9 @@ public interface RestConnector {
      *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
      * @param jsonBody the JSON encoded body for the update request. See Salesforce REST documentation for more details
      *                 on the format.
-     * @param headers  optional HTTP headers to add to the request.
      * @param callback a callback that is invoked when the operation is complete
      */
-    void patch(URI uri, String jsonBody, Map<String, String> headers, Callback<Void> callback);
+    void patch(URI uri, String jsonBody, Callback<Void> callback);
 
     /**
      * Issues a POST request to a Salesforce REST URI.
@@ -71,10 +67,9 @@ public interface RestConnector {
      *                 relative then the "/services/data/vX.X" prefix is automatically prepended.
      * @param jsonBody the JSON encoded body for the creation request. See Salesforce REST documentation for more
      *                 details on the format.
-     * @param headers  optional HTTP headers to add to the request.
      * @param callback a callback that is invoked when the operation is complete
      */
-    void post(URI uri, String jsonBody, Map<String, String> headers, Callback<JsonNode> callback);
+    void post(URI uri, String jsonBody, Callback<JsonNode> callback);
 
     /**
      * Indicates whether this connector executes synchronously. Synchronous execution means that the request is

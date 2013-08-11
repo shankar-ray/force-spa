@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Map;
 
 class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<Void> implements UpdateRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestUpdateRecordOperation.class);
@@ -48,14 +47,13 @@ class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<Void> imp
         final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
 
         URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
-        Map<String, String> headers = determineHeaders(descriptor, record);
         String json = encodeRecordForUpdate(mappingContext, record);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Update %s %s: %s", descriptor.getName(), id, json));
         }
 
-        connector.patch(uri, json, headers, new RestConnector.Callback<Void>() {
+        connector.patch(uri, json, new RestConnector.Callback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 if (log.isDebugEnabled()) {
