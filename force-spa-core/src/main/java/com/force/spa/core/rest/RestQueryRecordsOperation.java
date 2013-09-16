@@ -5,20 +5,21 @@
  */
 package com.force.spa.core.rest;
 
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.ws.Holder;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
-import com.force.spa.core.ObjectMappingContext;
-import com.force.spa.core.SoqlBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.xml.ws.Holder;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<List<T>> implements QueryRecordsOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestQueryRecordsOperation.class);
@@ -29,13 +30,12 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
     private int startPosition;
     private int maxResults;
 
-    public RestQueryRecordsOperation(String soqlTemplate, Class<?> recordClass, Class<T> resultClass) {
-        if (soqlTemplate == null)
-            throw new IllegalArgumentException("soqlTemplate must not be null");
-        if (recordClass == null)
-            throw new IllegalArgumentException("recordClass must not be null");
-        if (resultClass == null)
-            throw new IllegalArgumentException("resultClass must not be null");
+    RestQueryRecordsOperation(RestRecordAccessor accessor, String soqlTemplate, Class<?> recordClass, Class<T> resultClass) {
+        super(accessor);
+
+        Validate.notEmpty(soqlTemplate, "template must not be empty");
+        Validate.notNull(recordClass, "recordClass must not be null");
+        Validate.notNull(resultClass, "resultClass must not be null");
 
         this.soqlTemplate = soqlTemplate;
         this.resultClass = resultClass;
@@ -44,8 +44,8 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
         this.maxResults = 0;
     }
 
-    public RestQueryRecordsOperation(String soql, Class<T> recordClass) {
-        this(soql, recordClass, recordClass);
+    RestQueryRecordsOperation(RestRecordAccessor accessor, String soql, Class<T> recordClass) {
+        this(accessor, soql, recordClass, recordClass);
     }
 
     @Override
@@ -84,10 +84,10 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
     }
 
     @Override
-    public void start(final RestConnector connector, final ObjectMappingContext mappingContext) {
-        final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(recordClass);
+    public void start(final RestConnector connector) {
+        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(recordClass);
 
-        String soql = new SoqlBuilder(descriptor).soqlTemplate(soqlTemplate).offset(startPosition).limit(maxResults).build();
+        String soql = newSoqlBuilder().object(descriptor).template(soqlTemplate).offset(startPosition).limit(maxResults).build();
         URI uri = URI.create("/query?q=" + encodeParameter(soql));
 
         if (log.isDebugEnabled())
@@ -101,7 +101,7 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("...Result Row: %s", node.toString()));
                     }
-                    records.add(decodeRecord(mappingContext, node, resultClass));
+                    records.add(decodeRecord(node, resultClass));
                 }
 
                 JsonNode nextRecordsUrlNode = result.get("nextRecordsUrl");
@@ -127,7 +127,7 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
                                 if (log.isDebugEnabled()) {
                                     log.debug(String.format("...Result Row: %s", node.toString()));
                                 }
-                                records.add(decodeRecord(mappingContext, node, resultClass));
+                                records.add(decodeRecord(node, resultClass));
                             }
                             resultHolder.value = result.get("nextRecordsUrl");
                         }

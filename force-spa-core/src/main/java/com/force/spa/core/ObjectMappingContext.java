@@ -5,6 +5,22 @@
  */
 package com.force.spa.core;
 
+import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
+import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -21,21 +37,7 @@ import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.force.spa.RecordAccessorConfig;
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
+import com.force.spa.SalesforceObject;
 
 /**
  * Context for mapping annotated persistent objects to and from the JSON representations of the Salesforce generic REST
@@ -174,7 +176,7 @@ public final class ObjectMappingContext implements Serializable {
             boolean recursiveCall = isRecursiveCall();
             try {
                 BasicBeanDescription beanDescription = getBeanDescription(type);
-                ObjectDescriptor descriptor = new ObjectDescriptor(findObjectName(beanDescription));
+                ObjectDescriptor descriptor = new ObjectDescriptor(findObjectName(beanDescription), isMetadataAware(beanDescription));
                 incompleteDescriptors.put(type, descriptor);
                 descriptor.initializeFields(buildFieldDescriptors(beanDescription));
 
@@ -207,6 +209,11 @@ public final class ObjectMappingContext implements Serializable {
             return name;
 
         return beanDescription.getClassInfo().getRawType().getSimpleName();
+    }
+
+    private boolean isMetadataAware(BasicBeanDescription beanDescription) {
+        SalesforceObject annotation = beanDescription.getClassAnnotations().get(SalesforceObject.class);
+        return (annotation != null) && annotation.metadataAware();
     }
 
     private List<FieldDescriptor> buildFieldDescriptors(BasicBeanDescription beanDescription) {

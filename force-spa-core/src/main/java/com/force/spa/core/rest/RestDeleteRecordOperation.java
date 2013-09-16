@@ -5,14 +5,15 @@
  */
 package com.force.spa.core.rest;
 
-import com.force.spa.DeleteRecordOperation;
-import com.force.spa.RestConnector;
-import com.force.spa.core.ObjectDescriptor;
-import com.force.spa.core.ObjectMappingContext;
+import java.net.URI;
+
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
+import com.force.spa.DeleteRecordOperation;
+import com.force.spa.RestConnector;
+import com.force.spa.core.ObjectDescriptor;
 
 class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> implements DeleteRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestDeleteRecordOperation.class);
@@ -20,11 +21,11 @@ class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> imp
     private final String id;
     private final Class<T> recordClass;
 
-    public RestDeleteRecordOperation(String id, Class<T> recordClass) {
-        if (id == null)
-            throw new IllegalArgumentException("id must not be null");
-        if (recordClass == null)
-            throw new IllegalArgumentException("recordClass must not be null");
+    public RestDeleteRecordOperation(RestRecordAccessor accessor, String id, Class<T> recordClass) {
+        super(accessor);
+
+        Validate.notEmpty(id, "id must not be empty");
+        Validate.notNull(recordClass, "recordClass must not be null");
 
         this.id = id;
         this.recordClass = recordClass;
@@ -41,8 +42,8 @@ class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<Void> imp
     }
 
     @Override
-    public void start(RestConnector connector, ObjectMappingContext mappingContext) {
-        final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(recordClass);
+    public void start(RestConnector connector) {
+        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(recordClass);
 
         URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
 

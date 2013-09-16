@@ -5,15 +5,15 @@
  */
 package com.force.spa.core;
 
+import java.io.IOException;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
-
-import java.io.IOException;
-import java.util.Map;
 
 class SpaTypeSerializer extends TypeSerializerBase {
 

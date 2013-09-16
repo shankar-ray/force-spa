@@ -5,19 +5,20 @@
  */
 package com.force.spa.core.rest;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.ApiVersion;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class BatchRestConnector implements RestConnector {
     private static final Logger log = LoggerFactory.getLogger(BatchRestConnector.class);

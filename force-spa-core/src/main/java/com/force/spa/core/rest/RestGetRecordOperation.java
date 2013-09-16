@@ -5,17 +5,17 @@
  */
 package com.force.spa.core.rest;
 
+import java.net.URI;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
-import com.force.spa.core.ObjectMappingContext;
-import com.force.spa.core.SoqlBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URI;
 
 class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implements GetRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestGetRecordOperation.class);
@@ -23,11 +23,11 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implement
     private final String id;
     private final Class<T> recordClass;
 
-    public RestGetRecordOperation(String id, Class<T> recordClass) {
-        if (id == null)
-            throw new IllegalArgumentException("id must not be null");
-        if (recordClass == null)
-            throw new IllegalArgumentException("recordClass must not be null");
+    public RestGetRecordOperation(RestRecordAccessor accessor, String id, Class<T> recordClass) {
+        super(accessor);
+
+        Validate.notEmpty(id, "id must not be empty");
+        Validate.notNull(recordClass, "recordClass must not be null");
 
         this.id = id;
         this.recordClass = recordClass;
@@ -44,11 +44,11 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implement
     }
 
     @Override
-    public void start(RestConnector connector, final ObjectMappingContext mappingContext) {
-        final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(recordClass);
+    public void start(RestConnector connector) {
+        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(recordClass);
 
         String soqlTemplate = String.format("SELECT * FROM %s WHERE Id = '%s'", descriptor.getName(), id);
-        String soql = new SoqlBuilder(descriptor).soqlTemplate(soqlTemplate).limit(1).build();
+        String soql = newSoqlBuilder().object(descriptor).template(soqlTemplate).limit(1).build();
         URI uri = URI.create("/query?q=" + encodeParameter(soql));
 
         if (log.isDebugEnabled()) {
@@ -65,7 +65,7 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implement
                 if (log.isDebugEnabled()) {
                     log.debug(String.format("...Got: %s", recordNode.toString()));
                 }
-                T record = decodeRecord(mappingContext, recordNode, recordClass);
+                T record = decodeRecord(recordNode, recordClass);
                 set(record);
             }
 

@@ -5,6 +5,8 @@
  */
 package com.force.spa.core;
 
+import java.util.Collection;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
@@ -16,8 +18,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeNameIdResolver;
-
-import java.util.Collection;
 
 class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolverBuilder> {
 

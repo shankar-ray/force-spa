@@ -5,26 +5,28 @@
  */
 package com.force.spa.core.rest;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
-import com.force.spa.core.ObjectMappingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URI;
 
 final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<String> implements CreateRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestCreateRecordOperation.class);
 
     private final T record;
 
-    public RestCreateRecordOperation(T record) {
-        if (record == null)
-            throw new IllegalArgumentException("record must not be null");
+    public RestCreateRecordOperation(RestRecordAccessor accessor, T record) {
+        super(accessor);
+
+        Validate.notNull(record, "record must not be null");
 
         this.record = record;
     }
@@ -35,11 +37,11 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<Str
     }
 
     @Override
-    public void start(RestConnector connector, ObjectMappingContext mappingContext) {
-        final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
+    public void start(RestConnector connector) {
+        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(record.getClass());
 
         URI uri = URI.create("/sobjects/" + descriptor.getName());
-        String json = encodeRecordForCreate(mappingContext, record);
+        String json = encodeRecordForCreate(record);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Create %s: %s", descriptor.getName(), json));
@@ -83,9 +85,9 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<Str
         return "Salesforce persistence error with no message";
     }
 
-    private static String encodeRecordForCreate(ObjectMappingContext mappingContext, Object record) {
+    private String encodeRecordForCreate(Object record) {
         try {
-            return mappingContext.getObjectWriterForCreate().writeValueAsString(record);
+            return getObjectMappingContext().getObjectWriterForCreate().writeValueAsString(record);
         } catch (IOException e) {
             throw new RecordResponseException("Failed to encode record as JSON", e);
         }

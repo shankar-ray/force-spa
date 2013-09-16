@@ -5,15 +5,15 @@
  */
 package com.force.spa.core;
 
-
-import com.force.spa.ObjectDefinitionException;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import com.force.spa.ObjectDefinitionException;
 
 /**
  * Extra metadata about a Salesforce Object above and beyond that normally managed by Jackson. The information is
@@ -28,11 +28,13 @@ public final class ObjectDescriptor implements Serializable {
     public static final String ATTRIBUTES_FIELD_NAME = "attributes";
 
     private final String name;
+    private final boolean metadataAware;
     private List<FieldDescriptor> fields;
     private final Map<String, FieldDescriptor> fieldsByName;
 
-    ObjectDescriptor(String name) {
+    ObjectDescriptor(String name, boolean metadataAware) {
         this.name = name;
+        this.metadataAware = metadataAware;
         this.fields = Collections.emptyList();
         this.fieldsByName = new HashMap<String, FieldDescriptor>();
     }
@@ -89,6 +91,10 @@ public final class ObjectDescriptor implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isMetadataAware() {
+        return metadataAware;
     }
 
     public List<FieldDescriptor> getFields() {

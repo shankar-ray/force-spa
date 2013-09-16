@@ -5,16 +5,16 @@
  */
 package com.force.spa.core;
 
+import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
+import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
+import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
+
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
-
-import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
-import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
 
 /**
  * A property naming strategy which helps with the subtleties of relationship field naming.

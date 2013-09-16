@@ -5,6 +5,16 @@
  */
 package com.force.spa.core;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
@@ -16,15 +26,6 @@ import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 public abstract class AbstractRecordAccessor implements RecordAccessor {
 
@@ -37,9 +38,12 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     private static final Map<RecordAccessorConfig, ObjectMappingContext> sharedMappingContexts =
         Collections.synchronizedMap(new HashMap<RecordAccessorConfig, ObjectMappingContext>());
 
+    private final RecordAccessorConfig config;
     private final ObjectMappingContext mappingContext;
 
     protected AbstractRecordAccessor(RecordAccessorConfig config) {
+        this.config = config;
+
         if (!sharedMappingContexts.containsKey(config)) {
             sharedMappingContexts.put(config, new ObjectMappingContext(config));
         }
@@ -131,10 +135,14 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
     @Override
     public final <T> RecordQuery<T> createQuery(final String soqlTemplate, final Class<T> type) {
-        Validate.notNull(soqlTemplate, "soqlTemplate must not be null");
+        Validate.notNull(soqlTemplate, "template must not be null");
         Validate.notNull(type, "type must not be null");
 
         return new RecordQueryImpl<T>(soqlTemplate, type);
+    }
+
+    protected final RecordAccessorConfig getConfig() {
+        return config;
     }
 
     protected final ObjectMappingContext getMappingContext() {

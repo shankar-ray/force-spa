@@ -5,6 +5,8 @@
  */
 package com.force.spa.core;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -16,8 +18,6 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
-
-import java.io.IOException;
 
 class SpaTypeDeserializer extends TypeDeserializerBase {
     private static final long serialVersionUID = 4715905537436577142L;

@@ -5,15 +5,15 @@
  */
 package com.force.spa.core;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
 
 /**
  * Builder for generating SOQL to retrieve a particular type of object. The type of object for which SOQL is desired is
@@ -32,21 +32,32 @@ public final class SoqlBuilder {
     private static final Pattern SPLIT_AT_LITERAL_PATTERN = Pattern.compile("([^\'\"]+)(.*)");
     private static final Pattern WILDCARD_PATTERN = Pattern.compile("([^\\*\\s]*?)\\.?\\*");
 
-    private static final Map<CacheKey, String> cachedExpansions = new ConcurrentHashMap<CacheKey, String>();
+    private static final Map<CacheKey, String> sharedExpansionsCache = new ConcurrentHashMap<CacheKey, String>();
 
-    private final ObjectDescriptor rootObject;
+    private final AbstractRecordAccessor accessor;
+    private ObjectDescriptor object;
     private String template;
     private int offset = 0;
     private int limit = 0;
     private int depth = DEFAULT_DEPTH;
 
-    public SoqlBuilder(ObjectDescriptor rootObject) {
-        this.rootObject = rootObject;
+    SoqlBuilder(AbstractRecordAccessor accessor) {
+        this.accessor = accessor;
     }
 
-    public SoqlBuilder soqlTemplate(String template) {
-        Validate.notEmpty(template, "No template was specified");
+    public SoqlBuilder template(String template) {
         this.template = template;
+        return this;
+    }
+
+    public SoqlBuilder object(Class<?> recordClass) {
+        Validate.notNull(recordClass, "No recordClass was specified");
+
+        return object(accessor.getMappingContext().getRequiredObjectDescriptor(recordClass));
+    }
+
+    public SoqlBuilder object(ObjectDescriptor object) {
+        this.object = object;
         return this;
     }
 
@@ -66,6 +77,9 @@ public final class SoqlBuilder {
     }
 
     public String build() {
+        Validate.notNull(object, "No object was specified");
+        Validate.notEmpty(template, "No template was specified");
+
         StringBuilder sb = expandWildcards();
         if (limit > 0)
             sb.append(" LIMIT ").append(limit);
@@ -93,7 +107,7 @@ public final class SoqlBuilder {
         while (wildcardMatcher.find()) {
             builder.append(partToScanForWildcards.substring(lastEnd, wildcardMatcher.start()));
             String prefix = wildcardMatcher.group(1);
-            builder.append(expandObject(rootObject, prefix, depth));
+            builder.append(expandObject(object, prefix, depth));
             lastEnd = wildcardMatcher.end();
         }
         builder.append(partToScanForWildcards.substring(lastEnd));
@@ -101,16 +115,16 @@ public final class SoqlBuilder {
         return builder;
     }
 
-    private static String expandObject(ObjectDescriptor object, String prefix, int remainingDepth) {
+    private String expandObject(ObjectDescriptor object, String prefix, int remainingDepth) {
         CacheKey cacheKey = new CacheKey(object, prefix);       //TODO depth matters too
-        String expansion = cachedExpansions.get(cacheKey);
+        String expansion = sharedExpansionsCache.get(cacheKey);
         if (expansion != null)
             return expansion;
 
         if (remainingDepth >= 0) {
             List<String> accumulator = new ArrayList<String>();
             for (FieldDescriptor field : object.getFields()) {
-                if (!(object.hasAttributesField() && field.equals(object.getAttributesField()))) {
+                if (isFieldVisible(object, field)) {
                     String expandedField = expandField(field, prefix, remainingDepth);
                     if (expandedField != null) {
                         accumulator.add(expandedField);
@@ -118,13 +132,32 @@ public final class SoqlBuilder {
                 }
             }
             expansion = StringUtils.join(accumulator, ",");
-            cachedExpansions.put(cacheKey, expansion);
+            if (isCacheable(object)) {
+                sharedExpansionsCache.put(cacheKey, expansion);
+            }
         }
-
         return expansion;
     }
 
-    private static String expandField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private static boolean isFieldVisible(ObjectDescriptor object, FieldDescriptor field) {
+        if (isAttributesField(object, field)) {
+            return false;
+        } else if (object.isMetadataAware()) {
+            throw new UnsupportedOperationException("Not implemented yet"); //TODO Use metadata to determine field visibility
+        } else {
+            return true;
+        }
+    }
+
+    private static boolean isAttributesField(ObjectDescriptor object, FieldDescriptor field) {
+        return object.hasAttributesField() && field.equals(object.getAttributesField());
+    }
+
+    private static boolean isCacheable(ObjectDescriptor object) {
+        return !object.isMetadataAware(); // Leveraging per-user metadata makes it useless in a shared cache
+    }
+
+    private String expandField(FieldDescriptor field, String prefix, int remainingDepth) {
         if (field.isRelationship()) {
             return expandRelationshipField(field, prefix, remainingDepth);
         } else {
@@ -136,7 +169,7 @@ public final class SoqlBuilder {
         return StringUtils.isEmpty(prefix) ? field.getName() : prefix + "." + field.getName();
     }
 
-    private static String expandRelationshipField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandRelationshipField(FieldDescriptor field, String prefix, int remainingDepth) {
         if (field.isPolymorphic()) {
             return expandPolymorphicField(field, prefix, remainingDepth);
         } else if (field.isArrayOrCollection()) {
@@ -146,7 +179,7 @@ public final class SoqlBuilder {
         }
     }
 
-    private static String expandPolymorphicField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandPolymorphicField(FieldDescriptor field, String prefix, int remainingDepth) {
         StringBuilder builder = new StringBuilder();
         builder.append("TYPEOF ").append(expandSimpleField(field, prefix));
         for (ObjectDescriptor object : field.getPolymorphicChoices()) {
@@ -162,9 +195,10 @@ public final class SoqlBuilder {
         return builder.toString();
     }
 
-    private static String expandCollectionField(FieldDescriptor field, String prefix, int remainingDepth) {
-        return new SoqlBuilder(field.getRelatedObject())
-            .soqlTemplate("(SELECT * from " + expandSimpleField(field, prefix) + ")")
+    private String expandCollectionField(FieldDescriptor field, String prefix, int remainingDepth) {
+        return new SoqlBuilder(accessor)
+            .object(field.getRelatedObject())
+            .template("(SELECT * from " + expandSimpleField(field, prefix) + ")")
             .depth(remainingDepth - 1)
             .build();
     }

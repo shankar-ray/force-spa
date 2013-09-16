@@ -5,10 +5,11 @@
  */
 package com.force.spa.core;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * A property bean writer which helps with the subtleties of serializing Salesforce relationships.

@@ -5,12 +5,13 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 
 /**
  * Extra metadata about a Salesforce Field above and beyond that normally managed by Jackson. The information is

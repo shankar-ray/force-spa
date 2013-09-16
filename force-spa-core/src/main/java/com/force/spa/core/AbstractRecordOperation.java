@@ -5,14 +5,19 @@
  */
 package com.force.spa.core;
 
-import com.force.spa.RecordOperation;
-
 import java.util.concurrent.ExecutionException;
+
+import com.force.spa.RecordOperation;
 
 public abstract class AbstractRecordOperation<T> implements RecordOperation<T> {
     private T result = null;
     private Throwable exception = null;
     private boolean done = false;
+    private final AbstractRecordAccessor accessor;
+
+    protected AbstractRecordOperation(AbstractRecordAccessor accessor) {
+        this.accessor = accessor;
+    }
 
     @Override
     public final boolean isDone() {
@@ -52,5 +57,17 @@ public abstract class AbstractRecordOperation<T> implements RecordOperation<T> {
         }
         done = true;
         this.exception = exception;
+    }
+
+    protected AbstractRecordAccessor getAccessor() {
+        return accessor;
+    }
+
+    protected final ObjectMappingContext getObjectMappingContext() {
+        return getAccessor().getMappingContext();
+    }
+
+    protected final SoqlBuilder newSoqlBuilder() {
+        return new SoqlBuilder(getAccessor());
     }
 }

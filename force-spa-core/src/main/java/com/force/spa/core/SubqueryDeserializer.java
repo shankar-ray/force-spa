@@ -5,6 +5,10 @@
  */
 package com.force.spa.core;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.Validate;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanProperty;
@@ -12,9 +16,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
-import org.apache.commons.lang3.Validate;
-
-import java.io.IOException;
 
 /**
  * A special deserializer that knows how to deal with the Salesforce REST representation for SOQL subqueries.

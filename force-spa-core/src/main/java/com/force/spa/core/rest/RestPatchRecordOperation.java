@@ -5,16 +5,17 @@
  */
 package com.force.spa.core.rest;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
-import com.force.spa.core.ObjectMappingContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.net.URI;
 
 class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<Void> implements PatchRecordOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestPatchRecordOperation.class);
@@ -22,11 +23,11 @@ class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<Void> impl
     private final String id;
     private final T record;
 
-    public RestPatchRecordOperation(String id, T record) {
-        if (id == null)
-            throw new IllegalArgumentException("id must not be null");
-        if (record == null)
-            throw new IllegalArgumentException("record must not be null");
+    public RestPatchRecordOperation(RestRecordAccessor accessor, String id, T record) {
+        super(accessor);
+
+        Validate.notEmpty(id, "id must not be empty");
+        Validate.notNull(record, "record must not be null");
 
         this.id = id;
         this.record = record;
@@ -43,11 +44,11 @@ class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<Void> impl
     }
 
     @Override
-    public void start(RestConnector connector, ObjectMappingContext mappingContext) {
-        final ObjectDescriptor descriptor = mappingContext.getRequiredObjectDescriptor(record.getClass());
+    public void start(RestConnector connector) {
+        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(record.getClass());
 
         URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
-        String json = encodeRecordForPatch(mappingContext, record);
+        String json = encodeRecordForPatch(record);
 
         if (log.isDebugEnabled()) {
             log.debug(String.format("Update %s %s: %s", descriptor.getName(), id, json));
@@ -69,9 +70,9 @@ class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<Void> impl
         });
     }
 
-    private static String encodeRecordForPatch(ObjectMappingContext mappingContext, Object record) {
+    private String encodeRecordForPatch(Object record) {
         try {
-            return mappingContext.getObjectWriterForPatch().writeValueAsString(record);
+            return getObjectMappingContext().getObjectWriterForPatch().writeValueAsString(record);
         } catch (IOException e) {
             throw new RecordResponseException("Failed to encode record as JSON", e);
         }

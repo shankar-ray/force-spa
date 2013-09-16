@@ -5,6 +5,17 @@
  */
 package com.force.spa.core;
 
+import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
+
+import java.lang.reflect.AnnotatedElement;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.Transient;
+
 import com.fasterxml.jackson.annotation.JsonTypeId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
@@ -23,16 +34,6 @@ import com.force.spa.Polymorphic;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.Transient;
-import java.lang.reflect.AnnotatedElement;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
 
 /**
  * An {@link com.fasterxml.jackson.databind.AnnotationIntrospector} which understands the special persistence
