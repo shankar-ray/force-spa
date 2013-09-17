@@ -66,7 +66,7 @@ public final class FieldDescriptor implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T> T getValue(Object record) {
-        return (T) accessor.getValue(record);
+       return (T) ((accessor != null) ? accessor.getValue(record) : null);
     }
 
     @Override

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.DefaultDeserializationContext;
+import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
@@ -247,12 +248,16 @@ public final class ObjectMappingContext implements Serializable {
 
     private boolean isPolymorphic(BeanPropertyDefinition property) {
         SerializationConfig config = objectMapper.getSerializationConfig();
-        return config.getAnnotationIntrospector().findPropertyTypeResolver(config, property.getAccessor(), null) != null;
+        return config.getAnnotationIntrospector().findPropertyTypeResolver(config, getAnnotatedMember(property), null) != null;
     }
 
     private Collection<NamedType> getSubtypes(BeanPropertyDefinition property) {
         SerializationConfig config = objectMapper.getSerializationConfig();
         return config.getSubtypeResolver().collectAndResolveSubtypes(
-            property.getAccessor(), config, config.getAnnotationIntrospector(), null);
+            getAnnotatedMember(property), config, config.getAnnotationIntrospector(), null);
+    }
+
+    private static AnnotatedMember getAnnotatedMember(BeanPropertyDefinition property) {
+        return property.getAccessor() != null ? property.getAccessor() : property.getMutator();
     }
 }

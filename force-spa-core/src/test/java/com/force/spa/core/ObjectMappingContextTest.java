@@ -5,20 +5,6 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.force.spa.core.testbeans.CustomBean;
-import com.force.spa.core.testbeans.EnumBean;
-import com.force.spa.core.testbeans.EnumWithAbstractMethod;
-import com.force.spa.core.testbeans.ExplicitlyNamedBean;
-import com.force.spa.core.testbeans.NoGetterBean;
-import com.force.spa.core.testbeans.NoSetterBean;
-import com.force.spa.core.testbeans.RecursiveBean;
-import com.force.spa.core.testbeans.SimpleBean;
-import com.force.spa.core.testbeans.SimpleContainerBean;
-import com.force.spa.core.testbeans.TransientFieldBean;
-import com.force.spa.core.testbeans.UnannotatedBean;
-import org.junit.Test;
-
 import static com.force.spa.core.HasFieldName.hasFieldName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -27,6 +13,22 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.force.spa.core.testbeans.CustomBean;
+import com.force.spa.core.testbeans.EnumBean;
+import com.force.spa.core.testbeans.EnumWithAbstractMethod;
+import com.force.spa.core.testbeans.ExplicitlyNamedBean;
+import com.force.spa.core.testbeans.FieldWithNoAccessorBean;
+import com.force.spa.core.testbeans.NoGetterBean;
+import com.force.spa.core.testbeans.NoSetterBean;
+import com.force.spa.core.testbeans.RecursiveBean;
+import com.force.spa.core.testbeans.SimpleBean;
+import com.force.spa.core.testbeans.SimpleContainerBean;
+import com.force.spa.core.testbeans.TransientFieldBean;
+import com.force.spa.core.testbeans.UnannotatedBean;
 
 @SuppressWarnings("unchecked")
 public class ObjectMappingContextTest {
@@ -206,5 +208,17 @@ public class ObjectMappingContextTest {
             containsInAnyOrder(
                 hasFieldName("Id"),
                 hasFieldName("attributes")));
+    }
+
+    @Test
+    public void testFieldWithNoAccessorBean() {
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(FieldWithNoAccessorBean.class);
+        assertThat(descriptor, is(not(nullValue())));
+        assertThat(descriptor.getName(), is(equalTo("FieldWithNoAccessorBean")));
+        assertThat(descriptor.getFields(), is(not(nullValue())));
+        assertThat(descriptor.getFields(), containsInAnyOrder(
+            hasFieldName("Value1"),
+            hasFieldName("Id"),
+            hasFieldName("attributes")));
     }
 }
