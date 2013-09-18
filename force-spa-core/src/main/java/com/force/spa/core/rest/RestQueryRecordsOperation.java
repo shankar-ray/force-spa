@@ -17,11 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.QueryRecordsOperation;
+import com.force.spa.RecordQueryResult;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
 import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.core.SimpleRecordQueryResult;
 
-final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<List<T>> implements QueryRecordsOperation<T> {
+final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<RecordQueryResult<T>> implements QueryRecordsOperation<T> {
     private static final Logger log = LoggerFactory.getLogger(RestQueryRecordsOperation.class);
 
     private final String soqlTemplate;
@@ -97,6 +99,7 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
             @Override
             public void onSuccess(JsonNode result) {
                 final List<T> records = new ArrayList<T>();
+                int totalSize = result.get("totalSize").asInt();
                 for (JsonNode node : result.get("records")) {
                     if (log.isDebugEnabled()) {
                         log.debug(String.format("...Result Row: %s", node.toString()));
@@ -108,7 +111,7 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
                 while (nextRecordsUrlNode != null) {
                     nextRecordsUrlNode = getNextRecords(nextRecordsUrlNode, records);
                 }
-                set(records);
+                set(new SimpleRecordQueryResult<T>(totalSize, true, records));
             }
 
             @Override

@@ -24,6 +24,7 @@ import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
+import com.force.spa.RecordQueryResult;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
 
@@ -145,7 +146,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         return config;
     }
 
-    protected final ObjectMappingContext getMappingContext() {
+    public final ObjectMappingContext getMappingContext() {
         return mappingContext;
     }
 
@@ -188,6 +189,16 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
         @Override
         public <R> List<R> execute(Class<R> resultClass) {
+            return executeForResult(resultClass).getRecords();
+        }
+
+        @Override
+        public RecordQueryResult<T> executeForResult() {
+            return executeForResult(type);
+        }
+
+        @Override
+        public <R> RecordQueryResult<R> executeForResult(Class<R> resultClass) {
             QueryRecordsOperation<R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
             if (startPosition != 0)
                 operation.setStartPosition(startPosition);

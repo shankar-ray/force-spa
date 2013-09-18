@@ -24,15 +24,40 @@ public interface RecordQuery<T> {
      * Execute a SOQL query and return the list of records satisfying the query.
      * <p/>
      * This method is used to request the results in an alternate Java form. For example, instead of getting the results
-     * back in the form of the originally annotated bean, you can use this to request the results back as
-     * com.fasterxml.jackson.databind.JsonNode instead. This is useful if you want to manually navigate the raw results
+     * back in the form of the originally annotated bean, you can use this to request the results back as {@link
+     * com.fasterxml.jackson.databind.JsonNode} instead. This is useful if you want to manually navigate the raw results
      * in order to access things like aggregate fields.
      *
-     * @param resultClass the class of the desired return type. A typical choice is com.fasterxml.jackson.databind.JsonNode.
+     * @param resultClass the class of the desired return type. A typical choice is {@link
+     *                    com.fasterxml.jackson.databind.JsonNode}.
      * @param <R>         the type of result records
      * @return the list of records satisfying the query
      */
     <R> List<R> execute(Class<R> resultClass);
+
+    /**
+     * Execute a SOQL query and return the list of records wrapped in a {@link RecordQueryResult} along with total size
+     * information.
+     *
+     * @return the query result holding records satisfying the request
+     */
+    RecordQueryResult<T> executeForResult();
+
+    /**
+     * Execute a SOQL query and return the list of records wrapped in a {@link RecordQueryResult} along with total size
+     * information.
+     * <p/>
+     * This method is used to request the results in an alternate Java form. For example, instead of getting the results
+     * back in the form of the originally annotated bean, you can use this to request the results back as {@link
+     * com.fasterxml.jackson.databind.JsonNode instead}. This is useful if you want to manually navigate the raw results
+     * in order to access things like aggregate fields.
+     *
+     * @param resultClass the class of the desired return type. A typical choice is {@link
+     *                    com.fasterxml.jackson.databind.JsonNode}.
+     * @param <R>         the type of result records
+     * @return the query result holding records satisfying the request
+     */
+    <R> RecordQueryResult<R> executeForResult(Class<R> resultClass);
 
     /**
      * Sets the maximum number of results to retrieve.

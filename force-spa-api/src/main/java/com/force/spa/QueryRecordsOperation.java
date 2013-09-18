@@ -5,9 +5,7 @@
  */
 package com.force.spa;
 
-import java.util.List;
-
-public interface QueryRecordsOperation<T> extends RecordOperation<List<T>> {
+public interface QueryRecordsOperation<T> extends RecordOperation<RecordQueryResult<T>> {
     String getSoqlTemplate();
 
     Class<?> getRecordClass();
