@@ -19,7 +19,7 @@ public class SimpleRecordQueryResult<T> implements RecordQueryResult<T> {
     public SimpleRecordQueryResult(int totalSize, boolean done, List<T> records) {
         this.totalSize = totalSize;
         this.done = done;
-        this.records = Collections.unmodifiableList(records);
+        this.records = records;
     }
 
     public boolean isDone() {
