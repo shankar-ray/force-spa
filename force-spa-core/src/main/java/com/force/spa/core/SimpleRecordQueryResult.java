@@ -5,7 +5,6 @@
  */
 package com.force.spa.core;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.force.spa.RecordQueryResult;
