@@ -5,11 +5,14 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
-import com.sun.jersey.api.client.Client;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.force.spa.AuthorizationConnector;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.config.ClientConfig;
 
 /**
  * A Spring factory for instances of Jersey {@link Client} configured appropriately for JerseyRestConnector use.
@@ -19,20 +22,28 @@ import org.springframework.stereotype.Component;
  * and instead provide a client instance of your own then make sure that the client instance can support HTTP "PATCH".
  * You really should use this factory or something derived from it.
  * <p/>
- * By default, the returned instances use a {@link org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager} in order
- * to support multi-threaded use.
+ * By default, the returned instances use a {@link org.apache.http.impl.conn.PoolingClientConnectionManager} in order to
+ * support multi-threaded use.
  */
 @Component("clientFactory")
-public class SpringClientFactory implements FactoryBean<Client> {
+public class SpringClientFactory implements FactoryBean<Client>, InitializingBean {
 
-    private final ClientFactory internalFactory = new ClientFactory();
+    private ClientFactory delegate;
 
     @Autowired
     private AuthorizationConnector authorizationConnector;
 
+    @Autowired(required = false)
+    private ClientConfig clientConfig;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        delegate = (clientConfig != null) ? new ClientFactory(clientConfig) : new ClientFactory();
+    }
+
     @Override
     public Client getObject() throws Exception {
-        return internalFactory.newInstance(authorizationConnector);
+        return delegate.newInstance(authorizationConnector);
     }
 
     @Override

@@ -4,17 +4,20 @@ description = 'Simple Persistence API for Salesforce - Jersey components'
 
 dependencies {
     compile project(":force-spa-core")
-    compile "com.google.code.findbugs:annotations:2.0.1", provided
     compile "com.sun.jersey.contribs:jersey-apache-client4:${jerseyVersion}"
     compile "com.sun.jersey:jersey-core:${jerseyVersion}"
     compile "com.sun.jersey:jersey-json:${jerseyVersion}"
     compile "com.sun.jersey:jersey-client:${jerseyVersion}"
+    compile "org.apache.httpcomponents:httpclient:${apacheHttpVersion}"
+
+    compile "com.google.code.findbugs:annotations:2.0.1", provided
     compile "javax.servlet:javax.servlet-api:3.0.1", provided
     compile "org.springframework:spring-web:${springVersion}", provided
 
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+    testCompile "org.mockito:mockito-all:${mockitoVersion}"
     testCompile "org.springframework:spring-test:${springVersion}"
 
     testRuntime project(":config")

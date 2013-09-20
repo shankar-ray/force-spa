@@ -17,8 +17,8 @@ dependencies {
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
+    testCompile "org.mockito:mockito-all:${mockitoVersion}"
     testCompile "joda-time:joda-time:2.2"
-    testCompile "org.mockito:mockito-all:1.9.5"
 
     testRuntime project(":config")
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"

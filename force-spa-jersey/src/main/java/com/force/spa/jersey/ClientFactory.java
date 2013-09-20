@@ -5,6 +5,10 @@
  */
 package com.force.spa.jersey;
 
+import javax.ws.rs.core.HttpHeaders;
+
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+
 import com.force.spa.AuthorizationConnector;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientRequest;
@@ -14,9 +18,6 @@ import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-
-import javax.ws.rs.core.HttpHeaders;
 
 /**
  * A simple (non-Spring) factory for instances of {@link Client} configured appropriately for {@link
@@ -27,9 +28,26 @@ import javax.ws.rs.core.HttpHeaders;
  * instance of your own then make sure the client instance can support HTTP "PATCH". You really should use this factory
  * or something derived from it.
  * <p/>
- * By default, the returned instances use a {@link ThreadSafeClientConnManager} in order to support multi-threaded use.
+ * By default, the returned instances use a {@link PoolingClientConnectionManager} in order to support multi-threaded
+ * use.
  */
 public final class ClientFactory {
+
+    public static final String PROPERTY_MAX_CONNECTIONS_TOTAL = "com.force.spa.jersey.apacheMaxConnectionsTotal";
+    public static final String PROPERTY_MAX_CONNECTIONS_PER_ROUTE = "com.force.spa.jersey.apacheMaxConnectionsPerRoute";
+
+    static final int DEFAULT_MAX_CONNECTIONS_TOTAL = 200;
+    static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 50;
+
+    private final ClientConfig clientConfig;
+
+    public ClientFactory() {
+        this(new DefaultApacheHttpClient4Config());
+    }
+
+    public ClientFactory(ClientConfig clientConfig) {
+        this.clientConfig = augmentClientConfig(clientConfig);
+    }
 
     /**
      * Creates a new instance of {@link Client} configured appropriately for {@link JerseyRestConnector} use.
@@ -38,25 +56,47 @@ public final class ClientFactory {
      * @return a Jersey Client
      */
     public Client newInstance(AuthorizationConnector authorizationConnector) {
-        return newInstance(authorizationConnector, new DefaultApacheHttpClient4Config());
+
+        ApacheHttpClient4 client = ApacheHttpClient4.create(clientConfig);
+        addAuthorizationFilter(client, authorizationConnector);
+
+        return client;
     }
 
-    /**
-     * Creates a new instance of {@link Client} configured appropriately for {@link JerseyRestConnector} use.
-     *
-     * @param authorizationConnector an authorization connector
-     * @param clientConfig           configuration information for the client
-     * @return a Jersey Client
-     */
-    public Client newInstance(final AuthorizationConnector authorizationConnector, ClientConfig clientConfig) {
-
-        // If the caller hasn't explicitly chosen something else, select a thread-safe Apache connection manager.
-        if (!clientConfig.getProperties().containsKey(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER)) {
-            clientConfig.getProperties().put(
-                ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, new ThreadSafeClientConnManager());
+    private static ClientConfig augmentClientConfig(ClientConfig clientConfig) {
+        if (hasNoConnectionManagerConfigured(clientConfig)) {
+            configureConnectionManager(clientConfig);
         }
+        return clientConfig;
+    }
 
-        Client client = ApacheHttpClient4.create(clientConfig);
+    private static boolean hasNoConnectionManagerConfigured(ClientConfig clientConfig) {
+        return clientConfig.getProperty(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER) == null;
+    }
+
+    private static void configureConnectionManager(ClientConfig clientConfig) {
+        PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
+        connectionManager.setDefaultMaxPerRoute(getMaxConnectionsPerRoute(clientConfig));
+        connectionManager.setMaxTotal(getMaxConnectionsTotal(clientConfig));
+
+        clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, connectionManager);
+    }
+
+    private static int getMaxConnectionsPerRoute(ClientConfig clientConfig) {
+        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_PER_ROUTE, DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+    }
+
+    private static int getMaxConnectionsTotal(ClientConfig clientConfig) {
+        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getProperty(ClientConfig clientConfig, String propertyName, T defaultValue) {
+        T configuredValue = (T) clientConfig.getProperty(propertyName);
+        return configuredValue != null ? configuredValue : defaultValue;
+    }
+
+    private static void addAuthorizationFilter(ApacheHttpClient4 client, final AuthorizationConnector authorizationConnector) {
         client.addFilter(new ClientFilter() {
             @Override
             public ClientResponse handle(ClientRequest clientRequest) {
@@ -64,6 +104,5 @@ public final class ClientFactory {
                 return getNext().handle(clientRequest);
             }
         });
-        return client;
     }
 }
