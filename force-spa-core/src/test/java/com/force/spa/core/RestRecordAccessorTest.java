@@ -5,34 +5,8 @@
  */
 package com.force.spa.core;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.RecordQuery;
-import com.force.spa.RecordQueryResult;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.core.testbeans.DateTimeBean;
@@ -43,6 +17,29 @@ import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
 import com.force.spa.core.testbeans.StandardFieldBean;
 import com.force.spa.record.NamedRecord;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.junit.Test;
+
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
@@ -255,36 +252,8 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     public void testSimpleQuery() throws Exception {
         when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
 
-        RecordQuery<SimpleBean> query = accessor.createQuery("select * from SimpleBean", SimpleBean.class);
-        List<SimpleBean> beans = query.execute();
+        List<SimpleBean> beans = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute();
 
-        assertThat(beans.size(), is(equalTo(2)));
-
-        SimpleBean bean1 = beans.get(0);
-        assertThat(bean1.getAttributes().get("type"), is(equalTo("SimpleBean")));
-        assertThat(bean1.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
-        assertThat(bean1.getId(), is(equalTo("a01i00000000001")));
-        assertThat(bean1.getName(), is(equalTo("Name 1")));
-        assertThat(bean1.getDescription(), is(equalTo("Description 1")));
-
-        SimpleBean bean2 = beans.get(1);
-        assertThat(bean2.getAttributes().get("type"), is(equalTo("SimpleBean")));
-        assertThat(bean2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000002")));
-        assertThat(bean2.getId(), is(equalTo("a01i00000000002")));
-        assertThat(bean2.getName(), is(equalTo("Name 2")));
-        assertThat(bean2.getDescription(), is(equalTo("Description 2")));
-    }
-
-    @Test
-    public void testSimpleQueryThroughResult() throws Exception {
-        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
-
-        RecordQuery<SimpleBean> query = accessor.createQuery("select * from SimpleBean", SimpleBean.class);
-        RecordQueryResult<SimpleBean> result = query.executeForResult();
-
-        assertThat(result.getTotalSize(), is(equalTo(2)));
-
-        List<SimpleBean> beans = result.getRecords();
         assertThat(beans.size(), is(equalTo(2)));
 
         SimpleBean bean1 = beans.get(0);
@@ -346,45 +315,12 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     }
 
     @Test
-    public void testCountToQueryResult() throws Exception {
-        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("countQueryResponse.json"));
-
-        RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id) FROM SimpleBean GROUP BY Name", SimpleBean.class);
-        RecordQueryResult<SimpleBean> result = query.executeForResult();
-
-        assertThat(result, is(notNullValue()));
-        assertThat(result.getTotalSize(), is(equalTo(2)));
-        assertThat(result.isDone(), is(true));
-    }
-
-    @Test
     public void testAggregateQueryToJsonNode() throws Exception {
         when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
 
         RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
         List<JsonNode> jsonNodes = query.execute(JsonNode.class);
 
-        assertThat(jsonNodes.size(), is(equalTo(2)));
-
-        JsonNode node1 = jsonNodes.get(0);
-        assertThat(node1.get("expr0").asInt(), is(equalTo(1)));
-        assertThat(node1.get("Name").asText(), is(equalTo("Name 1")));
-
-        JsonNode node2 = jsonNodes.get(1);
-        assertThat(node2.get("expr0").asInt(), is(equalTo(1)));
-        assertThat(node2.get("Name").asText(), is(equalTo("Name 2")));
-    }
-
-    @Test
-    public void testAggregateQueryToJsonNodeThroughResult() throws Exception {
-        when(mockConnector.get(any(URI.class))).thenReturn(getResourceStream("aggregateQueryResponse.json"));
-
-        RecordQuery<SimpleBean> query = accessor.createQuery("select count(Id),Name FROM SimpleBean GROUP BY Name", SimpleBean.class);
-        RecordQueryResult<JsonNode> result = query.executeForResult(JsonNode.class);
-
-        assertThat(result.getTotalSize(), is(equalTo(2)));
-
-        List<JsonNode> jsonNodes = result.getRecords();
         assertThat(jsonNodes.size(), is(equalTo(2)));
 
         JsonNode node1 = jsonNodes.get(0);

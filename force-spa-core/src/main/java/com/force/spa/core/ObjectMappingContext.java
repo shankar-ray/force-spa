@@ -223,7 +223,7 @@ public final class ObjectMappingContext implements Serializable {
             Class<?> type = getConcreteClass(beanDescription, property);
             ObjectDescriptor relatedObject = getRelatedObject(type);
             List<ObjectDescriptor> polymorphicChoices = getPolymorphicChoices(property, type);
-            fields.add(new FieldDescriptor(property.getName(), property.getAccessor(), property.getMutator(), type, relatedObject, polymorphicChoices));
+            fields.add(new FieldDescriptor(property.getName(), property.getAccessor(), type, relatedObject, polymorphicChoices));
         }
         return fields;
     }

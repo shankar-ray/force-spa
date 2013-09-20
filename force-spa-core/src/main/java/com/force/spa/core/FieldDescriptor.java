@@ -25,14 +25,12 @@ public final class FieldDescriptor implements Serializable {
     private final String name;
     private final Class<?> type;
     private final AnnotatedMember accessor;
-    private final AnnotatedMember mutator;
     private final ObjectDescriptor relatedObject;
     private final List<ObjectDescriptor> polymorphicChoices;
 
-    FieldDescriptor(String name, AnnotatedMember accessor, AnnotatedMember mutator, Class<?> type, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
+    FieldDescriptor(String name, AnnotatedMember accessor, Class<?> type, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
         this.name = name;
         this.accessor = accessor;
-        this.mutator = mutator;
         this.type = type;
         this.relatedObject = relatedObject;
         this.polymorphicChoices = polymorphicChoices;
@@ -68,20 +66,7 @@ public final class FieldDescriptor implements Serializable {
 
     @SuppressWarnings("unchecked")
     public <T> T getValue(Object record) {
-        if (accessor != null) {
-            return (T) accessor.getValue(record);
-        } else {
-            throw new IllegalStateException("Field has no accessor");
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> void setValue(Object record, T value) {
-        if (mutator != null) {
-            mutator.setValue(record, value);
-        } else {
-            throw new IllegalStateException("Field has no mutator");
-        }
+       return (T) ((accessor != null) ? accessor.getValue(record) : null);
     }
 
     @Override
