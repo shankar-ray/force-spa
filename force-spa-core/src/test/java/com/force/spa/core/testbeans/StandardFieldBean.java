@@ -7,8 +7,8 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.DetailedNamedRecord;
-import com.force.spa.record.NamedRecord;
+import com.force.spa.beans.DetailedNamedRecord;
+import com.force.spa.beans.NamedRecord;
 
 /**
  * A test bean that includes the standard Salesforce fields.

@@ -44,8 +44,8 @@ import com.force.spa.SalesforceObject;
  * Context for mapping annotated persistent objects to and from the JSON representations of the Salesforce generic REST
  * API.
  * <p/>
- * This context includes the basic Jackson {@link ObjectMapper} configured appropriately as extra metadata in the form
- * of {@link ObjectDescriptor} for use in making other advanced choices related to persistence.
+ * This context includes the basic Jackson {@link ObjectMapper} configured in addition to extra metadata in the form of
+ * {@link ObjectDescriptor}s for making advanced choices related to Salesforce persistence.
  */
 public final class ObjectMappingContext implements Serializable {
 

@@ -25,7 +25,7 @@ import com.sun.jersey.api.client.config.ClientConfig;
  * By default, the returned instances use a {@link org.apache.http.impl.conn.PoolingClientConnectionManager} in order to
  * support multi-threaded use.
  */
-@Component("clientFactory")
+@Component("spa.client")
 public class SpringClientFactory implements FactoryBean<Client>, InitializingBean {
 
     private ClientFactory delegate;
@@ -33,17 +33,25 @@ public class SpringClientFactory implements FactoryBean<Client>, InitializingBea
     @Autowired
     private AuthorizationConnector authorizationConnector;
 
-    @Autowired(required = false)
+    @Autowired
     private ClientConfig clientConfig;
+
+    public void setAuthorizationConnector(AuthorizationConnector authorizationConnector) {
+        this.authorizationConnector = authorizationConnector;
+    }
+
+    public void setClientConfig(ClientConfig clientConfig) {
+        this.clientConfig = clientConfig;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        delegate = (clientConfig != null) ? new ClientFactory(clientConfig) : new ClientFactory();
+        delegate = new ClientFactory(authorizationConnector, clientConfig);
     }
 
     @Override
     public Client getObject() throws Exception {
-        return delegate.newInstance(authorizationConnector);
+        return delegate.getClient();
     }
 
     @Override
@@ -54,5 +62,13 @@ public class SpringClientFactory implements FactoryBean<Client>, InitializingBea
     @Override
     public boolean isSingleton() {
         return true;
+    }
+
+    AuthorizationConnector getAuthorizationConnector() {
+        return authorizationConnector;
+    }
+
+    ClientConfig getClientConfig() {
+        return clientConfig;
     }
 }

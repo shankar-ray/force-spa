@@ -7,7 +7,7 @@ package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.Record;
+import com.force.spa.beans.Record;
 
 /**
  * A bean that has a field with no Jackson accessor.

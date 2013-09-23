@@ -112,6 +112,20 @@ public interface RecordAccessor {
     void execute(List<RecordOperation<?>> operations);
 
     /**
+     * Returns the {@link RecordAccessorConfig}.
+     *
+     * @return the record accessor config
+     */
+    RecordAccessorConfig getConfig();
+
+    /**
+     * Returns the {@link MetadataAccessor}.
+     *
+     * @return the metadata accessor
+     */
+    MetadataAccessor getMetadataAccessor();
+
+    /**
      * Returns a new create operation that can be combined into a batch. The operation, along with any others that it is
      * batched with, can be executed at a later time using {@link #execute}.
      *

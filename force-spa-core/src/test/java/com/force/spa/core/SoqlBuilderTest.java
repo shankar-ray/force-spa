@@ -9,25 +9,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-import java.util.List;
-
+import org.junit.Before;
 import org.junit.Test;
 
-import com.force.spa.CreateRecordOperation;
-import com.force.spa.DeleteRecordOperation;
-import com.force.spa.GetRecordOperation;
-import com.force.spa.PatchRecordOperation;
-import com.force.spa.QueryRecordsOperation;
-import com.force.spa.RecordAccessorConfig;
-import com.force.spa.RecordOperation;
-import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
 import com.force.spa.core.testbeans.RecursiveBean;
 import com.force.spa.core.testbeans.SimpleBean;
 
 public class SoqlBuilderTest extends AbstractRestRecordAccessorTest {
 
-    private AbstractRecordAccessor accessor = new DummyRecordAccessor();
+    private AbstractRecordAccessor accessor;
+
+    @Before
+    public void setUp() {
+        accessor = new DummyRecordAccessor();
+    }
 
     @Test
     public void testBasicWildcard() throws Exception {
@@ -85,56 +81,5 @@ public class SoqlBuilderTest extends AbstractRestRecordAccessorTest {
 
     private SoqlBuilder newSoqlBuilder() {
         return new SoqlBuilder(accessor);
-    }
-
-    private static class DummyRecordAccessor extends AbstractRecordAccessor {
-        private DummyRecordAccessor() {
-            super(new RecordAccessorConfig());
-        }
-
-        @Override
-        protected void execute(RecordOperation<?> operation) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void execute(List<RecordOperation<?>> operations) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> CreateRecordOperation<T> newCreateRecordOperation(T record) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> DeleteRecordOperation<T> newDeleteRecordOperation(String id, Class<T> recordClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> GetRecordOperation<T> newGetRecordOperation(String id, Class<T> recordClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> PatchRecordOperation<T> newPatchRecordOperation(String id, T recordChanges) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<?> recordClass, Class<T> resultClass) {
-            throw new UnsupportedOperationException();
-        }
     }
 }

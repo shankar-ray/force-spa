@@ -5,10 +5,10 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.SalesforceObject;
-import com.force.spa.record.Record;
-
 import javax.persistence.Transient;
+
+import com.force.spa.SalesforceObject;
+import com.force.spa.beans.Record;
 
 @SalesforceObject
 @SuppressWarnings("UnusedDeclaration")

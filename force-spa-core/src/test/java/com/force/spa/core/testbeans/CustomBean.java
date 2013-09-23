@@ -5,11 +5,11 @@
  */
 package com.force.spa.core.testbeans;
 
+import java.util.List;
+
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.NamedRecord;
-
-import java.util.List;
+import com.force.spa.beans.NamedRecord;
 
 @SuppressWarnings("UnusedDeclaration")
 @SalesforceObject(name = "namespace__CustomBean__c")

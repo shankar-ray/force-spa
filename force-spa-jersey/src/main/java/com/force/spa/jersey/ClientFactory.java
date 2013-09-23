@@ -7,6 +7,7 @@ package com.force.spa.jersey;
 
 import javax.ws.rs.core.HttpHeaders;
 
+import org.apache.commons.lang3.Validate;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 
 import com.force.spa.AuthorizationConnector;
@@ -33,31 +34,32 @@ import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
  */
 public final class ClientFactory {
 
-    public static final String PROPERTY_MAX_CONNECTIONS_TOTAL = "com.force.spa.jersey.apacheMaxConnectionsTotal";
-    public static final String PROPERTY_MAX_CONNECTIONS_PER_ROUTE = "com.force.spa.jersey.apacheMaxConnectionsPerRoute";
+    static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
+    static final int DEFAULT_MAX_CONNECTIONS_TOTAL = 100;
 
-    static final int DEFAULT_MAX_CONNECTIONS_TOTAL = 200;
-    static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 50;
-
+    private final AuthorizationConnector authorizationConnector;
     private final ClientConfig clientConfig;
 
-    public ClientFactory() {
-        this(new DefaultApacheHttpClient4Config());
+    public ClientFactory(AuthorizationConnector authorizationConnector) {
+        this(authorizationConnector, new DefaultApacheHttpClient4Config());
     }
 
-    public ClientFactory(ClientConfig clientConfig) {
+    public ClientFactory(AuthorizationConnector authorizationConnector, ClientConfig clientConfig) {
+        Validate.notNull(authorizationConnector, "authorizationConnector must not be null");
+        Validate.notNull(clientConfig, "clientConfig must not be null");
+
+        this.authorizationConnector = authorizationConnector;
         this.clientConfig = augmentClientConfig(clientConfig);
     }
 
     /**
      * Creates a new instance of {@link Client} configured appropriately for {@link JerseyRestConnector} use.
      *
-     * @param authorizationConnector an authorization connector
      * @return a Jersey Client
      */
-    public Client newInstance(AuthorizationConnector authorizationConnector) {
-
+    public Client getClient() {
         ApacheHttpClient4 client = ApacheHttpClient4.create(clientConfig);
+
         addAuthorizationFilter(client, authorizationConnector);
 
         return client;
@@ -83,11 +85,11 @@ public final class ClientFactory {
     }
 
     private static int getMaxConnectionsPerRoute(ClientConfig clientConfig) {
-        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_PER_ROUTE, DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        return getProperty(clientConfig, SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
     }
 
     private static int getMaxConnectionsTotal(ClientConfig clientConfig) {
-        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
+        return getProperty(clientConfig, SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
     }
 
     @SuppressWarnings("unchecked")

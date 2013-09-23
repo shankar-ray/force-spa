@@ -30,7 +30,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     private final RestConnector connector;
 
     public RestRecordAccessor(RecordAccessorConfig config, RestConnector connector) {
-        super(config);
+        super(config, new RestMetadataAccessor(config, connector));
         this.connector = connector;
     }
 
@@ -90,6 +90,13 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     @Override
     public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
         return new RestUpdateRecordOperation<T>(this, id, record);
+    }
+
+    /**
+     * For unit test purposes only.
+     */
+    public RestConnector getConnector() {
+        return connector;
     }
 
     private boolean isBatchingSupported() {

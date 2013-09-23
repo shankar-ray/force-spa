@@ -5,53 +5,45 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.ApiVersion;
-import com.force.spa.AuthorizationConnector;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
 import com.sun.jersey.api.client.Client;
-import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * A Spring factory for instances of {@link RecordAccessor} that use a {@link JerseyRestConnector} for communications.
  */
-@Component("recordAccessorFactory")
-public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> {
+@Component("spa.recordAccessor")
+public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor>, InitializingBean {
 
-    private final RecordAccessorFactory internalFactory = new RecordAccessorFactory();
+    private RecordAccessorFactory delegate;
+
+    @Autowired
+    private RecordAccessorConfig config;
 
     @Autowired
     private Client client;
 
-    @Autowired
-    private AuthorizationConnector authorizationConnector;
-
-    @Autowired(required = false)
-    private RecordAccessorConfig config = new RecordAccessorConfig();
-
-    private ApiVersion apiVersion = null;
-
-    /**
-     * Sets the Salesforce API version used by the generated {@link RecordAccessor} instances.
-     * <p/>
-     * If a version is not configured with this method then the default is to use the highest version supported by the
-     * Salesforce server.
-     *
-     * @param apiVersion a Salesforce API version (for example: "28.0")
-     */
-    public void setApiVersion(ApiVersion apiVersion) {
-        this.apiVersion = apiVersion;
+    public void setConfig(RecordAccessorConfig config) {
+        this.config = config;
     }
 
-    ApiVersion getApiVersion() {
-        return this.apiVersion;
+    public void setClient(Client client) {
+        this.client = client;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        delegate = new RecordAccessorFactory(config, client);
     }
 
     @Override
     public RecordAccessor getObject() {
-        return internalFactory.newInstance(config, authorizationConnector, client, apiVersion);
+        return delegate.getRecordAccessor();
     }
 
     @Override
@@ -62,5 +54,13 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor> 
     @Override
     public boolean isSingleton() {
         return true;
+    }
+
+    RecordAccessorConfig getConfig() {
+        return config;
+    }
+
+    Client getClient() {
+        return client;
     }
 }

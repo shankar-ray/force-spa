@@ -5,13 +5,14 @@
  */
 package com.force.spa.core.testbeans;
 
-import com.force.spa.SalesforceField;
-import com.force.spa.SalesforceObject;
-import com.force.spa.record.Record;
+import java.util.Date;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
-import java.util.Date;
+import com.force.spa.SalesforceField;
+import com.force.spa.SalesforceObject;
+import com.force.spa.beans.Record;
 
 @SalesforceObject
 public class DateTimeBean extends Record {

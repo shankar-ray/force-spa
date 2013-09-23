@@ -5,6 +5,22 @@
  */
 package com.force.spa.jersey;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -21,48 +37,26 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.client.WebResource;
-import org.apache.commons.lang3.StringUtils;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link RestConnector} implementation that uses Sun's Jersey 1.x client to connect to Salesforce persistence using
  * the REST API.
  */
-public final class JerseyRestConnector implements RestConnector {
+final class JerseyRestConnector implements RestConnector {
 
-    private static final Logger log = LoggerFactory.getLogger(JerseyRestConnector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JerseyRestConnector.class);
+
+    private static final ObjectReader objectReader = new ObjectMapper().reader();
     private static final Cache<URI, ApiVersion> apiVersionCache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.HOURS).build();
 
-    private final AuthorizationConnector authorizationConnector;
     private final Client client;
-    private final ApiVersion apiVersion;
-    private final ObjectReader objectReader;
+    private final ApiVersion configuredApiVersion;
+    private final AuthorizationConnector authorizationConnector;
 
-    /**
-     * Constructs a new instance.
-     *
-     * @param authorizationConnector the authorization connector used to obtain the instance URL
-     * @param client                 the fully configured Jersey client
-     * @param apiVersion             an optional apiVersion. If specified as <code>null</code>, then the highest version
-     *                               supported by the server is used.
-     */
-    public JerseyRestConnector(AuthorizationConnector authorizationConnector, Client client, ApiVersion apiVersion) {
-        this.authorizationConnector = authorizationConnector;
+    JerseyRestConnector(Client client, AuthorizationConnector authorizationConnector, ApiVersion apiVersion) {
         this.client = client;
-        this.apiVersion = apiVersion;
-        this.objectReader = new ObjectMapper().reader();
+        this.authorizationConnector = authorizationConnector;
+        this.configuredApiVersion = apiVersion;
     }
 
     @Override
@@ -75,7 +69,7 @@ public final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Delete failed: %s", buildErrorMessage(e));
+                String message = "Delete failed: " + buildErrorMessage(e);
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
@@ -92,17 +86,15 @@ public final class JerseyRestConnector implements RestConnector {
         try {
             try {
                 InputStream resultStream = getConfiguredResource(uri).get(InputStream.class);
-                JsonNode resultNode = objectReader.readTree(resultStream);
+                JsonNode resultNode = readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Get failed: %s", buildErrorMessage(e));
+                String message = "Get failed: " + buildErrorMessage(e);
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
                     throw new RecordRequestException(message, e);
                 }
-            } catch (IOException e) {
-                throw new RecordResponseException("Failed to parse response stream", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -119,7 +111,7 @@ public final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Patch failed: %s", buildErrorMessage(e));
+                String message = "Patch failed: " + buildErrorMessage(e);
                 if (e.getResponse().getStatus() == 404) {
                     throw new RecordNotFoundException(message, e);
                 } else {
@@ -136,17 +128,15 @@ public final class JerseyRestConnector implements RestConnector {
         try {
             try {
                 InputStream resultStream = getConfiguredResource(uri).post(InputStream.class, jsonBody);
-                JsonNode resultNode = objectReader.readTree(resultStream);
+                JsonNode resultNode = readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = String.format("Post failed: %s", buildErrorMessage(e));
+                String message = "Post failed: " + buildErrorMessage(e);
                 if (e.getResponse().getStatus() == 404) {
                     throw new ObjectNotFoundException(message, e);
                 } else {
                     throw new RecordRequestException(message, e);
                 }
-            } catch (IOException e) {
-                throw new RecordResponseException("Failed to parse response stream", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -165,28 +155,35 @@ public final class JerseyRestConnector implements RestConnector {
 
     @Override
     public ApiVersion getApiVersion() {
-        final URI instanceUri = authorizationConnector.getInstanceUrl();
-        try {
-            return apiVersionCache.get(instanceUri, new Callable<ApiVersion>() {
-                @Override
-                public ApiVersion call() throws JSONException {
-                    return (apiVersion != null) ? apiVersion : getHighestSupportedApiVersion(instanceUri);
-                }
-            });
-        } catch (Exception e) {
-            throw new RuntimeException(String.format("Failed to determine version for instance %s", instanceUri), e);
+        if (configuredApiVersion == null) {
+            final URI instanceUri = authorizationConnector.getInstanceUrl();
+            try {
+                return apiVersionCache.get(instanceUri, new Callable<ApiVersion>() {
+                    @Override
+                    public ApiVersion call() throws JSONException {
+                        LOG.debug(String.format("Asking %s about Salesforce API versions", instanceUri));
+                        JSONArray versionChoices =
+                            client.resource(instanceUri).path("services/data")
+                                .accept(MediaType.APPLICATION_JSON_TYPE)
+                                .get(JSONArray.class);
+
+                        JSONObject highestVersion = (JSONObject) versionChoices.get(versionChoices.length() - 1);
+                        return new ApiVersion(highestVersion.get("version").toString());
+                    }
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(String.format("Failed to determine version for instance %s", instanceUri), e);
+            }
+        } else {
+            return configuredApiVersion;
         }
     }
 
-    private ApiVersion getHighestSupportedApiVersion(URI instanceUri) throws JSONException {
-        log.debug(String.format("Asking %s about Salesforce API versions", instanceUri));
-        JSONArray versionChoices =
-            client.resource(instanceUri).path("services/data")
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(JSONArray.class);
-
-        JSONObject highestVersion = (JSONObject) versionChoices.get(versionChoices.length() - 1);
-        return new ApiVersion(highestVersion.get("version").toString());
+    /**
+     * For unit test purposes only.
+     */
+    Client getClient() {
+        return client;
     }
 
     private WebResource.Builder getConfiguredResource(URI relativeUri) {
@@ -202,6 +199,14 @@ public final class JerseyRestConnector implements RestConnector {
         }
         builder.uri(authorizationConnector.getInstanceUrl());
         return builder.build();
+    }
+
+    private static JsonNode readTree(InputStream inputStream) {
+        try {
+            return objectReader.readTree(inputStream);
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to parse response stream", e);
+        }
     }
 
     private static String buildErrorMessage(UniformInterfaceException e) {

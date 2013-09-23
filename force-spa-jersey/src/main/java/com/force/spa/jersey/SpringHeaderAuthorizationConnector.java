@@ -5,16 +5,18 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationConnector;
-import com.force.spa.AuthorizationException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import java.net.URI;
-import java.net.URISyntaxException;
+import com.force.spa.AuthorizationConnector;
+import com.force.spa.AuthorizationException;
 
 /**
  * An implementation of {@link AuthorizationConnector} which looks for the authorization information and instance
@@ -22,8 +24,10 @@ import java.net.URISyntaxException;
  * <p/>
  * The authorization header of the currently active inbound request is propagated to the outbound REST request. The
  * instance url information is expected in a header of name "Force-Instance-Url".
+ * <p/>
+ * TODO Need better mechanism than requiring “Force-Instance-Url” and “Force-UserId” headers, maybe session? Cookie?
  */
-@Component("authorizationConnector")
+@Component("spa.authorizationConnector")
 public class SpringHeaderAuthorizationConnector implements AuthorizationConnector {
     @Override
     public final String getAuthorization() {
@@ -33,6 +37,11 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
     @Override
     public final URI getInstanceUrl() {
         return getInstanceUrl(getCurrentRequest());
+    }
+
+    @Override
+    public String getUserId() {
+        throw new UnsupportedOperationException("Not implemented yet"); //TODO
     }
 
     /**

@@ -6,10 +6,7 @@
 package com.force.spa.core;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -18,6 +15,7 @@ import org.apache.commons.lang3.Validate;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
+import com.force.spa.MetadataAccessor;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
@@ -29,29 +27,21 @@ import com.force.spa.UpdateRecordOperation;
 
 public abstract class AbstractRecordAccessor implements RecordAccessor {
 
-    /**
-     * A set of shared {@link ObjectMappingContext} instances keyed by {@link RecordAccessorConfig}. All {@link
-     * RecordAccessor} instances that share the same configuration can share the same {@link ObjectMappingContext}. The
-     * contexts are thread-safe and hold no per-accessor context. There is no reason to go through the expense of
-     * creating multiple instances. This way we get to share the cache.
-     */
-    private static final Map<RecordAccessorConfig, ObjectMappingContext> sharedMappingContexts =
-        Collections.synchronizedMap(new HashMap<RecordAccessorConfig, ObjectMappingContext>());
+    private static ObjectMappingContextCache objectMappingContextCache = new ObjectMappingContextCache();
 
     private final RecordAccessorConfig config;
+    private final MetadataAccessor metadataAccessor;
     private final ObjectMappingContext mappingContext;
 
-    protected AbstractRecordAccessor(RecordAccessorConfig config) {
+    protected AbstractRecordAccessor(RecordAccessorConfig config, MetadataAccessor metadataAccessor) {
         this.config = config;
-
-        if (!sharedMappingContexts.containsKey(config)) {
-            sharedMappingContexts.put(config, new ObjectMappingContext(config));
-        }
-        this.mappingContext = sharedMappingContexts.get(config);
+        this.metadataAccessor = metadataAccessor;
+        this.mappingContext = objectMappingContextCache.getObjectMappingContext(config);
     }
 
     /**
-     * Executes a single record operation. This is used internally
+     * Executes a single record operation. This is used internally and is the primary mechanism for specific record
+     * accessor implementations to leverage common code in this base class.
      */
     protected abstract void execute(RecordOperation<?> operation);
 
@@ -141,10 +131,17 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         return new RecordQueryImpl<T>(soqlTemplate, type);
     }
 
-    protected final RecordAccessorConfig getConfig() {
+    @Override
+    public final RecordAccessorConfig getConfig() {
         return config;
     }
 
+    @Override
+    public final MetadataAccessor getMetadataAccessor() {
+        return metadataAccessor;
+    }
+
+//TODO This may be only awkward cross reference left.
     protected final ObjectMappingContext getMappingContext() {
         return mappingContext;
     }

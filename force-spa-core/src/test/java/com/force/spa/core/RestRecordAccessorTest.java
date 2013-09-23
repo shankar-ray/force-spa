@@ -5,30 +5,6 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.force.spa.RecordQuery;
-import com.force.spa.RecordRequestException;
-import com.force.spa.RecordResponseException;
-import com.force.spa.core.testbeans.DateTimeBean;
-import com.force.spa.core.testbeans.InsertableUpdatableBean;
-import com.force.spa.core.testbeans.NoAttributesBean;
-import com.force.spa.core.testbeans.PolymorphicFieldBean;
-import com.force.spa.core.testbeans.SimpleBean;
-import com.force.spa.core.testbeans.SimpleContainerBean;
-import com.force.spa.core.testbeans.StandardFieldBean;
-import com.force.spa.record.NamedRecord;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
-import org.junit.Test;
-
-import java.net.URI;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -40,6 +16,31 @@ import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.net.URI;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
+import org.junit.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.force.spa.RecordQuery;
+import com.force.spa.RecordRequestException;
+import com.force.spa.RecordResponseException;
+import com.force.spa.beans.NamedRecord;
+import com.force.spa.core.testbeans.DateTimeBean;
+import com.force.spa.core.testbeans.InsertableUpdatableBean;
+import com.force.spa.core.testbeans.NoAttributesBean;
+import com.force.spa.core.testbeans.PolymorphicFieldBean;
+import com.force.spa.core.testbeans.SimpleBean;
+import com.force.spa.core.testbeans.SimpleContainerBean;
+import com.force.spa.core.testbeans.StandardFieldBean;
 
 public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 

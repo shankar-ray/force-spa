@@ -6,7 +6,7 @@
 package com.force.spa.core.testbeans;
 
 import com.force.spa.SalesforceObject;
-import com.force.spa.record.NamedRecord;
+import com.force.spa.beans.NamedRecord;
 
 @SalesforceObject(name = "ExplicitName")
 public class ExplicitlyNamedBean extends NamedRecord {

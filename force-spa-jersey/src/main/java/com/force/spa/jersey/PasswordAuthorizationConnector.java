@@ -5,6 +5,18 @@
  */
 package com.force.spa.jersey;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,16 +24,6 @@ import com.force.spa.AuthorizationConnector;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.UniformInterfaceException;
 import com.sun.jersey.api.representation.Form;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * An implementation of {@link AuthorizationConnector} which uses a username and password to obtain the authorization
@@ -29,6 +31,9 @@ import java.net.URISyntaxException;
  * <p/>
  * This class can also be used standalone (outside the context of SPA).
  */
+
+//TODO Seems like may be in wrong package, refactor to use any RestConnector? Add version that doesn't require OAuth configuration...
+
 public class PasswordAuthorizationConnector implements AuthorizationConnector {
 
     private static final Logger log = LoggerFactory.getLogger(PasswordAuthorizationConnector.class);
@@ -139,12 +144,8 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         return instanceUrl;
     }
 
-    /**
-     * Returns the user ID of the currently authenticated user.
-     *
-     * @return the user ID of the currently authenticated user
-     */
-    public String getUsedId() {
+    @Override
+    public String getUserId() {
         return userId;
     }
 

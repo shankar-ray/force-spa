@@ -5,6 +5,7 @@
  */
 package com.force.spa;
 
+import java.io.Serializable;
 import java.net.URI;
 
 /**
@@ -13,18 +14,25 @@ import java.net.URI;
  * <p/>
  * This abstraction gives the surrounding application flexibility in how it obtains and stores the information.
  */
-public interface AuthorizationConnector {
+public interface AuthorizationConnector extends Serializable {
     /**
-     * Retrieves the value of the authorization header to use for an outbound REST request.
+     * Gets the value of the authorization header to use for an outbound REST request.
      *
      * @return a value for the Authorization header
      */
     String getAuthorization();
 
     /**
-     * Retrieves the instance URL to use for an outbound REST request.
+     * Gets the instance URL to use for an outbound REST request.
      *
      * @return the instance URL
      */
     URI getInstanceUrl();
+
+    /**
+     * Gets the user Id.
+     *
+     * @return the user Id.
+     */
+    String getUserId();
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.force.spa.core"/>
+    <context:component-scan base-package="com.force.spa.jersey"/>
+
+    <bean id="spa.clientConfig" class="com.force.spa.jersey.SpringClientConfig">
+        <property name="maxConnectionsPerRoute" value="#{100}"/>
+        <property name="maxConnectionsTotal" value="#{1000}"/>
+    </bean>
+
+    <bean id="local.clientConfig" class="com.force.spa.jersey.SpringClientConfig" autowire-candidate="false"/>
+
+    <bean id="spa.client" class="com.force.spa.jersey.SpringClientFactory">
+        <property name="authorizationConnector" ref="local.authorizationConnector"/>
+        <property name="clientConfig" ref="local.clientConfig"/>
+    </bean>
+
+    <bean id="local.client" class="com.force.spa.jersey.SpringClientFactory" autowire-candidate="false"/>
+
+    <bean id="spa.recordAccessorConfig" class="com.force.spa.core.SpringRecordAccessorConfigFactory">
+        <property name="authorizationConnector" ref="local.authorizationConnector"/>
+        <property name="apiVersion" value="28.0"/>
+        <property name="auditFieldWritingAllowed" value="true"/>
+        <property name="fieldAnnotationRequired" value="true"/>
+        <property name="objectAnnotationRequired" value="true"/>
+    </bean>
+
+    <bean id="local.recordAccessorConfig" class="com.force.spa.core.SpringRecordAccessorConfigFactory" autowire-candidate="false"/>
+
+    <bean id="spa.authorizationConnector" class="com.force.spa.jersey.SpringHeaderAuthorizationConnector"/>
+
+    <bean id="local.authorizationConnector" class="com.force.spa.jersey.SpringHeaderAuthorizationConnector" autowire-candidate="false"/>
+
+    <bean id="spa.recordAccessor" class="com.force.spa.jersey.SpringRecordAccessorFactory">
+        <property name="config" ref="local.recordAccessorConfig"/>
+        <property name="client" ref="local.client"/>
+    </bean>
+
+</beans>

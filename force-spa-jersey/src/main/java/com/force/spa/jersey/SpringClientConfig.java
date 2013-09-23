@@ -7,30 +7,55 @@ package com.force.spa.jersey;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.InitializingBean;
+import org.apache.http.conn.ClientConnectionManager;
 import org.springframework.stereotype.Component;
 
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-
 /**
- * A Spring bean for configuring the Jersey {@link DefaultApacheHttpClient4Config} that used by {@link
- * SpringClientFactory} for create Jersey {@link com.sun.jersey.api.client.Client} instances.
+ * A Spring bean for configuring the Jersey {@link com.sun.jersey.api.client.config.ClientConfig} used by {@link
+ * SpringClientFactory}.
  *
  * @see SpringClientFactory
  */
-@Component("clientConfig")
-public class SpringClientConfig extends DefaultApacheHttpClient4Config implements InitializingBean {
+@Component("spa.clientConfig")
+public class SpringClientConfig extends SpaClientConfig {
 
-    private Map<String, Object> properties = null;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (properties != null) {
-            getProperties().putAll(properties);
-        }
+    /**
+     * Sets the maximum total number of connections to maintain in the Apache Http client pool.
+     * <p/>
+     * This only applies to the case when no explicit {@link ClientConnectionManager} is specified. The value is used
+     * when creating a default connection manager.
+     * <p/>
+     * If not specified, the value defaults to 100.
+     */
+    public void setMaxConnectionsTotal(int maxConnectionsTotal) {
+        getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, maxConnectionsTotal);
     }
 
+    /**
+     * Sets the maximum number of connections to maintain in the Apache Http client pool for a given route.
+     * <p/>
+     * This only applies to the case when no explicit {@link ClientConnectionManager} is specified. The value is used
+     * when creating a default connection manager.
+     * <p/>
+     * If not specified, the value defaults to 20.
+     */
+    public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
+        getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, maxConnectionsPerRoute);
+    }
+
+    /**
+     * Sets the Apache Http {@link ClientConnectionManager} to use.
+     * <p/>
+     * If not specified, the value defaults to an instance of {@link org.apache.http.impl.conn.PoolingClientConnectionManager}.
+     */
+    public void setConnectionManager(ClientConnectionManager connectionManager) {
+        getProperties().put(SpaClientConfig.PROPERTY_CONNECTION_MANAGER, connectionManager);
+    }
+
+    /**
+     * Sets additional properties.
+     */
     public void setProperties(Map<String, Object> properties) {
-        this.properties = properties;
+        getProperties().putAll(properties);
     }
 }

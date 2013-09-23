@@ -49,8 +49,7 @@ public class ClientFactoryTest {
     @Test
     public void testNewFactoryWithDefaultConfig() {
 
-        ClientFactory factory = new ClientFactory();
-        Client client = factory.newInstance(mockConnector);
+        Client client = new ClientFactory(mockConnector).getClient();
 
         assertThat(client, instanceOf(ApacheHttpClient4.class));
         assertThat(getConnectionManager(client), instanceOf(PoolingClientConnectionManager.class));
@@ -62,11 +61,10 @@ public class ClientFactoryTest {
     public void testNewFactoryWithSpecifiedPoolLimits() {
 
         ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
-        clientConfig.getProperties().put(ClientFactory.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, 101);
-        clientConfig.getProperties().put(ClientFactory.PROPERTY_MAX_CONNECTIONS_TOTAL, 1001);
+        clientConfig.getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, 101);
+        clientConfig.getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, 1001);
 
-        ClientFactory factory = new ClientFactory(clientConfig);
-        Client client = factory.newInstance(mockConnector);
+        Client client = new ClientFactory(mockConnector, clientConfig).getClient();
 
         assertThat(client, instanceOf(ApacheHttpClient4.class));
         assertThat(getConnectionManager(client), instanceOf(PoolingClientConnectionManager.class));
@@ -84,8 +82,7 @@ public class ClientFactoryTest {
         ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
         clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, myConnectionManager);
 
-        ClientFactory factory = new ClientFactory(clientConfig);
-        Client client = factory.newInstance(mockConnector);
+        Client client = new ClientFactory(mockConnector, clientConfig).getClient();
 
         assertThat(client, instanceOf(ApacheHttpClient4.class));
         assertThat(getConnectionManager(client), instanceOf(PoolingClientConnectionManager.class));
@@ -96,8 +93,7 @@ public class ClientFactoryTest {
     @Test
     public void testThatAuthorizationFilterIsEstablished() {
 
-        ClientFactory factory = new ClientFactory();
-        Client client = factory.newInstance(mockConnector);
+        Client client = new ClientFactory(mockConnector).getClient();
 
         issueDummyPutRequest(client, new ClientRequestChecker() {
             @Override
