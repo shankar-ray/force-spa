@@ -132,7 +132,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     //TODO This may be only awkward cross reference left.
-    protected final ObjectMappingContext getMappingContext() {
+    public final ObjectMappingContext getMappingContext() {
         return mappingContext;
     }
 
