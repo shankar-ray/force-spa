@@ -31,6 +31,7 @@ import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.RestConnector;
+import com.force.spa.UnauthorizedException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.sun.jersey.api.client.Client;
@@ -69,12 +70,7 @@ final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = "Delete failed: " + buildErrorMessage(e);
-                if (e.getResponse().getStatus() == 404) {
-                    throw new RecordNotFoundException(message, e);
-                } else {
-                    throw new RecordRequestException(message, e);
-                }
+                throw mappedException("Delete", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -89,12 +85,7 @@ final class JerseyRestConnector implements RestConnector {
                 JsonNode resultNode = readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = "Get failed: " + buildErrorMessage(e);
-                if (e.getResponse().getStatus() == 404) {
-                    throw new RecordNotFoundException(message, e);
-                } else {
-                    throw new RecordRequestException(message, e);
-                }
+                throw mappedException("Get", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -111,12 +102,7 @@ final class JerseyRestConnector implements RestConnector {
                 }
                 callback.onSuccess(null);
             } catch (UniformInterfaceException e) {
-                String message = "Patch failed: " + buildErrorMessage(e);
-                if (e.getResponse().getStatus() == 404) {
-                    throw new RecordNotFoundException(message, e);
-                } else {
-                    throw new RecordRequestException(message, e);
-                }
+                throw mappedException("Patch", e);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -131,12 +117,7 @@ final class JerseyRestConnector implements RestConnector {
                 JsonNode resultNode = readTree(resultStream);
                 callback.onSuccess(resultNode);
             } catch (UniformInterfaceException e) {
-                String message = "Post failed: " + buildErrorMessage(e);
-                if (e.getResponse().getStatus() == 404) {
-                    throw new ObjectNotFoundException(message, e);
-                } else {
-                    throw new RecordRequestException(message, e);
-                }
+                throw mappedException("Post", e, true);
             }
         } catch (RuntimeException e) {
             callback.onFailure(e);
@@ -209,9 +190,29 @@ final class JerseyRestConnector implements RestConnector {
         }
     }
 
-    private static String buildErrorMessage(UniformInterfaceException e) {
+    private static RecordRequestException mappedException(String methodName, UniformInterfaceException e) {
+        return mappedException(methodName, e, false);
+    }
+
+    private static RecordRequestException mappedException(String methodName, UniformInterfaceException e, boolean forPost) {
+        String message = buildErrorMessage(methodName, e);
+        switch (e.getResponse().getStatus()) {
+            case 401:
+                return new UnauthorizedException(e);
+
+            case 404:
+                return (forPost) ? new ObjectNotFoundException(message, e) : new RecordNotFoundException(message, e);
+
+            default:
+                return new RecordRequestException(message, e);
+        }
+    }
+
+    private static String buildErrorMessage(String methodName, UniformInterfaceException e) {
         try {
-            StringBuilder builder = new StringBuilder(80);
+            StringBuilder builder = new StringBuilder(120);
+            builder.append(methodName).append(": ");
+
             JSONArray jsonResponse = e.getResponse().getEntity(JSONArray.class);
             for (int i = 0, limit = jsonResponse.length(); i < limit; i++) {
                 JSONObject error = (JSONObject) jsonResponse.get(i);
