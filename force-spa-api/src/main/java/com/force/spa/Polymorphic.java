@@ -13,7 +13,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks a member (field or setter method) as being a polymorphic field.
+ * Identifies a member (field or setter method) as being a polymorphic field.
  */
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)

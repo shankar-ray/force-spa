@@ -7,6 +7,7 @@ package com.force.spa.beans;
 
 import java.util.Map;
 
+import com.force.spa.Attributes;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 
@@ -31,7 +32,7 @@ public class Record {
         this.id = id;
     }
 
-    @SalesforceField(name = "attributes")
+    @Attributes
     public Map<String, String> getAttributes() {
         return attributes;
     }

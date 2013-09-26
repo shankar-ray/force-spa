@@ -13,7 +13,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Marks a member (field or setter method) as representing a Salesforce persistent field.
+ * Identifies a member (field or setter method) as representing a Salesforce persistent field.
  */
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)

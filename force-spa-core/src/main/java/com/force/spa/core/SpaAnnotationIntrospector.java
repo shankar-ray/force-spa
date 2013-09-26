@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Transient;
 
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.databind.introspect.NopAnnotationIntrospector;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.util.BeanUtil;
+import com.force.spa.Attributes;
 import com.force.spa.Polymorphic;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceField;
@@ -44,8 +46,10 @@ import com.force.spa.SalesforceObject;
  * This implementation also accepts a limited subset of JPA annotations for backward compatability with earlier library
  * versions. Eventually that support may go away.
  *
- * @see SalesforceObject
+ * @see Attributes
+ * @see Polymorphic
  * @see SalesforceField
+ * @see SalesforceObject
  */
 class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
@@ -199,6 +203,16 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
             if (salesforceField != null) {
                 return salesforceField.name();
+            }
+
+            Attributes attributes = element.getAnnotation(Attributes.class);
+            if (attributes != null) {
+                return ObjectDescriptor.ATTRIBUTES_FIELD_NAME;
+            }
+
+            Id id = element.getAnnotation(Id.class);
+            if (id != null) {
+                return ObjectDescriptor.ID_FIELD_NAME;
             }
 
             Column column = element.getAnnotation(Column.class);

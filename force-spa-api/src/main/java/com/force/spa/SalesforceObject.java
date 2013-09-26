@@ -13,7 +13,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Marks a type as representing a Salesforce persistent object.
+ * Identifies a type as representing a Salesforce persistent object.
  */
 @Documented
 @Target(TYPE)
