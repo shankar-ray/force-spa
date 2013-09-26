@@ -35,26 +35,16 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    protected void execute(RecordOperation<?> operation) {
-        if (operation instanceof RestRecordOperation) {
-            ((RestRecordOperation) operation).start(connector);
-            connector.flush();
-        } else {
-            throw new IllegalArgumentException("operation isn't supported because it doesn't implement RestRecordOperation");
-        }
-    }
-
-    @Override
     public void execute(List<RecordOperation<?>> operations) {
-        RestConnector batchConnector = isBatchingSupported() ? new BatchRestConnector(connector) : connector;
+        RestConnector connector = shouldBatch(operations) ? new BatchRestConnector(this.connector) : this.connector;
         for (RecordOperation<?> operation : operations) {
             if (operation instanceof RestRecordOperation) {
-                ((RestRecordOperation) operation).start(batchConnector);
+                ((RestRecordOperation) operation).start(connector);
             } else {
                 throw new IllegalArgumentException("operation isn't supported because it doesn't implement RestRecordOperation");
             }
         }
-        batchConnector.flush(); // Causes all the buffered operations to be sent (executed).
+        connector.flush(); // Causes all the buffered operations to be sent (executed).
     }
 
     @Override
@@ -97,6 +87,10 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
      */
     public RestConnector getConnector() {
         return connector;
+    }
+
+    private boolean shouldBatch(List<RecordOperation<?>> operations) {
+        return operations.size() > 1 && isBatchingSupported();
     }
 
     private boolean isBatchingSupported() {

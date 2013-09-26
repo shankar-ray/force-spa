@@ -32,11 +32,6 @@ public class DummyRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    protected void execute(RecordOperation<?> operation) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void execute(List<RecordOperation<?>> operations) {
         throw new UnsupportedOperationException();
     }

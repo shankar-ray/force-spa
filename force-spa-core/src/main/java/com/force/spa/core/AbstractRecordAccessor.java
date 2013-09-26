@@ -39,19 +39,9 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         this.mappingContext = objectMappingContextCache.getObjectMappingContext(config);
     }
 
-    /**
-     * Executes a single record operation. This is used internally and is the primary mechanism for specific record
-     * accessor implementations to leverage common code in this base class.
-     */
-    protected abstract void execute(RecordOperation<?> operation);
-
     @Override
-    public void execute(RecordOperation<?>... operations) {
-        if (operations.length == 1) {
-            execute(operations[0]); // Optimize for the single operation case
-        } else {
-            execute(Arrays.asList(operations));
-        }
+    public final void execute(RecordOperation<?>... operations) {
+        execute(Arrays.asList(operations));
     }
 
     @Override
@@ -141,7 +131,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         return metadataAccessor;
     }
 
-//TODO This may be only awkward cross reference left.
+    //TODO This may be only awkward cross reference left.
     protected final ObjectMappingContext getMappingContext() {
         return mappingContext;
     }
