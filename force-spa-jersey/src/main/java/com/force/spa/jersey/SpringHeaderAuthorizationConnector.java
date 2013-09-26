@@ -16,7 +16,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.force.spa.AuthorizationConnector;
-import com.force.spa.AuthorizationException;
+import com.force.spa.BadRequestException;
 
 /**
  * An implementation of {@link AuthorizationConnector} which looks for the authorization information and instance
@@ -72,7 +72,7 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
         if (authorizationHeader != null) {
             return authorizationHeader;
         } else {
-            throw new AuthorizationException("Missing Authorization header");
+            throw new BadRequestException("Missing Authorization header");
         }
     }
 
@@ -88,10 +88,10 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
             try {
                 return new URI(instanceUrlHeader);
             } catch (URISyntaxException e) {
-                throw new AuthorizationException("Invalid Force-Instance-Url header", e);
+                throw new BadRequestException("Invalid Force-Instance-Url header", e);
             }
         } else {
-            throw new AuthorizationException("Missing Force-Instance-Url header");
+            throw new BadRequestException("Missing Force-Instance-Url header");
         }
     }
 }

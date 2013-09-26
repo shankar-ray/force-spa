@@ -5,15 +5,16 @@
  */
 package com.force.spa.jersey;
 
-import com.force.spa.AuthorizationException;
-import com.force.spa.RecordRequestException;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import org.springframework.stereotype.Component;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+
+import org.springframework.stereotype.Component;
+
+import com.force.spa.BadRequestException;
+import com.force.spa.RecordRequestException;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.UniformInterfaceException;
 
 /**
  * A Jersey exception mapper that can map ({@link RecordRequestException}) into appropriate HTTP responses.
@@ -24,7 +25,7 @@ public class RecordRequestExceptionMapper implements ExceptionMapper<RecordReque
     @Override
     public Response toResponse(RecordRequestException exception) {
 
-        if (exception instanceof AuthorizationException) {
+        if (exception instanceof BadRequestException) {
 
             return Response
                 .status(ClientResponse.Status.BAD_REQUEST)

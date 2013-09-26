@@ -5,10 +5,6 @@
  */
 package com.force.spa;
 
-import org.junit.Test;
-
-import java.io.Serializable;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -16,19 +12,23 @@ import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
-public class AuthorizationExceptionTest {
+import java.io.Serializable;
+
+import org.junit.Test;
+
+public class BadRequestExceptionTest {
     private static final String MESSAGE = "Exception Message";
     private static final String CAUSE_MESSAGE = "Cause Message";
 
     @Test
     public void testDerivation() {
-        assertThat(new AuthorizationException(), isA(RuntimeException.class));
-        assertThat(new AuthorizationException(), isA(Serializable.class));
+        assertThat(new BadRequestException(), isA(RuntimeException.class));
+        assertThat(new BadRequestException(), isA(Serializable.class));
     }
 
     @Test
     public void testDefaultConstructor() {
-        AuthorizationException exception = new AuthorizationException();
+        BadRequestException exception = new BadRequestException();
         assertThat(exception.getCause(), is(nullValue()));
         assertThat(exception.getMessage(), is(nullValue()));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName())));
@@ -38,7 +38,7 @@ public class AuthorizationExceptionTest {
     public void testCauseConstructor() {
         RuntimeException cause = new RuntimeException(CAUSE_MESSAGE);
 
-        AuthorizationException exception = new AuthorizationException(cause);
+        BadRequestException exception = new BadRequestException(cause);
         assertThat(exception.getCause(), is(sameInstance((Throwable) cause)));
         assertThat(exception.getMessage(), is(equalTo(cause.toString())));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + cause.toString())));
@@ -46,7 +46,7 @@ public class AuthorizationExceptionTest {
 
     @Test
     public void testMessageConstructor() {
-        AuthorizationException exception = new AuthorizationException(MESSAGE);
+        BadRequestException exception = new BadRequestException(MESSAGE);
         assertThat(exception.getCause(), is(nullValue()));
         assertThat(exception.getMessage(), is(equalTo(MESSAGE)));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + MESSAGE)));
@@ -56,7 +56,7 @@ public class AuthorizationExceptionTest {
     public void testMessageAndCauseConstructor() {
         RuntimeException cause = new RuntimeException(CAUSE_MESSAGE);
 
-        AuthorizationException exception = new AuthorizationException(MESSAGE, cause);
+        BadRequestException exception = new BadRequestException(MESSAGE, cause);
         assertThat(exception.getCause(), is(sameInstance((Throwable) cause)));
         assertThat(exception.getMessage(), is(equalTo(MESSAGE)));
         assertThat(exception.toString(), is(equalTo(exception.getClass().getName() + ": " + MESSAGE)));

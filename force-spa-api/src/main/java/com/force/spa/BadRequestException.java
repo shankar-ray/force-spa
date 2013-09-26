@@ -6,15 +6,15 @@
 package com.force.spa;
 
 /**
- * Thrown to indicate a problem with the authorization information for the the request.
+ * Thrown to indicate a problem with the authorization information for the request.
  */
-public class AuthorizationException extends RecordRequestException {
+public class BadRequestException extends RecordRequestException {
     private static final long serialVersionUID = -4541948422240513930L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.
      */
-    public AuthorizationException() {
+    public BadRequestException() {
         super();
     }
 
@@ -23,7 +23,7 @@ public class AuthorizationException extends RecordRequestException {
      *
      * @param message the detail message
      */
-    public AuthorizationException(String message) {
+    public BadRequestException(String message) {
         super(message);
     }
 
@@ -34,7 +34,7 @@ public class AuthorizationException extends RecordRequestException {
      *
      * @param cause the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public AuthorizationException(Throwable cause) {
+    public BadRequestException(Throwable cause) {
         super(cause);
     }
 
@@ -44,7 +44,7 @@ public class AuthorizationException extends RecordRequestException {
      * @param message the detail message
      * @param cause   the cause. <tt>null</tt> is permitted, and indicates that the cause is nonexistent or unknown.
      */
-    public AuthorizationException(String message, Throwable cause) {
+    public BadRequestException(String message, Throwable cause) {
         super(message, cause);
     }
 }
