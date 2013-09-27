@@ -51,44 +51,44 @@ import com.force.spa.SalesforceObject;
  * @see SalesforceField
  * @see SalesforceObject
  */
-class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
+public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     private static final long serialVersionUID = -6877076662700362622L;
-
-    private static final String[] STARTING_PROPERTY_ORDER = new String[]{"attributes", "Id", "Name"};
 
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
     private static final Class<?>[] UPDATE_VIEWS = new Class<?>[]{SerializationViews.Update.class, SerializationViews.Patch.class};
 
+    private static final String[] STARTING_PROPERTY_ORDER = new String[]{"attributes", "Id", "Name"};
+
     private final boolean auditFieldWritingAllowed;
     private final ObjectMappingContext mappingContext;
 
-    SpaAnnotationIntrospector(ObjectMappingContext mappingContext, RecordAccessorConfig config) {
+    public SpaAnnotationIntrospector(ObjectMappingContext mappingContext, RecordAccessorConfig config) {
         this.auditFieldWritingAllowed = config.isAuditFieldWritingAllowed();
         this.mappingContext = mappingContext;
     }
 
     @Override
     public String findTypeName(AnnotatedClass annotatedClass) {
-        return findSpecifiedSalesforceObjectName(annotatedClass.getAnnotated());
+        return findSpecifiedTypeName(annotatedClass.getAnnotated());
     }
 
     @Override
     public PropertyName findRootName(AnnotatedClass annotatedClass) {
-        String simpleName = findSpecifiedSalesforceObjectName(annotatedClass.getAnnotated());
+        String simpleName = findSpecifiedTypeName(annotatedClass.getAnnotated());
         return (simpleName == null) ? null : new PropertyName(simpleName);
     }
 
     @Override
     public PropertyName findNameForSerialization(Annotated annotated) {
-        String simpleName = findSalesforceFieldName(annotated);
+        String simpleName = findSpecifiedPropertyName(annotated);
         return (simpleName == null) ? null : new PropertyName(simpleName);
     }
 
     @Override
     public PropertyName findNameForDeserialization(Annotated annotated) {
-        String simpleName = findSalesforceFieldName(annotated);
+        String simpleName = findSpecifiedPropertyName(annotated);
         return (simpleName == null) ? null : new PropertyName(simpleName);
     }
 
@@ -99,11 +99,11 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
         if (!insertable || !updatable) {
             if (!insertable && !updatable) {
-                return NEVER_VIEWS;   // Never serialized
+                return getNeverViews();   // Never serialized
             } else if (insertable) {
-                return CREATE_VIEWS;  // Only serialized for create
+                return getCreateViews();  // Only serialized for create
             } else {
-                return UPDATE_VIEWS;  // Only serialized for update (and patch).
+                return getUpdateViews();  // Only serialized for update (and patch).
             }
         } else {
             return super.findViews(annotated);
@@ -139,7 +139,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
         ArrayList<NamedType> result = new ArrayList<NamedType>();
         for (Class<?> type : polymorphic.value()) {
-            result.add(new NamedType(type, findSalesforceObjectName(type)));
+            result.add(new NamedType(type, findTypeName(type)));
         }
         return result;
     }
@@ -161,39 +161,63 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     @Override
     public String[] findSerializationPropertyOrder(AnnotatedClass ac) {
-        return STARTING_PROPERTY_ORDER; // The order for a few fields we want at the front (if they exist).
+        return STARTING_PROPERTY_ORDER.clone(); // The order for a few fields we want at the front (if they exist).
     }
 
     @Override
     public Object findSerializer(Annotated annotated) {
-        if ("attributes".equals(findSalesforceFieldName(annotated))) {
+        if (ObjectDescriptor.ATTRIBUTES_FIELD_NAME.equals(findPropertyName(annotated))) {
             return new AttributesSerializer();
         } else {
             return super.findSerializer(annotated);
         }
     }
 
-    static String findSalesforceObjectName(Class<?> clazz) {
-        String name = findSpecifiedSalesforceObjectName(clazz);
+    public static String findTypeName(Class<?> clazz) {
+        String name = findSpecifiedTypeName(clazz);
         if (name == null) {
             name = clazz.getSimpleName();
         }
         return name;
     }
 
-    private static String findSpecifiedSalesforceObjectName(Class<?> clazz) {
+    private static String findSpecifiedTypeName(Class<?> clazz) {
         SalesforceObject salesforceObject = clazz.getAnnotation(SalesforceObject.class);
         if (salesforceObject != null) {
             return salesforceObject.name();
         }
+
         Entity entity = clazz.getAnnotation(Entity.class);
         if (entity != null) {
             return entity.name();
         }
+
+        if (clazz.getSuperclass() != null) {
+            return findSpecifiedTypeName(clazz.getSuperclass());
+        }
+
         return null;
     }
 
-    private static String findSalesforceFieldName(Annotated annotated) {
+    public static String findPropertyName(Annotated annotated) {
+        String name = findSpecifiedPropertyName(annotated);
+        if (name != null) {
+            return name;
+        } else if (annotated instanceof AnnotatedField) {
+            return annotated.getName();
+        } else if (annotated instanceof AnnotatedMethod) {
+            AnnotatedMethod method = (AnnotatedMethod) annotated;
+            if (method.getParameterCount() == 0) {
+                return BeanUtil.okNameForGetter(method);
+            } else {
+                return BeanUtil.okNameForSetter(method);
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private static String findSpecifiedPropertyName(Annotated annotated) {
         if (!(annotated instanceof AnnotatedField || annotated instanceof AnnotatedMethod)) {
             return null;
         }
@@ -229,7 +253,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     private boolean isInsertable(Annotated annotated) {
-        if (IntrospectionUtils.isNonInsertableStandardProperty(getPropertyName(annotated), auditFieldWritingAllowed)) {
+        if (IntrospectionUtils.isNonInsertableStandardProperty(findPropertyName(annotated), auditFieldWritingAllowed)) {
             return false;
         }
 
@@ -254,7 +278,7 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     private boolean isUpdatable(Annotated annotated) {
-        if (IntrospectionUtils.isNonUpdatableStandardProperty(getPropertyName(annotated), auditFieldWritingAllowed)) {
+        if (IntrospectionUtils.isNonUpdatableStandardProperty(findPropertyName(annotated), auditFieldWritingAllowed)) {
             return false;
         }
 
@@ -278,22 +302,16 @@ class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return true;
     }
 
-    private static String getPropertyName(Annotated annotated) {
-        String name = findSalesforceFieldName(annotated);
-        if (name != null) {
-            return name;
-        } else if (annotated instanceof AnnotatedField) {
-            return annotated.getName();
-        } else if (annotated instanceof AnnotatedMethod) {
-            AnnotatedMethod method = (AnnotatedMethod) annotated;
-            if (method.getParameterCount() == 0) {
-                return BeanUtil.okNameForGetter(method);
-            } else {
-                return BeanUtil.okNameForSetter(method);
-            }
-        } else {
-            return null;
-        }
+    protected Class<?>[] getNeverViews() {
+        return NEVER_VIEWS.clone();
+    }
+
+    protected Class<?>[] getCreateViews() {
+        return CREATE_VIEWS.clone();
+    }
+
+    protected Class<?>[] getUpdateViews() {
+        return UPDATE_VIEWS.clone();
     }
 
     @SuppressWarnings("UnusedParameters")

@@ -85,6 +85,6 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
     }
 
     private static boolean isPropertyOfCustomEntity(AnnotatedMember member) {
-        return SpaAnnotationIntrospector.findSalesforceObjectName(member.getDeclaringClass()).endsWith("__c");
+        return SpaAnnotationIntrospector.findTypeName(member.getDeclaringClass()).endsWith("__c");
     }
 }

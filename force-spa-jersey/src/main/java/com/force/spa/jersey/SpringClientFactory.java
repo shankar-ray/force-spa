@@ -64,11 +64,11 @@ public class SpringClientFactory implements FactoryBean<Client>, InitializingBea
         return true;
     }
 
-    AuthorizationConnector getAuthorizationConnector() {
+    protected AuthorizationConnector getAuthorizationConnector() {
         return authorizationConnector;
     }
 
-    ClientConfig getClientConfig() {
+    protected ClientConfig getClientConfig() {
         return clientConfig;
     }
 }

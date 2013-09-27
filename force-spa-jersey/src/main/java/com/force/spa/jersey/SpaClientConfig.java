@@ -29,4 +29,13 @@ public class SpaClientConfig extends DefaultApacheHttpClient4Config {
      * If not specified, the value defaults to 20.
      */
     public static final String PROPERTY_MAX_CONNECTIONS_PER_ROUTE = "com.force.spa.jersey.apacheMaxConnectionsPerRoute";
+
+    /**
+     * A specific SSL socket factory implementation to use.
+     * <p/>
+     * The value MUST be an instance of {@link org.apache.http.conn.ssl.SSLSocketFactory}.
+     * <p/>
+     * If not specified, Apache defaults are used.
+     */
+    public static final String PROPERTY_SSL_SOCKET_FACTORY = "com.force.spa.jersey.apacheSslSocketFactory";
 }

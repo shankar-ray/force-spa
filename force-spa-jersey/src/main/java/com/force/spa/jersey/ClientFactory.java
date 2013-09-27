@@ -8,6 +8,8 @@ package com.force.spa.jersey;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.lang3.Validate;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 
 import com.force.spa.AuthorizationConnector;
@@ -81,7 +83,15 @@ public final class ClientFactory {
         connectionManager.setDefaultMaxPerRoute(getMaxConnectionsPerRoute(clientConfig));
         connectionManager.setMaxTotal(getMaxConnectionsTotal(clientConfig));
 
+        if (hasSslSocketFactoryConfigured(clientConfig)) {
+            connectionManager.getSchemeRegistry().register(new Scheme("https", 443, getSslSocketFactory(clientConfig)));
+        }
+
         clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, connectionManager);
+    }
+
+    private static boolean hasSslSocketFactoryConfigured(ClientConfig clientConfig) {
+        return clientConfig.getProperty(SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY) != null;
     }
 
     private static int getMaxConnectionsPerRoute(ClientConfig clientConfig) {
@@ -90,6 +100,10 @@ public final class ClientFactory {
 
     private static int getMaxConnectionsTotal(ClientConfig clientConfig) {
         return getProperty(clientConfig, SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
+    }
+
+    private static SSLSocketFactory getSslSocketFactory(ClientConfig clientConfig) {
+        return getProperty(clientConfig, SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY, null);
     }
 
     @SuppressWarnings("unchecked")
