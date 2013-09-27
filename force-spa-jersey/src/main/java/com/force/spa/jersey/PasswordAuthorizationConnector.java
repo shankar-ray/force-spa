@@ -144,7 +144,6 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         return instanceUrl;
     }
 
-    @Override
     public String getUserId() {
         return userId;
     }

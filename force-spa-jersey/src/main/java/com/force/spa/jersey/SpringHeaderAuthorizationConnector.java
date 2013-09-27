@@ -39,11 +39,6 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
         return getInstanceUrl(getCurrentRequest());
     }
 
-    @Override
-    public String getUserId() {
-        throw new UnsupportedOperationException("Not implemented yet"); //TODO
-    }
-
     /**
      * Obtain the current {@link javax.servlet.http.HttpServletRequest} from the Spring container.
      *

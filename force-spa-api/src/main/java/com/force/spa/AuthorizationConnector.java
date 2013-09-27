@@ -28,11 +28,4 @@ public interface AuthorizationConnector extends Serializable {
      * @return the instance URL
      */
     URI getInstanceUrl();
-
-    /**
-     * Gets the user Id.
-     *
-     * @return the user Id.
-     */
-    String getUserId();
 }

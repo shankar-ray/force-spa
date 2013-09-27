@@ -15,10 +15,12 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.beans.GroupBrief;
 import com.force.spa.beans.Share;
 import com.force.spa.beans.UserBrief;
+import com.force.spa.jersey.PasswordAuthorizationConnector;
 
 public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegrationTest {
 
@@ -35,7 +37,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     @Test
     public void testCreateWithRelationshipById() {
         Guild guild = createGuild();
-        String userId = accessor.getConfig().getAuthorizationConnector().getUserId();
+        String userId = getCurrentUserId();
         UserBrief user = accessor.get(userId, UserBrief.class);
 
         GuildMembership membership = new GuildMembership();
@@ -55,7 +57,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     @Test
     public void testCreateWithRelationshipByExternalId() {
         Guild guild = createGuild();
-        String userId = accessor.getConfig().getAuthorizationConnector().getUserId();
+        String userId = getCurrentUserId();
         UserBrief user = accessor.get(userId, UserBrief.class);
         UserBrief userByUsername = new UserBrief();
         userByUsername.setUsername(user.getUsername());
@@ -163,4 +165,14 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         }
         return groups.get(0);
     }
+
+    private String getCurrentUserId() {
+        AuthorizationConnector connector = accessor.getConfig().getAuthorizationConnector();
+        if ( connector instanceof PasswordAuthorizationConnector) {
+            return ((PasswordAuthorizationConnector)connector).getUserId();
+        }    else {
+            throw new IllegalStateException("I don't know how to get the user id from that kind of authorization connector");
+        }
+    }
+
 }
