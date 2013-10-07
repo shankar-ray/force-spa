@@ -5,23 +5,18 @@
  */
 package com.force.spa.core;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.force.spa.RestConnector;
-
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.channels.CompletionHandler;
+
+import com.force.spa.core.rest.RestConnector;
 
 /**
- * A {@link RestConnector} implementation that is designed for use in unit tests. The asynchronous callback interface of
+ * A {@link com.force.spa.core.rest.RestConnector} implementation that is designed for use in unit tests. The asynchronous callback interface of
  * the RestConnector is a pain to mock so this TestRestConnector wraps some synchronous methods that are much easier to
  * mock.
  */
 public abstract class TestRestConnector implements RestConnector {
-
-    private ObjectReader objectReader;
 
     public abstract void delete(URI uri);
 
@@ -31,65 +26,58 @@ public abstract class TestRestConnector implements RestConnector {
 
     public abstract InputStream post(URI uri, String jsonBody);
 
+    public abstract MappingContext getMappingContext();
+
+    public int getStatus() {
+        return 200;
+    }
+
     @Override
     public final boolean isSynchronous() {
         return true;
     }
 
     @Override
-    public final void flush() {
+    public final void join() {
     }
 
     @Override
-    public final void delete(URI uri, Callback<Void> callback) {
+    public final void delete(URI uri, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
         try {
             delete(uri);
-            callback.onSuccess(null);
-        } catch (RuntimeException e) {
-            callback.onFailure(e);
+            completionHandler.completed(null, getStatus());
+        } catch (Exception e) {
+            completionHandler.failed(e, getStatus());
         }
     }
 
     @Override
-    public final void get(URI uri, Callback<JsonNode> callback) {
+    public final void get(URI uri, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
         try {
             InputStream resultStream = get(uri);
-            JsonNode result = getObjectReader().readTree(resultStream);
-            callback.onSuccess(result);
-        } catch (RuntimeException e) {
-            callback.onFailure(e);
-        } catch (IOException e) {
-            callback.onFailure(new RuntimeException(e));
+            completionHandler.completed(getMappingContext().createParser(resultStream), getStatus());
+        } catch (Exception e) {
+            completionHandler.failed(e, getStatus());
         }
     }
 
     @Override
-    public final void patch(URI uri, String jsonBody, Callback<Void> callback) {
+    public final void patch(URI uri, String jsonBody, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
         try {
             patch(uri, jsonBody);
-            callback.onSuccess(null);
-        } catch (RuntimeException e) {
-            callback.onFailure(e);
+            completionHandler.completed(null, getStatus());
+        } catch (Exception e) {
+            completionHandler.failed(e, getStatus());
         }
     }
 
     @Override
-    public final void post(URI uri, String jsonBody, Callback<JsonNode> callback) {
+    public final void post(URI uri, String jsonBody, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
         try {
             InputStream resultStream = post(uri, jsonBody);
-            JsonNode result = getObjectReader().readTree(resultStream);
-            callback.onSuccess(result);
-        } catch (RuntimeException e) {
-            callback.onFailure(e);
-        } catch (IOException e) {
-            callback.onFailure(new RuntimeException(e));
+            completionHandler.completed(getMappingContext().createParser(resultStream), getStatus());
+        } catch (Exception e) {
+            completionHandler.failed(e, getStatus());
         }
-    }
-
-    private ObjectReader getObjectReader() {
-        if (objectReader == null) {
-            objectReader = new ObjectMapper().reader();
-        }
-        return objectReader;
     }
 }

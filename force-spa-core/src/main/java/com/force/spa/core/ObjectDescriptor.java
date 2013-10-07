@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.force.spa.ObjectDefinitionException;
 
 /**
@@ -28,12 +29,14 @@ public final class ObjectDescriptor implements Serializable {
     public static final String ATTRIBUTES_FIELD_NAME = "attributes";
 
     private final String name;
+    private final JavaType javaType;
     private final boolean metadataAware;
     private List<FieldDescriptor> fields;
     private final Map<String, FieldDescriptor> fieldsByName;
 
-    ObjectDescriptor(String name, boolean metadataAware) {
+    ObjectDescriptor(String name, JavaType javaType, boolean metadataAware) {
         this.name = name;
+        this.javaType = javaType;
         this.metadataAware = metadataAware;
         this.fields = Collections.emptyList();
         this.fieldsByName = new HashMap<String, FieldDescriptor>();
@@ -51,12 +54,12 @@ public final class ObjectDescriptor implements Serializable {
         }
 
         if (hasAttributesField()) {
-            if (!Map.class.isAssignableFrom(getAttributesField().getType()))
-                throw new ObjectDefinitionException(name, "'attributes' field has wrong Java type, must be Map<String, String>");
+            if (!getAttributesField().getJavaType().isMapLikeType())
+                throw new ObjectDefinitionException(name, "'attributes' field has wrong Java type, must be a Map");
         }
 
         if (hasIdField()) {
-            if (!String.class.isAssignableFrom(getIdField().getType()))
+            if (!String.class.isAssignableFrom(getIdField().getJavaType().getRawClass()))
                 throw new ObjectDefinitionException(name, "'id' field has wrong Java type, must be String");
         }
     }
@@ -91,6 +94,10 @@ public final class ObjectDescriptor implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public JavaType getJavaType() {
+        return javaType;
     }
 
     public boolean isMetadataAware() {

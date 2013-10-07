@@ -25,13 +25,13 @@ import com.fasterxml.jackson.databind.ser.SerializerFactory;
 final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory {
     private static final long serialVersionUID = 91029020789141671L;
 
-    private final ObjectMappingContext mappingContext;
+    private final MappingContext mappingContext;
 
-    RelationshipAwareBeanSerializerFactory(ObjectMappingContext mappingContext) {
+    RelationshipAwareBeanSerializerFactory(MappingContext mappingContext) {
         this(mappingContext, null);
     }
 
-    private RelationshipAwareBeanSerializerFactory(ObjectMappingContext mappingContext, SerializerFactoryConfig config) {
+    private RelationshipAwareBeanSerializerFactory(MappingContext mappingContext, SerializerFactoryConfig config) {
         super(config);
         this.mappingContext = mappingContext;
     }

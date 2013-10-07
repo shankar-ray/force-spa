@@ -32,6 +32,7 @@ import com.sun.jersey.api.representation.Form;
  * This class can also be used standalone (outside the context of SPA).
  */
 
+//TODO Refactor to use connector? Better yet, refactor to use Soap so don't need to worry about OAuth config?
 //TODO Seems like may be in wrong package, refactor to use any RestConnector? Add version that doesn't require OAuth configuration...
 
 public class PasswordAuthorizationConnector implements AuthorizationConnector {
@@ -96,6 +97,7 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         Validate.notEmpty(clientSecret, "clientSecret must be specified");
         Validate.notEmpty(serverUrl, "serverUrl must be specified");
 
+        InputStream jsonStream = null;
         Client client = Client.create();
         try {
             Form form = new Form();
@@ -105,7 +107,7 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
             form.add("username", username);
             form.add("password", password);
 
-            InputStream jsonStream = client
+            jsonStream = client
                 .resource(serverUrl)
                 .path("services/oauth2/token")
                 .type(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
@@ -131,6 +133,14 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
             String message = String.format("Invalid OAuth server url: %s", e.getMessage());
             log.error(message, e);
             throw new RuntimeException(message, e);
+        } finally {
+            if (jsonStream != null) {
+                try {
+                    jsonStream.close();
+                } catch (IOException e) {
+                    // Ignore close failure. There is nothing we can do.
+                }
+            }
         }
     }
 

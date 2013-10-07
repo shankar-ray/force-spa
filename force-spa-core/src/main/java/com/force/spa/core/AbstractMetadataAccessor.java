@@ -11,14 +11,18 @@ import com.force.spa.RecordAccessorConfig;
 public abstract class AbstractMetadataAccessor implements MetadataAccessor {
 
     private final RecordAccessorConfig config;
+    private final MappingContext mappingContext;
 
-    protected AbstractMetadataAccessor(RecordAccessorConfig config) {
+    protected AbstractMetadataAccessor(RecordAccessorConfig config, MappingContext mappingContext) {
         this.config = config;
+        this.mappingContext = mappingContext;
     }
 
     protected final RecordAccessorConfig getConfig() {
         return config;
     }
 
-    //TODO Not implemented yet
+    protected final MappingContext getMappingContext() {
+        return mappingContext;
+    }
 }

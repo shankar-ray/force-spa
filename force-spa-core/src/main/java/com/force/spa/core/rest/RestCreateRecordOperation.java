@@ -7,26 +7,23 @@ package com.force.spa.core.rest;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.CompletionHandler;
 
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.CreateRecordOperation;
+import com.force.spa.ObjectNotFoundException;
 import com.force.spa.RecordResponseException;
-import com.force.spa.RestConnector;
-import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.core.CountingJsonParser;
+import com.google.common.base.Stopwatch;
 
-final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<String> implements CreateRecordOperation<T> {
-    private static final Logger log = LoggerFactory.getLogger(RestCreateRecordOperation.class);
+final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, String> implements CreateRecordOperation<T> {
 
     private final T record;
 
+    @SuppressWarnings("unchecked")
     public RestCreateRecordOperation(RestRecordAccessor accessor, T record) {
-        super(accessor);
-
-        Validate.notNull(record, "record must not be null");
+        super(accessor, (Class<T>) record.getClass());
 
         this.record = record;
     }
@@ -37,38 +34,64 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<Str
     }
 
     @Override
-    public void start(RestConnector connector) {
-        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(record.getClass());
-
-        URI uri = URI.create("/sobjects/" + descriptor.getName());
-        String json = encodeRecordForCreate(record);
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Create %s: %s", descriptor.getName(), json));
+    protected RuntimeException exceptionFor(int status, JsonParser parser) {
+        if (status == 404) {
+            throw new ObjectNotFoundException(buildErrorMessage(status, parser));
+        } else {
+            return super.exceptionFor(status, parser);
         }
+    }
 
-        connector.post(uri, json, new RestConnector.Callback<JsonNode>() {
+    @Override
+    protected void start(RestConnector connector, final Stopwatch stopwatch) {
+
+        final String json = encodeRecordForCreate(record);
+
+        setTitle("Create " + getObjectDescriptor().getName());
+        setDetail(json);
+
+        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName());
+        connector.post(uri, json, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
-            public void onSuccess(JsonNode result) {
-                if (!result.has("success") || !result.has("id")) {
-                    throw new RecordResponseException("JSON response is missing expected fields");
-                }
-                if (!result.get("success").asBoolean()) {
-                    throw new RecordResponseException(getErrorsText(result));
-                }
-                String id = result.get("id").asText();
-
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("...Created %s %s", descriptor.getName(), id));
-                }
-                set(id);
+            public void completed(CountingJsonParser parser, Integer status) {
+                checkStatus(status, parser);
+                RestCreateRecordOperation.this.completed(parseResponseUsing(parser), buildStatistics(json, parser, stopwatch));
             }
 
             @Override
-            public void onFailure(RuntimeException exception) {
-                setException(exception);
+            public void failed(Throwable exception, Integer status) {
+                RestCreateRecordOperation.this.failed(exception, buildStatistics(json, null, stopwatch));
             }
         });
+    }
+
+    private String encodeRecordForCreate(Object record) {
+        try {
+            return getMappingContext().getObjectWriterForCreate().writeValueAsString(record);
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to encode record as JSON", e);
+        }
+    }
+
+    private String parseResponseUsing(JsonParser parser) {
+        JsonNode node = readTree(parser);
+        if (!node.has("success") || !node.has("id")) {
+            throw new RecordResponseException("JSON response is missing expected fields");
+        }
+
+        if (!node.get("success").asBoolean()) {
+            throw new RecordResponseException(getErrorsText(node));
+        }
+
+        return node.get("id").asText();
+    }
+
+    private static JsonNode readTree(JsonParser parser) {
+        try {
+            return parser.readValueAsTree();
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to parse JSON response", e);
+        }
     }
 
     private static String getErrorsText(JsonNode node) {
@@ -82,14 +105,6 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<Str
             if (sb.length() > 0)
                 return sb.toString();
         }
-        return "Salesforce persistence error with no message";
-    }
-
-    private String encodeRecordForCreate(Object record) {
-        try {
-            return getObjectMappingContext().getObjectWriterForCreate().writeValueAsString(record);
-        } catch (IOException e) {
-            throw new RecordResponseException("Failed to encode record as JSON", e);
-        }
+        return "Salesforce REST error with no message";
     }
 }

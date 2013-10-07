@@ -14,7 +14,7 @@ import com.force.spa.RecordAccessorConfig;
  */
 public class DummyMetadataAccessor extends AbstractMetadataAccessor {
 
-    public DummyMetadataAccessor(RecordAccessorConfig config) {
-        super(config);
+    public DummyMetadataAccessor(RecordAccessorConfig config, MappingContext mappingContext) {
+        super(config, mappingContext);
     }
 }

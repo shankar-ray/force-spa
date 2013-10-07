@@ -7,12 +7,12 @@ package com.force.spa;
 
 import java.util.List;
 
-public interface QueryRecordsOperation<T> extends RecordOperation<List<T>> {
+public interface QueryRecordsOperation<T, R> extends RecordOperation<List<R>> {
     String getSoqlTemplate();
 
-    Class<?> getRecordClass();
+    Class<T> getRecordClass();
 
-    Class<T> getResultClass();
+    Class<R> getResultClass();
 
     void setStartPosition(int offset);
 
@@ -21,4 +21,7 @@ public interface QueryRecordsOperation<T> extends RecordOperation<List<T>> {
     void setMaxResults(int limit);
 
     int getMaxResults();
+
+    @Override
+    QueryRecordsStatistics getStatistics();
 }

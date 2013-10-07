@@ -41,7 +41,7 @@ public final class SoqlBuilder {
     private int limit = 0;
     private int depth = DEFAULT_DEPTH;
 
-    SoqlBuilder(AbstractRecordAccessor accessor) {
+    public SoqlBuilder(AbstractRecordAccessor accessor) {
         this.accessor = accessor;
     }
 
@@ -53,7 +53,7 @@ public final class SoqlBuilder {
     public SoqlBuilder object(Class<?> recordClass) {
         Validate.notNull(recordClass, "No recordClass was specified");
 
-        return object(accessor.getMappingContext().getRequiredObjectDescriptor(recordClass));
+        return object(accessor.getMappingContext().getObjectDescriptor(recordClass));
     }
 
     public SoqlBuilder object(ObjectDescriptor object) {
@@ -172,8 +172,8 @@ public final class SoqlBuilder {
     private String expandRelationshipField(FieldDescriptor field, String prefix, int remainingDepth) {
         if (field.isPolymorphic()) {
             return expandPolymorphicField(field, prefix, remainingDepth);
-        } else if (field.isArrayOrCollection()) {
-            return expandCollectionField(field, prefix, remainingDepth);
+        } else if (field.getJavaType().isContainerType()) {
+            return expandContainerField(field, prefix, remainingDepth);
         } else {
             return expandObject(field.getRelatedObject(), expandSimpleField(field, prefix), remainingDepth - 1);
         }
@@ -195,7 +195,7 @@ public final class SoqlBuilder {
         return builder.toString();
     }
 
-    private String expandCollectionField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandContainerField(FieldDescriptor field, String prefix, int remainingDepth) {
         return new SoqlBuilder(accessor)
             .object(field.getRelatedObject())
             .template("(SELECT * from " + expandSimpleField(field, prefix) + ")")

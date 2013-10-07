@@ -7,27 +7,21 @@ package com.force.spa.core.rest;
 
 import java.io.IOException;
 import java.net.URI;
-
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.channels.CompletionHandler;
 
 import com.force.spa.RecordResponseException;
-import com.force.spa.RestConnector;
 import com.force.spa.UpdateRecordOperation;
-import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.core.CountingJsonParser;
+import com.google.common.base.Stopwatch;
 
-class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<Void> implements UpdateRecordOperation<T> {
-    private static final Logger log = LoggerFactory.getLogger(RestUpdateRecordOperation.class);
+class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements UpdateRecordOperation<T> {
 
     private final String id;
     private final T record;
 
+    @SuppressWarnings("unchecked")
     public RestUpdateRecordOperation(RestRecordAccessor accessor, String id, T record) {
-        super(accessor);
-
-        Validate.notEmpty(id, "id must not be empty");
-        Validate.notNull(record, "record must not be null");
+        super(accessor, (Class<T>) record.getClass());
 
         this.id = id;
         this.record = record;
@@ -44,35 +38,31 @@ class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<Void> imp
     }
 
     @Override
-    public void start(RestConnector connector) {
-        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(record.getClass());
+    protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        URI uri = URI.create("/sobjects/" + descriptor.getName() + "/" + id);
-        String json = encodeRecordForUpdate(record);
+        final String json = encodeRecordForUpdate(record);
 
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Update %s %s: %s", descriptor.getName(), id, json));
-        }
+        setTitle("Update " + getObjectDescriptor().getName());
+        setDetail(json);
 
-        connector.patch(uri, json, new RestConnector.Callback<Void>() {
+        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
+        connector.patch(uri, json, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
-            public void onSuccess(Void result) {
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("...Updated %s %s", descriptor.getName(), id));
-                }
-                set(null);
+            public void completed(CountingJsonParser parser, Integer status) {
+                checkStatus(status, parser);
+                RestUpdateRecordOperation.this.completed(null, buildStatistics(json, null, stopwatch));
             }
 
             @Override
-            public void onFailure(RuntimeException exception) {
-                setException(exception);
+            public void failed(Throwable exception, Integer status) {
+                RestUpdateRecordOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
             }
         });
     }
 
     private String encodeRecordForUpdate(Object record) {
         try {
-            return getObjectMappingContext().getObjectWriterForUpdate().writeValueAsString(record);
+            return getMappingContext().getObjectWriterForUpdate().writeValueAsString(record);
         } catch (IOException e) {
             throw new RecordResponseException("Failed to encode record as JSON", e);
         }

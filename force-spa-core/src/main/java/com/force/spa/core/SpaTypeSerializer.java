@@ -17,9 +17,9 @@ import com.fasterxml.jackson.databind.jsontype.impl.TypeSerializerBase;
 
 class SpaTypeSerializer extends TypeSerializerBase {
 
-    private final ObjectMappingContext mappingContext;
+    private final MappingContext mappingContext;
 
-    SpaTypeSerializer(ObjectMappingContext mappingContext, TypeIdResolver idResolver) {
+    SpaTypeSerializer(MappingContext mappingContext, TypeIdResolver idResolver) {
         super(idResolver, null);
         this.mappingContext = mappingContext;
     }

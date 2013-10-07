@@ -1,0 +1,30 @@
+{
+    "done": true,
+    "totalSize": 1,
+    "records": [
+        {
+            "attributes": {
+                "type": "PolymorphicFieldBean",
+                "url": "/services/data/v28.0/sobjects/PolymorphicFieldBean/a01i00000000003"
+            },
+            "Id": "a01i00000000003",
+            "Value1": {
+                "attributes": {
+                    "type": "SimpleBean",
+                    "url": "/services/data/v28.0/sobjects/SimpleBean/a01i00000000001"
+                },
+                "Id": "a01i00000000001",
+                "Name": "Name 1",
+                "Description": "Description 1"
+            },
+            "Value2": {
+                "attributes": {
+                    "type": "ExplicitName",
+                    "url": "/services/data/v28.0/sobjects/ExplicitName/a01i00000000002"
+                },
+                "Id": "a01i00000000002",
+                "Name": "Name 2"
+            }
+        }
+    ]
+}

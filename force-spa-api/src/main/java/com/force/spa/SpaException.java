@@ -9,6 +9,19 @@ public class SpaException extends RuntimeException {
     private static final long serialVersionUID = -966474393052365313L;
 
     /**
+     * Convenience routine for dealing with {@link Exception} instances that may or may not contain a SpaException.
+     * <p/>
+     * If the cause of the execution exception is a SpaException then that cause is returned. If the cause is not a
+     * SpaException then the cause is returned wrapped inside of a SpaException.
+     */
+    public static SpaException getCauseAsSpaException(Exception exception) {
+        if (exception.getCause() instanceof SpaException)
+            return (SpaException) exception.getCause();
+        else
+            return new SpaException(exception.getCause());
+    }
+
+    /**
      * Constructs a new instance with <code>null</code> as the detail message.
      */
     public SpaException() {

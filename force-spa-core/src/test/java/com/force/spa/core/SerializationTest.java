@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class SerializationTest {
 
-    private final ObjectMappingContext mappingContext = new ObjectMappingContext();
+    private final MappingContext mappingContext = new MappingContext();
 
     @Test
     public void testEnumBeanSerialization() throws Exception {

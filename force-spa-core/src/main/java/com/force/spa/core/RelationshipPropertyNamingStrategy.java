@@ -6,9 +6,10 @@
 package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.IntrospectionUtils.getConcreteClass;
 import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
+import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedField;
@@ -50,7 +51,7 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
     }
 
     String translate(AnnotatedMember member, String name) {
-        if (canBeSalesforceObject(getConcreteClass(member), false)) {
+        if (isRelationship(member)) {
             if (isCustomProperty(member, name)) {
                 return translateCustomName(name);
             } else {
@@ -58,6 +59,27 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
             }
         }
         return name;
+    }
+
+    private boolean isRelationship(AnnotatedMember member) {
+        JavaType javaType = getJavaTypeFor(member);
+        if (javaType.isContainerType()) {
+            return false;
+        } else {
+            return canBeSalesforceObject(javaType.getRawClass(), false);
+        }
+    }
+
+    private static boolean isCustomProperty(AnnotatedMember member, String name) {
+        return isCustomSuffixPresent(name) || (isPropertyOfCustomEntity(member) && !isStandardProperty(name));
+    }
+
+    private static boolean isCustomSuffixPresent(String name) {
+        return name.endsWith("__c") || name.endsWith("__r");
+    }
+
+    private static boolean isPropertyOfCustomEntity(AnnotatedMember member) {
+        return SpaAnnotationIntrospector.findTypeName(member.getDeclaringClass()).endsWith("__c");
     }
 
     private String translateCustomName(String name) {
@@ -74,17 +96,5 @@ final class RelationshipPropertyNamingStrategy extends PropertyNamingStrategy {
             propertyNameSansId = name.substring(0, name.length() - 2);
 
         return propertyNameSansId;
-    }
-
-    private static boolean isCustomProperty(AnnotatedMember member, String name) {
-        return isCustomSuffixPresent(name) || (isPropertyOfCustomEntity(member) && !isStandardProperty(name));
-    }
-
-    private static boolean isCustomSuffixPresent(String name) {
-        return name.endsWith("__c") || name.endsWith("__r");
-    }
-
-    private static boolean isPropertyOfCustomEntity(AnnotatedMember member) {
-        return SpaAnnotationIntrospector.findTypeName(member.getDeclaringClass()).endsWith("__c");
     }
 }

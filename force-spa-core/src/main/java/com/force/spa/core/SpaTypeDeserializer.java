@@ -52,7 +52,7 @@ class SpaTypeDeserializer extends TypeDeserializerBase {
 
     @Override
     public Object deserializeTypedFromAny(JsonParser parser, DeserializationContext context) throws IOException {
-        throw new UnsupportedOperationException("What are we doing here and how should we handle this?");
+        return deserializeTypedFromObject(parser, context);
     }
 
     @Override

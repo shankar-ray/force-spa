@@ -1,0 +1,18 @@
+{"hasErrors": false, "results": [
+    {
+        "statusCode": 201,
+        "result": {
+            "id": "a01i00000000001AAC",
+            "success": true,
+            "errors": []
+        }
+    },
+    {
+        "statusCode": 201,
+        "result": {
+            "id": "a01i00000000002AAC",
+            "success": true,
+            "errors": []
+        }
+    }
+]}

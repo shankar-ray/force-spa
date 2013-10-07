@@ -14,27 +14,27 @@ import com.force.spa.beans.Record;
 @SalesforceObject
 public class PolymorphicFieldBean extends Record {
 
-    @Polymorphic({SimpleBean.class, NoAttributesBean.class})
+    @Polymorphic({SimpleBean.class, ExplicitlyNamedBean.class})
     @SalesforceField(name = "Value1")
-    private Object value1;
+    private Record value1;
 
-    @Polymorphic({SimpleBean.class, NoAttributesBean.class})
+    @Polymorphic({SimpleBean.class, ExplicitlyNamedBean.class})
     @SalesforceField(name = "Value2")
-    private Object value2;
+    private Record value2;
 
     public Object getValue1() {
         return value1;
     }
 
-    public void setValue1(Object value1) {
+    public void setValue1(Record value1) {
         this.value1 = value1;
     }
 
-    public Object getValue2() {
+    public Record getValue2() {
         return value2;
     }
 
-    public void setValue2(Object value2) {
+    public void setValue2(Record value2) {
         this.value2 = value2;
     }
 }

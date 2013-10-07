@@ -12,6 +12,8 @@ import static org.hamcrest.Matchers.is;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.force.spa.RecordAccessorConfig;
+import com.force.spa.core.rest.AbstractRestRecordAccessorTest;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
 import com.force.spa.core.testbeans.RecursiveBean;
 import com.force.spa.core.testbeans.SimpleBean;
@@ -22,7 +24,7 @@ public class SoqlBuilderTest extends AbstractRestRecordAccessorTest {
 
     @Before
     public void setUp() {
-        accessor = new DummyRecordAccessor();
+        accessor = new DummyRecordAccessor(new RecordAccessorConfig(), new MappingContext());
     }
 
     @Test
@@ -73,7 +75,7 @@ public class SoqlBuilderTest extends AbstractRestRecordAccessorTest {
     @Test
     public void testPolymorphicRelationships() throws Exception {
         String soqlTemplate = "select * from PolymorphicFieldBean where Id = '012345678901234'";
-        String expectedSoql = "select Id,TYPEOF Value1 WHEN SimpleBean THEN Id,Name,Description WHEN NoAttributesBean THEN Id,Name END,TYPEOF Value2 WHEN SimpleBean THEN Id,Name,Description WHEN NoAttributesBean THEN Id,Name END from PolymorphicFieldBean where Id = '012345678901234'";
+        String expectedSoql = "select Id,TYPEOF Value1 WHEN SimpleBean THEN Id,Name,Description WHEN ExplicitName THEN Id,Name ELSE Id END,TYPEOF Value2 WHEN SimpleBean THEN Id,Name,Description WHEN ExplicitName THEN Id,Name ELSE Id END from PolymorphicFieldBean where Id = '012345678901234'";
 
         String soql = newSoqlBuilder().object(PolymorphicFieldBean.class).template(soqlTemplate).build();
         assertThat(soql, is(equalTo(expectedSoql)));

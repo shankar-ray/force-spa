@@ -82,7 +82,7 @@ public interface RecordAccessor {
      *                     final SOQL query. The processing involves replacing occurrences of wildcards (*) with actual
      *                     field names as described by the annotations in the record class.
      * @param recordClass  the annotated class of the result record's bean
-     * @param <T>          the type of result records
+     * @param <T>          the type of record
      * @return a {link RecordQuery} which can be executed
      */
     <T> RecordQuery<T> createQuery(String soqlTemplate, Class<T> recordClass);
@@ -188,7 +188,7 @@ public interface RecordAccessor {
      * @param recordClass  the annotated class of the requested object's bean
      * @return the operation
      */
-    <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass);
+    <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass);
 
     /**
      * Returns a new query operation that can be combined into a batch. The operation, along with any others that it is
@@ -202,5 +202,5 @@ public interface RecordAccessor {
      *                     com.fasterxml.jackson.databind.JsonNode.
      * @return the operation
      */
-    <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<?> recordClass, Class<T> resultClass);
+    <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass);
 }

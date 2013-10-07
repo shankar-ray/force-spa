@@ -10,15 +10,15 @@
         </encoder>
     </appender>
 
-    <root level="WARN">
+    <root level="warn">
         <appender-ref ref="stdout"/>
     </root>
 
-    <logger name="com.force.spa" level="error"/>
+    <!--<logger name="com.force.spa" level="info"/>-->
 
-    <logger name="org.apache.http" level="error"/>
-    <logger name="org.apache.http.headers" level="error"/>
-    <logger name="org.apache.http.wire" level="error"/>
-    <logger name="org.apache.http.impl.conn" level="error"/>
+    <!--<logger name="org.apache.http" level="error"/>-->
+    <!--<logger name="org.apache.http.headers" level="error"/>-->
+    <!--<logger name="org.apache.http.wire" level="error"/>-->
+    <!--<logger name="org.apache.http.impl.conn" level="error"/>-->
 
 </configuration>

@@ -5,29 +5,26 @@
  */
 package com.force.spa.core.rest;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.CompletionHandler;
 
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
-import com.force.spa.RestConnector;
-import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.RecordResponseException;
+import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.SoqlBuilder;
+import com.force.spa.core.utils.URLEncoderDecoderUtils;
+import com.google.common.base.Stopwatch;
 
-class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implements GetRecordOperation<T> {
-    private static final Logger log = LoggerFactory.getLogger(RestGetRecordOperation.class);
+class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implements GetRecordOperation<T> {
 
     private final String id;
     private final Class<T> recordClass;
 
     public RestGetRecordOperation(RestRecordAccessor accessor, String id, Class<T> recordClass) {
-        super(accessor);
-
-        Validate.notEmpty(id, "id must not be empty");
-        Validate.notNull(recordClass, "recordClass must not be null");
+        super(accessor, recordClass);
 
         this.id = id;
         this.recordClass = recordClass;
@@ -44,35 +41,41 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T> implement
     }
 
     @Override
-    public void start(RestConnector connector) {
-        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(recordClass);
+    protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        String soqlTemplate = String.format("SELECT * FROM %s WHERE Id = '%s'", descriptor.getName(), id);
-        String soql = newSoqlBuilder().object(descriptor).template(soqlTemplate).limit(1).build();
-        URI uri = URI.create("/query?q=" + encodeParameter(soql));
+        String soql = new SoqlBuilder(getRecordAccessor())
+            .object(getObjectDescriptor())
+            .template(String.format("SELECT * FROM %s WHERE Id='%s'", getObjectDescriptor().getName(), id))
+            .limit(1)
+            .build();
 
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("Get %s %s: %s", descriptor.getName(), id, soql));
-        }
+        setTitle("Get " + getObjectDescriptor().getName());
+        setDetail(soql);
 
-        connector.get(uri, new RestConnector.Callback<JsonNode>() {
+        URI uri = URI.create("/query?q=" + URLEncoderDecoderUtils.encode(soql));
+        connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
-            public void onSuccess(JsonNode result) {
-                JsonNode recordNode = result.get("records").get(0);
-                if (recordNode == null) {
-                    throw new RecordNotFoundException();
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug(String.format("...Got: %s", recordNode.toString()));
-                }
-                T record = decodeRecord(recordNode, recordClass);
-                set(record);
+            public void completed(CountingJsonParser parser, Integer status) {
+                checkStatus(status, parser);
+                RestGetRecordOperation.this.completed(parseResponseUsing(parser), buildStatistics(null, parser, stopwatch));
             }
 
             @Override
-            public void onFailure(RuntimeException exception) {
-                setException(exception);
+            public void failed(Throwable exception, Integer status) {
+                RestGetRecordOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
             }
         });
+    }
+
+    private T parseResponseUsing(JsonParser parser) {
+        try {
+            QueryResult queryResult = parser.readValueAs(QueryResult.class);
+            if (queryResult.getRecords() == null || queryResult.getRecords().size() < 1) {
+                throw new RecordNotFoundException();
+            }
+            return recordClass.cast(queryResult.getRecords().get(0));
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to decode JSON record", e);
+        }
     }
 }

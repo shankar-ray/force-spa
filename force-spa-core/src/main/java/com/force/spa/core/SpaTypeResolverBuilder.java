@@ -11,39 +11,38 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.cfg.MapperConfig;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeResolverBuilder;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.jsontype.impl.TypeNameIdResolver;
 
 class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolverBuilder> {
 
     private Class<?> defaultImpl = null;
-    private TypeIdResolver customIdResolver = null;
-    private final ObjectMappingContext mappingContext;
+    private final MappingContext mappingContext;
 
-    SpaTypeResolverBuilder(ObjectMappingContext mappingContext) {
+    SpaTypeResolverBuilder(MappingContext mappingContext) {
         this.mappingContext = mappingContext;
     }
 
     @Override
     public TypeDeserializer buildTypeDeserializer(DeserializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
-        TypeIdResolver idResolver = getIdResolver(config, baseType, subtypes, false);
-        return new SpaTypeDeserializer(baseType, idResolver, defaultImpl != null ? defaultImpl : baseType.getRawClass());
+        TypeIdResolver typeIdResolver = new SpaTypeIdResolver(baseType, mappingContext);
+        return new SpaTypeDeserializer(baseType, typeIdResolver, defaultImpl != null ? defaultImpl : baseType.getRawClass());
     }
 
     @Override
     public TypeSerializer buildTypeSerializer(SerializationConfig config, JavaType baseType, Collection<NamedType> subtypes) {
-        TypeIdResolver idResolver = getIdResolver(config, baseType, subtypes, true);
-        return new SpaTypeSerializer(mappingContext, idResolver);
+        TypeIdResolver typeIdResolver = new SpaTypeIdResolver(baseType, mappingContext);
+        return new SpaTypeSerializer(mappingContext, typeIdResolver);
     }
 
     @Override
     public SpaTypeResolverBuilder init(JsonTypeInfo.Id idType, TypeIdResolver idResolver) {
-        this.customIdResolver = idResolver;
+        if (idResolver != null) {
+            throw new UnsupportedOperationException("Type id resolver can not be externally specified");
+        }
         return this;
     }
 
@@ -70,14 +69,6 @@ class SpaTypeResolverBuilder implements TypeResolverBuilder<SpaTypeResolverBuild
 
     @Override
     public SpaTypeResolverBuilder typeIdVisibility(boolean isVisible) {
-        throw new UnsupportedOperationException("Type visibility is not configurable");
-    }
-
-    private TypeIdResolver getIdResolver(MapperConfig<?> config, JavaType baseType, Collection<NamedType> subtypes, boolean forSerialization) {
-        if (customIdResolver != null) {
-            return customIdResolver;
-        } else {
-            return TypeNameIdResolver.construct(config, baseType, subtypes, forSerialization, !forSerialization);
-        }
+        throw new UnsupportedOperationException("Type id visibility is not configurable");
     }
 }

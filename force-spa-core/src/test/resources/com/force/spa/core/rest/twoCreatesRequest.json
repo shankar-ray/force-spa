@@ -1,0 +1,1 @@
+{"haltOnError":false,"batchRequests":[{"url":"/services/data/v29.0/sobjects/SimpleBean","method":"Post","richInput": {"Name":"Name 1","Description":"Description 1"}},{"url":"/services/data/v29.0/sobjects/SimpleBean","method":"Post","richInput": {"Name":"Name 2","Description":"Description 2"}}]}

@@ -5,37 +5,40 @@
  */
 package com.force.spa.core.rest;
 
+import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
+
+import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.CompletionHandler;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import javax.xml.ws.Holder;
-
-import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.force.spa.QueryRecordsOperation;
+import com.force.spa.QueryRecordsStatistics;
 import com.force.spa.RecordResponseException;
-import com.force.spa.RestConnector;
-import com.force.spa.core.ObjectDescriptor;
+import com.force.spa.TooManyQueryRowsException;
+import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.SoqlBuilder;
+import com.force.spa.core.utils.URLEncoderDecoderUtils;
+import com.google.common.base.Stopwatch;
 
-final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<List<T>> implements QueryRecordsOperation<T> {
-    private static final Logger log = LoggerFactory.getLogger(RestQueryRecordsOperation.class);
+final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
+
+    private static final int INITIAL_ARRAY_ALLOCATION_SIZE = 500;  // Avoid a few growth cycles, but don't waste too much memory
 
     private final String soqlTemplate;
-    private final Class<?> recordClass;
-    private final Class<T> resultClass;
+    private final Class<T> recordClass;
+    private final Class<R> resultClass;
     private int startPosition;
     private int maxResults;
 
-    RestQueryRecordsOperation(RestRecordAccessor accessor, String soqlTemplate, Class<?> recordClass, Class<T> resultClass) {
-        super(accessor);
-
-        Validate.notEmpty(soqlTemplate, "template must not be empty");
-        Validate.notNull(recordClass, "recordClass must not be null");
-        Validate.notNull(resultClass, "resultClass must not be null");
+    RestQueryRecordsOperation(RestRecordAccessor accessor, String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
+        super(accessor, recordClass);
 
         this.soqlTemplate = soqlTemplate;
         this.resultClass = resultClass;
@@ -44,22 +47,18 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
         this.maxResults = 0;
     }
 
-    RestQueryRecordsOperation(RestRecordAccessor accessor, String soql, Class<T> recordClass) {
-        this(accessor, soql, recordClass, recordClass);
-    }
-
     @Override
     public String getSoqlTemplate() {
         return soqlTemplate;
     }
 
     @Override
-    public Class<?> getRecordClass() {
+    public Class<T> getRecordClass() {
         return recordClass;
     }
 
     @Override
-    public Class<T> getResultClass() {
+    public Class<R> getResultClass() {
         return resultClass;
     }
 
@@ -84,65 +83,126 @@ final class RestQueryRecordsOperation<T> extends AbstractRestRecordOperation<Lis
     }
 
     @Override
-    public void start(final RestConnector connector) {
-        final ObjectDescriptor descriptor = getObjectMappingContext().getRequiredObjectDescriptor(recordClass);
+    public QueryRecordsStatistics getStatistics() {
+        return (QueryRecordsStatistics) super.getStatistics();
+    }
 
-        String soql = newSoqlBuilder().object(descriptor).template(soqlTemplate).offset(startPosition).limit(maxResults).build();
-        URI uri = URI.create("/query?q=" + encodeParameter(soql));
+    @Override
+    protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        if (log.isDebugEnabled())
-            log.debug(String.format("Query: %s", soql));
+        String soql = new SoqlBuilder(getRecordAccessor())
+            .object(getObjectDescriptor())
+            .template(soqlTemplate)
+            .offset(startPosition)
+            .limit(maxResults)
+            .build();
 
-        connector.get(uri, new RestConnector.Callback<JsonNode>() {
+        setTitle("Query " + getObjectDescriptor().getName());
+        setDetail(soql);
+
+        QueryRecordsStatistics.Builder statisticsBuilder = new QueryRecordsStatistics.Builder();
+        try {
+            List<R> records = new ArrayList<R>(INITIAL_ARRAY_ALLOCATION_SIZE);
+            URI queryUri = URI.create("/query?q=" + URLEncoderDecoderUtils.encode(soql));
+            accumulateRecords(queryUri, connector, records, statisticsBuilder);
+
+            RestQueryRecordsOperation.this.completed(records, buildStatistics(statisticsBuilder, stopwatch));
+
+        } catch (QueryOperationFailedException e) {
+            RestQueryRecordsOperation.this.failed(e.getCause(), buildStatistics(statisticsBuilder, stopwatch));
+        }
+    }
+
+    private void accumulateRecords(URI uri, final RestConnector connector, final List<R> records, final QueryRecordsStatistics.Builder statisticsBuilder) {
+
+        connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
-            public void onSuccess(JsonNode result) {
-                final List<T> records = new ArrayList<T>();
-                for (JsonNode node : result.get("records")) {
-                    if (log.isDebugEnabled()) {
-                        log.debug(String.format("...Result Row: %s", node.toString()));
+            public void completed(CountingJsonParser parser, Integer status) {
+
+                checkStatus(status, parser);
+                QueryResult queryResult = parseResponseUsing(parser);
+                addStatistics(parser, queryResult, statisticsBuilder);
+
+                for (Object record : queryResult.getRecords()) {
+                    records.add(resultClass.cast(record));
+                }
+
+                if (queryResult.getNextRecordsUrl() != null) {
+                    if (connector.isSynchronous()) {
+                        accumulateRecords(URI.create(queryResult.getNextRecordsUrl()), connector, records, statisticsBuilder);
+                    } else {
+                        throw new TooManyQueryRowsException(); // Can only get one set of results when asynchronous
                     }
-                    records.add(decodeRecord(node, resultClass));
                 }
-
-                JsonNode nextRecordsUrlNode = result.get("nextRecordsUrl");
-                while (nextRecordsUrlNode != null) {
-                    nextRecordsUrlNode = getNextRecords(nextRecordsUrlNode, records);
-                }
-                set(records);
             }
 
             @Override
-            public void onFailure(RuntimeException exception) {
-                setException(exception);
-            }
-
-            private JsonNode getNextRecords(final JsonNode nextRecordsUrlNode, final List<T> records) {
-                if (connector.isSynchronous()) {
-                    final Holder<JsonNode> resultHolder = new Holder<JsonNode>();
-                    URI nextRecordsUri = URI.create(nextRecordsUrlNode.asText());
-                    connector.get(nextRecordsUri, new RestConnector.Callback<JsonNode>() {
-                        @Override
-                        public void onSuccess(JsonNode result) {
-                            for (JsonNode node : result.get("records")) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug(String.format("...Result Row: %s", node.toString()));
-                                }
-                                records.add(decodeRecord(node, resultClass));
-                            }
-                            resultHolder.value = result.get("nextRecordsUrl");
-                        }
-
-                        @Override
-                        public void onFailure(RuntimeException exception) {
-                            throw exception;
-                        }
-                    });
-                    return resultHolder.value;
-                } else {
-                    throw new RecordResponseException(
-                        "Too many result rows. Can't fetch additional results with asynchronous connector");
-                }
+            public void failed(Throwable exception, Integer status) {
+                throw new QueryOperationFailedException(exception);
             }
         });
+    }
+
+    private QueryResult parseResponseUsing(JsonParser parser) {
+        try {
+            if (resultClass.equals(recordClass)) {
+                return parser.readValueAs(QueryResult.class); // Fast and simple default case
+            } else {
+                return manuallyParseQueryResult(parser);      // A little more work for alternate return types
+            }
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to parse JSON response", e);
+        }
+    }
+
+    private QueryResult manuallyParseQueryResult(JsonParser parser) throws IOException {
+        QueryResult queryResult = new QueryResult();
+        establishCurrentToken(parser);
+        consumeExpectedToken(parser, JsonToken.START_OBJECT);
+        while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
+            parser.nextValue();
+            if (parser.getCurrentName().equals("totalSize")) {
+                queryResult.setTotalSize(parser.getIntValue());
+            } else if (parser.getCurrentName().equals("done")) {
+                queryResult.setDone(parser.getBooleanValue());
+            } else if (parser.getCurrentName().equals("nextRecordsUrl")) {
+                queryResult.setNextRecordsUrl(parser.getValueAsString());
+            } else if (parser.getCurrentName().equals("records")) {
+                queryResult.setRecords(manuallyParseRecords(parser));
+            } else {
+                parser.nextToken(); // Ignore field value we don't care about
+            }
+        }
+        consumeExpectedToken(parser, JsonToken.END_OBJECT);
+        return queryResult;
+    }
+
+    private List<Object> manuallyParseRecords(JsonParser parser) throws IOException {
+        List<Object> records = new ArrayList<Object>();
+        consumeExpectedToken(parser, JsonToken.START_ARRAY);
+        Iterator<R> it = parser.readValuesAs(resultClass);
+        while (it.hasNext()) {
+            records.add(it.next());
+        }
+        consumeExpectedToken(parser, JsonToken.END_ARRAY);
+        return records;
+    }
+
+    private static void addStatistics(CountingJsonParser parser, QueryResult queryResult, QueryRecordsStatistics.Builder accumulatedStatistics) {
+        accumulatedStatistics.additionalBytesReceived(parser.getCount());
+        accumulatedStatistics.additionalRowsProcessed(queryResult.getRecords().size());
+        if (queryResult.getTotalSize() != 0) {
+            accumulatedStatistics.totalRows(queryResult.getTotalSize());
+        }
+    }
+
+    private static QueryRecordsStatistics buildStatistics(QueryRecordsStatistics.Builder builder, Stopwatch stopwatch) {
+        return builder.elapsedNanos(stopwatch.elapsedTime(TimeUnit.NANOSECONDS)).build();
+    }
+
+    private static class QueryOperationFailedException extends RuntimeException {
+        QueryOperationFailedException(Throwable cause) {
+            super(cause);
+        }
     }
 }

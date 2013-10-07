@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * An interface for controlling the execution of SOQL queries.
  *
- * @param <T> the type of result records
+ * @param <T> the type of record the operation is working with
  */
 public interface RecordQuery<T> {
     /**

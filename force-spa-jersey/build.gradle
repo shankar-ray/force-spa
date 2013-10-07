@@ -8,6 +8,7 @@ dependencies {
     compile "com.sun.jersey:jersey-core:${jerseyVersion}"
     compile "com.sun.jersey:jersey-json:${jerseyVersion}"
     compile "com.sun.jersey:jersey-client:${jerseyVersion}"
+    compile "commons-io:commons-io:${commonsIoVersion}"
     compile "org.apache.httpcomponents:httpclient:${apacheHttpVersion}"
 
     compile "com.google.code.findbugs:annotations:2.0.1", provided

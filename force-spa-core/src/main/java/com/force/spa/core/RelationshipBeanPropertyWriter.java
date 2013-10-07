@@ -26,10 +26,10 @@ import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
  */
 class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
 
-    private final ObjectMappingContext mappingContext;
+    private final MappingContext mappingContext;
     private final String idPropertyName;
 
-    RelationshipBeanPropertyWriter(BeanPropertyWriter base, ObjectMappingContext mappingContext) {
+    RelationshipBeanPropertyWriter(BeanPropertyWriter base, MappingContext mappingContext) {
         super(base);
         this.mappingContext = mappingContext;
         this.idPropertyName = translateToIdName(base.getName());
@@ -39,7 +39,7 @@ class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
     public void serializeAsField(Object bean, JsonGenerator jgen, SerializerProvider prov) throws Exception {
         Object record = get(bean);
         if (record != null) {
-            ObjectDescriptor object = mappingContext.getRequiredObjectDescriptor(record.getClass());
+            ObjectDescriptor object = mappingContext.getObjectDescriptor(record.getClass());
             if (object.hasIdField()) {
                 String id = object.getIdField().getValue(record);
                 if (StringUtils.isNotEmpty(id)) {

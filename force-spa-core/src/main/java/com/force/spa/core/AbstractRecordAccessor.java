@@ -5,6 +5,8 @@
  */
 package com.force.spa.core;
 
+import static com.force.spa.SpaException.getCauseAsSpaException;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -27,16 +29,14 @@ import com.force.spa.UpdateRecordOperation;
 
 public abstract class AbstractRecordAccessor implements RecordAccessor {
 
-    private static ObjectMappingContextCache objectMappingContextCache = new ObjectMappingContextCache();
-
     private final RecordAccessorConfig config;
+    private final MappingContext mappingContext;
     private final MetadataAccessor metadataAccessor;
-    private final ObjectMappingContext mappingContext;
 
-    protected AbstractRecordAccessor(RecordAccessorConfig config, MetadataAccessor metadataAccessor) {
+    protected AbstractRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext, MetadataAccessor metadataAccessor) {
         this.config = config;
+        this.mappingContext = mappingContext;
         this.metadataAccessor = metadataAccessor;
-        this.mappingContext = objectMappingContextCache.getObjectMappingContext(config);
     }
 
     @Override
@@ -51,7 +51,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         try {
             return operation.get();
         } catch (ExecutionException e) {
-            throw getCauseAsRuntimeException(e);
+            throw getCauseAsSpaException(e);
         }
     }
 
@@ -62,7 +62,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         try {
             return operation.get();
         } catch (ExecutionException e) {
-            throw getCauseAsRuntimeException(e);
+            throw getCauseAsSpaException(e);
         }
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         try {
             operation.get();
         } catch (ExecutionException e) {
-            throw getCauseAsRuntimeException(e);
+            throw getCauseAsSpaException(e);
         }
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         try {
             operation.get();
         } catch (ExecutionException e) {
-            throw getCauseAsRuntimeException(e);
+            throw getCauseAsSpaException(e);
         }
     }
 
@@ -109,7 +109,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         try {
             operation.get();
         } catch (ExecutionException e) {
-            throw getCauseAsRuntimeException(e);
+            throw getCauseAsSpaException(e);
         }
     }
 
@@ -131,20 +131,12 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         return metadataAccessor;
     }
 
-    //TODO This may be only awkward cross reference left.
-    public final ObjectMappingContext getMappingContext() {
+    public final MappingContext getMappingContext() {
         return mappingContext;
     }
 
-    private static RuntimeException getCauseAsRuntimeException(ExecutionException e) {
-        if (e.getCause() instanceof RuntimeException)
-            return (RuntimeException) e.getCause();
-        else
-            return new RuntimeException(e.getCause());
-    }
-
     private String getRecordId(Object record) {
-        ObjectDescriptor object = mappingContext.getRequiredObjectDescriptor(record.getClass());
+        ObjectDescriptor object = mappingContext.getObjectDescriptor(record.getClass());
         if (object.hasIdField()) {
             String id = object.getIdField().getValue(record);
             if (StringUtils.isEmpty(id)) {
@@ -175,7 +167,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
         @Override
         public <R> List<R> execute(Class<R> resultClass) {
-            QueryRecordsOperation<R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
+            QueryRecordsOperation<T, R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
             if (startPosition != 0)
                 operation.setStartPosition(startPosition);
             if (maxResults != 0)
@@ -184,7 +176,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
             try {
                 return operation.get();
             } catch (ExecutionException e) {
-                throw getCauseAsRuntimeException(e);
+                throw getCauseAsSpaException(e);
             }
         }
 

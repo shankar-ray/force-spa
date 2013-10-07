@@ -17,6 +17,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.fasterxml.jackson.annotation.JsonTypeId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
@@ -43,7 +45,7 @@ import com.force.spa.SalesforceObject;
  * basic information for serializing and deserializing (the usual Jackson stuff) and also provide relationship
  * information which is used elsewhere to help build SOQL queries to fetch trees of objects.
  * <p/>
- * This implementation also accepts a limited subset of JPA annotations for backward compatability with earlier library
+ * This implementation also accepts a limited subset of JPA annotations for backward compatibility with earlier library
  * versions. Eventually that support may go away.
  *
  * @see Attributes
@@ -53,7 +55,7 @@ import com.force.spa.SalesforceObject;
  */
 public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
-    private static final long serialVersionUID = -6877076662700362622L;
+    private static final long serialVersionUID = 8766637889000218773L;
 
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
@@ -62,9 +64,9 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     private static final String[] STARTING_PROPERTY_ORDER = new String[]{"attributes", "Id", "Name"};
 
     private final boolean auditFieldWritingAllowed;
-    private final ObjectMappingContext mappingContext;
+    private final MappingContext mappingContext;
 
-    public SpaAnnotationIntrospector(ObjectMappingContext mappingContext, RecordAccessorConfig config) {
+    public SpaAnnotationIntrospector(MappingContext mappingContext, RecordAccessorConfig config) {
         this.auditFieldWritingAllowed = config.isAuditFieldWritingAllowed();
         this.mappingContext = mappingContext;
     }
@@ -137,7 +139,7 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return null;
         }
 
-        ArrayList<NamedType> result = new ArrayList<NamedType>();
+        List<NamedType> result = new ArrayList<NamedType>();
         for (Class<?> type : polymorphic.value()) {
             result.add(new NamedType(type, findTypeName(type)));
         }
@@ -151,12 +153,16 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     @Override
     public TypeResolverBuilder<?> findPropertyTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType baseType) {
-        return findTypeResolver(config, am, baseType);
+        if (baseType.isContainerType()) {
+            return null; // We have no container-level type information so no need for a type resolver
+        } else {
+            return findTypeResolver(config, am, baseType);
+        }
     }
 
     @Override
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
-        return findTypeResolver(config, am, containerType);
+        return findTypeResolver(config, am, containerType.containedType(0));
     }
 
     @Override
@@ -175,21 +181,18 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     public static String findTypeName(Class<?> clazz) {
         String name = findSpecifiedTypeName(clazz);
-        if (name == null) {
-            name = clazz.getSimpleName();
-        }
-        return name;
+        return (name != null) ? name : clazz.getSimpleName();
     }
 
     private static String findSpecifiedTypeName(Class<?> clazz) {
         SalesforceObject salesforceObject = clazz.getAnnotation(SalesforceObject.class);
         if (salesforceObject != null) {
-            return salesforceObject.name();
+            return StringUtils.defaultIfEmpty(salesforceObject.name(), null);
         }
 
         Entity entity = clazz.getAnnotation(Entity.class);
         if (entity != null) {
-            return entity.name();
+            return StringUtils.defaultIfEmpty(entity.name(), null);
         }
 
         if (clazz.getSuperclass() != null) {
@@ -314,13 +317,23 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return UPDATE_VIEWS.clone();
     }
 
-    @SuppressWarnings("UnusedParameters")
     private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
-        Polymorphic polymorphic = annotated.getAnnotation(Polymorphic.class);
-        if (polymorphic == null || polymorphic.value() == null || polymorphic.value().length == 0) {
+        if (hasPolymorphicAnnotation(annotated) || isObjectOrContainerOfObject(baseType)) {
+            return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
+        } else {
             return null;
         }
+    }
 
-        return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
+    private static boolean hasPolymorphicAnnotation(Annotated annotated) {
+        return annotated.getAnnotation(Polymorphic.class) != null;
+    }
+
+    private static boolean isObjectOrContainerOfObject(JavaType baseType) {
+        if (baseType.isContainerType()) {
+            return baseType.containedType(0).getRawClass().equals(Object.class);
+        } else {
+            return baseType.getRawClass().equals(Object.class);
+        }
     }
 }

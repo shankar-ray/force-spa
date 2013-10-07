@@ -11,10 +11,10 @@ dependencies {
     compile "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
     compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:2.1.2"
+    compile "commons-io:commons-io:${commonsIoVersion}"
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "org.springframework:spring-context:${springVersion}", provided
 
-    testCompile "commons-io:commons-io:2.4"
     testCompile "junit:junit:${junitVersion}"
     testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"

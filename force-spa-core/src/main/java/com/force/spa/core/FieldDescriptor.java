@@ -6,11 +6,11 @@
 package com.force.spa.core;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 
 /**
@@ -20,20 +20,20 @@ import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
  */
 public final class FieldDescriptor implements Serializable {
 
-    private static final long serialVersionUID = -7449364275029415469L;
+    private static final long serialVersionUID = 4291181727751149768L;
 
     private final String name;
-    private final Class<?> type;
+    private final JavaType javaType;
     private final AnnotatedMember accessor;
     private final AnnotatedMember mutator;
     private final ObjectDescriptor relatedObject;
     private final List<ObjectDescriptor> polymorphicChoices;
 
-    FieldDescriptor(String name, AnnotatedMember accessor, AnnotatedMember mutator, Class<?> type, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
+    FieldDescriptor(String name, AnnotatedMember accessor, AnnotatedMember mutator, JavaType javaType, ObjectDescriptor relatedObject, List<ObjectDescriptor> polymorphicChoices) {
         this.name = name;
         this.accessor = accessor;
         this.mutator = mutator;
-        this.type = type;
+        this.javaType = javaType;
         this.relatedObject = relatedObject;
         this.polymorphicChoices = polymorphicChoices;
     }
@@ -42,8 +42,8 @@ public final class FieldDescriptor implements Serializable {
         return name;
     }
 
-    public Class<?> getType() {
-        return type;
+    public JavaType getJavaType() {
+        return javaType;
     }
 
     public ObjectDescriptor getRelatedObject() {
@@ -52,10 +52,6 @@ public final class FieldDescriptor implements Serializable {
 
     public List<ObjectDescriptor> getPolymorphicChoices() {
         return polymorphicChoices;
-    }
-
-    public boolean isArrayOrCollection() {
-        return type.isArray() || Collection.class.isAssignableFrom(type);
     }
 
     public boolean isRelationship() {

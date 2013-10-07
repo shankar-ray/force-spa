@@ -22,7 +22,8 @@ public final class SerializationViews {
     }
 
     /**
-     * View that is specified when serializing an object for {@link com.force.spa.RecordAccessor#patch(String, Object)}}.
+     * View that is specified when serializing an object for {@link com.force.spa.RecordAccessor#patch(String,
+     * Object)}}.
      */
     public static final class Patch {
     }

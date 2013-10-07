@@ -22,5 +22,5 @@ public @interface Polymorphic {
     /**
      * A list of possible field types for a polymorphic field.
      */
-    Class<?>[] value();
+    Class<?>[] value() default {};
 }

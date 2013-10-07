@@ -10,6 +10,8 @@ import org.apache.commons.lang3.Validate;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
+import com.force.spa.core.MappingContext;
+import com.force.spa.core.rest.RestConnector;
 import com.force.spa.core.rest.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 
@@ -44,8 +46,9 @@ public class RecordAccessorFactory {
      * @return the record accessor
      */
     public RecordAccessor getRecordAccessor() {
-        return new RestRecordAccessor(config, new JerseyRestConnector(
-            client, config.getAuthorizationConnector(), config.getApiVersion()));
+        MappingContext mappingContext = new MappingContext(config);
+        RestConnector restConnector = new JerseyRestConnector(config, mappingContext, client);
+        return new RestRecordAccessor(config, mappingContext, restConnector);
     }
 
     private static Client createDefaultClient(RecordAccessorConfig config) {

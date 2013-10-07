@@ -23,12 +23,8 @@ import com.force.spa.UpdateRecordOperation;
  */
 public class DummyRecordAccessor extends AbstractRecordAccessor {
 
-    public DummyRecordAccessor() {
-        this(new RecordAccessorConfig());
-    }
-
-    public DummyRecordAccessor(RecordAccessorConfig config) {
-        super(config, new DummyMetadataAccessor(config));
+    public DummyRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext) {
+        super(config, mappingContext, new DummyMetadataAccessor(config, mappingContext));
     }
 
     @Override
@@ -62,12 +58,12 @@ public class DummyRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
+    public <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<?> recordClass, Class<T> resultClass) {
+    public <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
         throw new UnsupportedOperationException();
     }
 }

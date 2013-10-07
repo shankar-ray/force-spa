@@ -6,30 +6,22 @@
 package com.force.spa.core;
 
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
-import com.fasterxml.jackson.databind.introspect.BasicBeanDescription;
-import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.force.spa.SalesforceObject;
 
 /**
  * Miscellaneous utilities for asking questions about objects and their metadata.
  */
-final class IntrospectionUtils {
+public final class IntrospectionUtils {
     // The names of standard Salesforce properties.
     private static final Set<String> STANDARD_PROPERTIES = Collections.unmodifiableSet(
         new HashSet<String>(Arrays.asList(
@@ -166,86 +158,6 @@ final class IntrospectionUtils {
         }
 
         return hasSalesforceObjectAnnotation(type) || !objectAnnotationRequired;
-    }
-
-    /**
-     * Find the concrete {@link Class} of a property taking into account parameterized types and generic variables. If
-     * the property is an array or collection then the returned type is the type of contained elements.
-     */
-    static Class<?> getConcreteClass(BasicBeanDescription beanDescription, BeanPropertyDefinition property) {
-        Class<?> beanClass = beanDescription.getType().getRawClass();
-        if (property.hasSetter()) {
-            return getConcreteClass(beanClass, property.getSetter().getGenericParameterType(0));
-        } else if (property.hasField()) {
-            return getConcreteClass(beanClass, property.getField().getGenericType());
-        } else if (property.hasGetter()) {
-            return getConcreteClass(beanClass, property.getGetter().getGenericType());
-        } else {
-            throw new IllegalArgumentException("I don't know how to deal with that kind of property");
-        }
-    }
-
-    /**
-     * Find the concrete {@link Class} of a member taking into account parameterized types and generic variables. If the
-     * property is an array or collection then the returned type is the type of contained elements.
-     */
-    static Class<?> getConcreteClass(AnnotatedMember member) {
-        Class<?> beanClass = member.getDeclaringClass();
-        if (member instanceof AnnotatedMethod) {
-            AnnotatedMethod method = (AnnotatedMethod) member;
-            if (BeanUtil.okNameForSetter(method) != null) {
-                return getConcreteClass(beanClass, method.getGenericParameterType(0));
-            }
-        }
-        return getConcreteClass(beanClass, member.getGenericType());
-    }
-
-    private static Class<?> getConcreteClass(Class<?> beanClass, Type propertyType) {
-        if (propertyType instanceof Class) {
-            return getConcreteClassForClass((Class<?>) propertyType);
-
-        } else if (propertyType instanceof ParameterizedType) {
-            return getConcreteClassForParameterizedType(beanClass, (ParameterizedType) propertyType);
-
-        } else if (propertyType instanceof TypeVariable) {
-            return getConcreteClassForGenericVariable(beanClass, (TypeVariable) propertyType);
-
-        } else {
-            throw new IllegalArgumentException("I don't know how to deal with that kind of property");
-        }
-    }
-
-    private static Class<?> getConcreteClassForClass(Class<?> clazz) {
-        if (clazz.isArray()) {
-            return clazz.getComponentType(); // Return element class
-        } else {
-            return clazz;
-        }
-    }
-
-    private static Class<?> getConcreteClassForParameterizedType(Class<?> beanClass, ParameterizedType parameterizedType) {
-        if (Collection.class.isAssignableFrom((Class<?>) parameterizedType.getRawType())) {
-            return getConcreteClass(beanClass, parameterizedType.getActualTypeArguments()[0]); // Return element class
-        } else {
-            return getConcreteClass(beanClass, parameterizedType.getRawType());
-        }
-    }
-
-    private static Class<?> getConcreteClassForGenericVariable(Class<?> beanClass, TypeVariable typeVariable) {
-        Class<?> genericClass = (Class<?>) typeVariable.getGenericDeclaration();
-        if (genericClass.isAssignableFrom(beanClass)) {
-            JavaType[] boundTypes = TypeFactory.defaultInstance().findTypeParameters(beanClass, genericClass);
-            TypeVariable[] typeVariables = genericClass.getTypeParameters();
-            for (int i = 0; i < typeVariables.length; i++) {
-                if (typeVariables[i].equals(typeVariable)) {
-                    return boundTypes != null ? boundTypes[i].getRawClass() : genericClass;
-                }
-            }
-        }
-        throw new RuntimeException(
-            String.format(
-                "Don't know how to map type variable to a concrete type: variable=%s, beanClass=%s, genericClass=%s",
-                typeVariable.getName(), beanClass.getSimpleName(), genericClass.getSimpleName()));
     }
 
     private static boolean hasSalesforceObjectAnnotation(Class<?> type) {
