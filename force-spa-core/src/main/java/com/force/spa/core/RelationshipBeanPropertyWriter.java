@@ -47,8 +47,11 @@ class RelationshipBeanPropertyWriter extends BeanPropertyWriter {
                     return;
                 }
             }
+            super.serializeAsField(bean, jgen, prov);
+
+        } else if (!willSuppressNulls()){
+            jgen.writeStringField(idPropertyName, null);
         }
-        super.serializeAsField(bean, jgen, prov);
     }
 
     private static String translateToIdName(String relationshipName) {
