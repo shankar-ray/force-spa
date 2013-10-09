@@ -15,6 +15,7 @@ import com.force.spa.core.MappingContext;
  */
 public final class RestMetadataAccessor extends AbstractMetadataAccessor {
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final RestConnector connector;
 
     public RestMetadataAccessor(RecordAccessorConfig config, MappingContext mappingContext, RestConnector connector) {

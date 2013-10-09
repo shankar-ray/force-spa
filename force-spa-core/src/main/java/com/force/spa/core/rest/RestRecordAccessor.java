@@ -52,7 +52,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
         Validate.notNull(record, "record must not be null");
 
-        return new RestCreateRecordOperation<T>(this, record);
+        return new RestCreateRecordOperation<>(this, record);
     }
 
     @Override
@@ -61,7 +61,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notEmpty(id, "id must not be empty");
         Validate.notNull(recordClass, "recordClass must not be null");
 
-        return new RestDeleteRecordOperation<T>(this, id, recordClass);
+        return new RestDeleteRecordOperation<>(this, id, recordClass);
     }
 
     @Override
@@ -70,7 +70,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notEmpty(id, "id must not be empty");
         Validate.notNull(recordClass, "recordClass must not be null");
 
-        return new RestGetRecordOperation<T>(this, id, recordClass);
+        return new RestGetRecordOperation<>(this, id, recordClass);
     }
 
     @Override
@@ -79,7 +79,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notEmpty(id, "id must not be empty");
         Validate.notNull(record, "record must not be null");
 
-        return new RestPatchRecordOperation<T>(this, id, record);
+        return new RestPatchRecordOperation<>(this, id, record);
     }
 
     @Override
@@ -88,7 +88,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notEmpty(soql, "soql must not be empty");
         Validate.notNull(recordClass, "recordClass must not be null");
 
-        return new RestQueryRecordsOperation<T, T>(this, soql, recordClass, recordClass);
+        return new RestQueryRecordsOperation<>(this, soql, recordClass, recordClass);
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notNull(recordClass, "recordClass must not be null");
         Validate.notNull(resultClass, "resultClass must not be null");
 
-        return new RestQueryRecordsOperation<T, R>(this, soqlTemplate, recordClass, resultClass);
+        return new RestQueryRecordsOperation<>(this, soqlTemplate, recordClass, resultClass);
     }
 
     @Override
@@ -107,7 +107,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notEmpty(id, "id must not be empty");
         Validate.notNull(record, "record must not be null");
 
-        return new RestUpdateRecordOperation<T>(this, id, record);
+        return new RestUpdateRecordOperation<>(this, id, record);
     }
 
     public RestConnector getConnector() {  // For unit test purposes only.

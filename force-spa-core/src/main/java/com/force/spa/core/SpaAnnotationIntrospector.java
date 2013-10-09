@@ -139,7 +139,7 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return null;
         }
 
-        List<NamedType> result = new ArrayList<NamedType>();
+        List<NamedType> result = new ArrayList<>();
         for (Class<?> type : polymorphic.value()) {
             result.add(new NamedType(type, findTypeName(type)));
         }
@@ -148,7 +148,7 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
     @Override
     public TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, AnnotatedClass ac, JavaType baseType) {
-        return findTypeResolver(config, (Annotated) ac, baseType);
+        return findTypeResolver((Annotated) ac, baseType);
     }
 
     @Override
@@ -156,13 +156,13 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         if (baseType.isContainerType()) {
             return null; // We have no container-level type information so no need for a type resolver
         } else {
-            return findTypeResolver(config, am, baseType);
+            return findTypeResolver(am, baseType);
         }
     }
 
     @Override
     public TypeResolverBuilder<?> findPropertyContentTypeResolver(MapperConfig<?> config, AnnotatedMember am, JavaType containerType) {
-        return findTypeResolver(config, am, containerType.containedType(0));
+        return findTypeResolver(am, containerType.containedType(0));
     }
 
     @Override
@@ -317,7 +317,7 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return UPDATE_VIEWS.clone();
     }
 
-    private TypeResolverBuilder<?> findTypeResolver(MapperConfig<?> config, Annotated annotated, JavaType baseType) {
+    private TypeResolverBuilder<?> findTypeResolver(Annotated annotated, JavaType baseType) {
         if (hasPolymorphicAnnotation(annotated) || isObjectOrContainerOfObject(baseType)) {
             return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
         } else {

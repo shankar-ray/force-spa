@@ -6,7 +6,6 @@
 package com.force.spa.core.rest;
 
 import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
-import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
 
 import java.io.IOException;
 import java.net.URI;
@@ -37,7 +36,7 @@ public class BatchRestConnector implements RestConnector {
 
     public BatchRestConnector(RestConnector baseConnector) {
         this.baseConnector = baseConnector;
-        this.pendingRequests = new ArrayList<BatchRequest>();
+        this.pendingRequests = new ArrayList<>();
     }
 
     @Override
@@ -95,7 +94,6 @@ public class BatchRestConnector implements RestConnector {
                 @Override
                 public void completed(CountingJsonParser parser, Integer status) {
                     try {
-                        establishCurrentToken(parser);
                         processBatchResponse(parser, batchRequests);
                     } catch (IOException e) {
                         abort(new RecordResponseException(e), status);
@@ -151,6 +149,7 @@ public class BatchRestConnector implements RestConnector {
     }
 
     private static void processBatchResponse(CountingJsonParser parser, List<BatchRequest> batchRequests) throws IOException {
+        parser.nextToken();
         consumeExpectedToken(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();

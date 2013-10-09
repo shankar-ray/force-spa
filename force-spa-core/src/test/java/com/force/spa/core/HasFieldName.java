@@ -32,6 +32,6 @@ class HasFieldName<T extends FieldDescriptor> extends TypeSafeMatcher<T> {
 
     @Factory
     public static <T extends FieldDescriptor> Matcher<T> hasFieldName(String name) {
-        return new HasFieldName<T>(name);
+        return new HasFieldName<>(name);
     }
 }

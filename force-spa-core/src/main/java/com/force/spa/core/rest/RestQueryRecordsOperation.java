@@ -6,7 +6,6 @@
 package com.force.spa.core.rest;
 
 import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
-import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
 
 import java.io.IOException;
 import java.net.URI;
@@ -102,7 +101,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
 
         QueryRecordsStatistics.Builder statisticsBuilder = new QueryRecordsStatistics.Builder();
         try {
-            List<R> records = new ArrayList<R>(INITIAL_ARRAY_ALLOCATION_SIZE);
+            List<R> records = new ArrayList<>(INITIAL_ARRAY_ALLOCATION_SIZE);
             URI queryUri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
             accumulateRecords(queryUri, connector, records, statisticsBuilder);
 
@@ -157,7 +156,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
 
     private QueryResult manuallyParseQueryResult(JsonParser parser) throws IOException {
         QueryResult queryResult = new QueryResult();
-        establishCurrentToken(parser);
+        parser.nextToken();
         consumeExpectedToken(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();
@@ -178,7 +177,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     }
 
     private List<Object> manuallyParseRecords(JsonParser parser) throws IOException {
-        List<Object> records = new ArrayList<Object>();
+        List<Object> records = new ArrayList<>();
         consumeExpectedToken(parser, JsonToken.START_ARRAY);
         Iterator<R> it = parser.readValuesAs(resultClass);
         while (it.hasNext()) {

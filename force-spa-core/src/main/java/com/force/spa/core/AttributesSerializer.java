@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
  */
 final class AttributesSerializer extends JsonSerializer<Map<String, String>> {
 
-    private static final ThreadLocal<String> typeForInclusionInAttributes = new ThreadLocal<String>();
+    private static final ThreadLocal<String> typeForInclusionInAttributes = new ThreadLocal<>();
 
     /**
      * A way for the SpaTypeSerializer to indicate that type information needs to be added to the attributes.
@@ -47,7 +47,7 @@ final class AttributesSerializer extends JsonSerializer<Map<String, String>> {
     public void serialize(Map<String, String> value, JsonGenerator generator, SerializerProvider provider) throws IOException {
         String typeName = consumeTypeForInclusionInAttributes();
         if (typeName != null && value.get("type") == null) {
-            Map<String, String> augmentedValue = new HashMap<String, String>(value);
+            Map<String, String> augmentedValue = new HashMap<>(value);
             augmentedValue.put("type", typeName);
             serializeMap(augmentedValue, generator, provider);
         } else {
@@ -58,7 +58,7 @@ final class AttributesSerializer extends JsonSerializer<Map<String, String>> {
     private void serializeMap(Map<String, String> map, JsonGenerator generator, SerializerProvider provider) throws IOException {
         generator.writeStartObject();
         if (provider.isEnabled(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)) {
-            map = new TreeMap<String, String>(map);
+            map = new TreeMap<>(map);
         }
 
         boolean writeNulls = provider.isEnabled(SerializationFeature.WRITE_NULL_MAP_VALUES);

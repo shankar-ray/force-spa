@@ -118,7 +118,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         Validate.notNull(soqlTemplate, "template must not be null");
         Validate.notNull(type, "type must not be null");
 
-        return new RecordQueryImpl<T>(soqlTemplate, type);
+        return new RecordQueryImpl<>(soqlTemplate, type);
     }
 
     @Override

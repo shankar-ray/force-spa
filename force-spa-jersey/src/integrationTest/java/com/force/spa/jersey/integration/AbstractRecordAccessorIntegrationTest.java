@@ -21,7 +21,7 @@ public class AbstractRecordAccessorIntegrationTest {
     private static final SecureRandom secureRandom = new SecureRandom(RecordAccessorIntegrationTest.class.getName().getBytes());
 
     protected RecordAccessor accessor;
-    protected final Set<Object> objects = new HashSet<Object>();
+    protected final Set<Object> objects = new HashSet<>();
 
     @Before
     public void setUpRecordAccessor() {

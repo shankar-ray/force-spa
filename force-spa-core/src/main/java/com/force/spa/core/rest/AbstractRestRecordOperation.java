@@ -124,7 +124,7 @@ public abstract class AbstractRestRecordOperation<T, R> extends AbstractRecordOp
     }
 
     private static List<ErrorResult> parseErrorResults(JsonParser parser) throws IOException {
-        List<ErrorResult> errorResults = new ArrayList<ErrorResult>();
+        List<ErrorResult> errorResults = new ArrayList<>();
         switch (parser.getCurrentToken()) {
             case START_OBJECT:
                 errorResults.add(parser.readValueAs(ErrorResult.class));

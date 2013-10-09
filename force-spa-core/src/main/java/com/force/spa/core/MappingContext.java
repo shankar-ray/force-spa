@@ -65,11 +65,11 @@ public final class MappingContext implements Serializable {
     private final ObjectWriter objectWriterForPatch;
 
     // Updates happen infrequently once the context is primed so no need for special concurrent map parameters.
-    private final Map<String, ObjectDescriptor> descriptorsByName = new ConcurrentHashMap<String, ObjectDescriptor>();
-    private final Map<Class<?>, ObjectDescriptor> descriptorsByClass = new ConcurrentHashMap<Class<?>, ObjectDescriptor>();
+    private final Map<String, ObjectDescriptor> descriptorsByName = new ConcurrentHashMap<>();
+    private final Map<Class<?>, ObjectDescriptor> descriptorsByClass = new ConcurrentHashMap<>();
 
-    private final Map<Class<?>, ObjectDescriptor> descriptorsUnderConstruction = new HashMap<Class<?>, ObjectDescriptor>();
-    private final Set<Class<?>> rejectedClasses = new HashSet<Class<?>>();
+    private final Map<Class<?>, ObjectDescriptor> descriptorsUnderConstruction = new HashMap<>();
+    private final Set<Class<?>> rejectedClasses = new HashSet<>();
 
     public MappingContext() {
         this(new RecordAccessorConfig());
@@ -264,7 +264,7 @@ public final class MappingContext implements Serializable {
     }
 
     private List<FieldDescriptor> buildFieldDescriptors(BasicBeanDescription bean) {
-        List<FieldDescriptor> fields = new ArrayList<FieldDescriptor>();
+        List<FieldDescriptor> fields = new ArrayList<>();
         for (BeanPropertyDefinition property : bean.findProperties()) {
             fields.add(buildFieldDescriptor(bean, property));
         }
@@ -289,7 +289,7 @@ public final class MappingContext implements Serializable {
     private List<ObjectDescriptor> getPolymorphicChoices(BeanPropertyDefinition property, ObjectDescriptor baseObject) {
         if (baseObject != null) {
             JavaType baseJavaType = baseObject.getJavaType();
-            List<ObjectDescriptor> polymorphicChoices = new ArrayList<ObjectDescriptor>();
+            List<ObjectDescriptor> polymorphicChoices = new ArrayList<>();
             for (NamedType subtype : getSubtypes(property, baseJavaType)) {
                 if (!baseJavaType.getRawClass().equals(subtype.getType())) {
                     polymorphicChoices.add(getObjectDescriptor(subtype.getType()));

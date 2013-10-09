@@ -24,7 +24,7 @@ import com.force.spa.SalesforceObject;
 public final class IntrospectionUtils {
     // The names of standard Salesforce properties.
     private static final Set<String> STANDARD_PROPERTIES = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(
+        new HashSet<>(Arrays.asList(
             "Id", "Name", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate", "Owner",
             "MasterLabel", "DeveloperName", "Language", "RecordType", "attributes")));
 
@@ -32,7 +32,7 @@ public final class IntrospectionUtils {
      * The names of standard Salesforce properties that can not be sent with record creation.
      */
     private static final Set<String> NON_INSERTABLE_PROPERTIES = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(
+        new HashSet<>(Arrays.asList(
             "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
 
     /**
@@ -40,14 +40,14 @@ public final class IntrospectionUtils {
      * per is enabled in the org.
      */
     private static final Set<String> NON_INSERTABLE_PROPERTIES_AUDIT_OK = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(
+        new HashSet<>(Arrays.asList(
             "Id")));
 
     /**
      * The names of standard Salesforce properties that can not be sent with record update.
      */
     private static final Set<String> NON_UPDATABLE_PROPERTIES = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(
+        new HashSet<>(Arrays.asList(
             "Id", "CreatedBy", "CreatedDate", "LastModifiedBy", "LastModifiedDate")));
 
     /**
@@ -55,13 +55,14 @@ public final class IntrospectionUtils {
      * is enabled in the org.
      */
     private static final Set<String> NON_UPDATABLE_PROPERTIES_AUDIT_OK = Collections.unmodifiableSet(
-        new HashSet<String>(Arrays.asList(
+        new HashSet<>(Arrays.asList(
             "Id")));
 
     private IntrospectionUtils() {
         throw new UnsupportedOperationException("Can not be instantiated");
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     static boolean isStandardProperty(String name) {
         return STANDARD_PROPERTIES.contains(name);
     }
@@ -100,7 +101,7 @@ public final class IntrospectionUtils {
             }
         }
 
-        List<AnnotatedElement> relatedElements = new ArrayList<AnnotatedElement>();
+        List<AnnotatedElement> relatedElements = new ArrayList<>();
         relatedElements.add(member.getAnnotated()); // The given element is always first in the list.
 
         if (name != null) {

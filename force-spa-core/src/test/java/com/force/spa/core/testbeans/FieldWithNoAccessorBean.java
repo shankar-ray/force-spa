@@ -12,7 +12,7 @@ import com.force.spa.beans.Record;
 /**
  * A bean that has a field with no Jackson accessor.
  */
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"UnusedDeclaration", "FieldCanBeLocal"})
 @SalesforceObject
 public class FieldWithNoAccessorBean extends Record {
 

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * YourKit is accessed reflectively so we don't need to include any YourKit jar dependencies in production code.
  */
+@SuppressWarnings("CanBeFinal")
 public final class YourKitUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(YourKitUtils.class);

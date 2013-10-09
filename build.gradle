@@ -42,12 +42,15 @@ configure(rootProject) {
                 withXml { provider ->
                     provider.node.component.find { it.@name == 'VcsDirectoryMappings' }.mapping.@vcs = 'Git'
 
+                    //noinspection GroovyAssignabilityCheck
                     def gradleSettings = getFreshIprComponent(provider.node, 'GradleSettings')
                     gradleSettings.appendNode('option', [name: 'gradleHome', value: gradle.gradleHomeDir.absolutePath])
 
+                    //noinspection GroovyAssignabilityCheck
                     def javacSettings = getFreshIprComponent(provider.node, 'JavacSettings')
                     javacSettings.appendNode('option', [name: 'MAXIMUM_HEAP_SIZE', value: "256"])
 
+                    //noinspection GroovyAssignabilityCheck
                     def checkstyleSettings = getFreshIprComponent(provider.node, 'CheckStyle-IDEA')
                     def mapNode = checkstyleSettings.appendNode('option', [name: 'configuration']).appendNode('map')
                     mapNode.appendNode('entry', [key: 'active-configuration', value: 'LOCAL_FILE:$PROJECT_DIR$/config/src/main/resources/checkstyle.xml:'])
@@ -179,7 +182,7 @@ configure(subprojects - project(":config") - project(":force-spa-testschema")) {
         task integrationTest(type: Test) {
             classpath = sourceSets.integrationTest.runtimeClasspath
             testClassesDir = sourceSets.integrationTest.output.classesDir
-            testResultsDir = file("${project.testResultsDir}/$name")
+            reports.junitXml.destination = file("${project.testResultsDir}/$name")
         }
 
         idea {

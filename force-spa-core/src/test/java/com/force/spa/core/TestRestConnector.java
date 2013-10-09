@@ -28,6 +28,7 @@ public abstract class TestRestConnector implements RestConnector {
 
     public abstract MappingContext getMappingContext();
 
+    @SuppressWarnings("SameReturnValue")
     public int getStatus() {
         return 200;
     }

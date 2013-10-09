@@ -50,7 +50,7 @@ final class RelationshipAwareBeanSerializerFactory extends BeanSerializerFactory
         List<BeanPropertyWriter> originalWriters = super.findBeanProperties(prov, beanDesc, builder);
         if (originalWriters != null) {
             ObjectDescriptor object = mappingContext.getObjectDescriptor(beanDesc.getBeanClass());
-            List<BeanPropertyWriter> updatedWriters = new ArrayList<BeanPropertyWriter>();
+            List<BeanPropertyWriter> updatedWriters = new ArrayList<>();
             for (BeanPropertyWriter originalWriter : originalWriters) {
                 FieldDescriptor field = object.getField(originalWriter.getName());
                 if (field.isRelationship()) {

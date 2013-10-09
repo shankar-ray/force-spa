@@ -83,7 +83,7 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     public void testLotsOfCreates() throws Exception {
         int numberOfCreates = 25;
         long before = System.currentTimeMillis();
-        List<RecordOperation<?>> createOperations = new ArrayList<RecordOperation<?>>();
+        List<RecordOperation<?>> createOperations = new ArrayList<>();
         for (int i = 0; i < numberOfCreates; i++) {
             Guild guild = new Guild();
             guild.setName("Speed Cyclists" + i);
@@ -94,7 +94,7 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         long after = System.currentTimeMillis();
         System.out.println("Elapsed create time: " + (after - before));
 
-        List<RecordOperation<?>> getOperations = new ArrayList<RecordOperation<?>>();
+        List<RecordOperation<?>> getOperations = new ArrayList<>();
         for (int i = 0; i < numberOfCreates; i++) {
             String id = ((CreateRecordOperation<Guild>) createOperations.get(i)).get();
             getOperations.add(accessor.newGetRecordOperation(id, Guild.class));

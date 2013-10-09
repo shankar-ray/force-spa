@@ -28,7 +28,7 @@ import org.apache.commons.lang3.Validate;
 public final class SoqlBuilder {
     private static final int DEFAULT_DEPTH = 5;
 
-    private static final Map<CacheKey, String> sharedExpansionsCache = new ConcurrentHashMap<CacheKey, String>();
+    private static final Map<CacheKey, String> sharedExpansionsCache = new ConcurrentHashMap<>();
 
     private final AbstractRecordAccessor accessor;
     private ObjectDescriptor object;
@@ -84,6 +84,7 @@ public final class SoqlBuilder {
         return sb.toString();
     }
 
+    @SuppressWarnings("ConstantConditions")
     private StringBuilder expandWildcards() {
 
         char[] chars = template.toCharArray();
@@ -133,7 +134,7 @@ public final class SoqlBuilder {
             return expansion;
 
         if (remainingDepth >= 0) {
-            List<String> accumulator = new ArrayList<String>();
+            List<String> accumulator = new ArrayList<>();
             for (FieldDescriptor field : object.getFields()) {
                 if (isFieldVisible(object, field)) {
                     String expandedField = expandField(field, prefix, remainingDepth);

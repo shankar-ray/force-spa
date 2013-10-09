@@ -45,15 +45,13 @@ public final class RestVersionManager {
                     return supportedVersions.get(supportedVersions.size() - 1);
                 }
             });
-        } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
-        } catch (UncheckedExecutionException e) {
+        } catch (ExecutionException | UncheckedExecutionException e) {
             throw getCauseAsSpaException(e);
         }
     }
 
     private List<ApiVersion> getSupportedVersions() {
-        final List<ApiVersion> supportedVersions = new ArrayList<ApiVersion>();
+        final List<ApiVersion> supportedVersions = new ArrayList<>();
 
         connector.get(URI.create("/services/data"), new CompletionHandler<CountingJsonParser, Integer>() {
             @Override

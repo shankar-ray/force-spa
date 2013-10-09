@@ -39,7 +39,7 @@ public final class ObjectDescriptor implements Serializable {
         this.javaType = javaType;
         this.metadataAware = metadataAware;
         this.fields = Collections.emptyList();
-        this.fieldsByName = new HashMap<String, FieldDescriptor>();
+        this.fieldsByName = new HashMap<>();
     }
 
     void initializeFields(List<FieldDescriptor> fields) {
