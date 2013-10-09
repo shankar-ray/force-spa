@@ -190,7 +190,8 @@ public class BatchRestConnector implements RestConnector {
             } else if (parser.getCurrentName().equals("result")) {
                 resultProcessed = true;
                 batchRequest.getCompletionHandler().completed(parser, statusCode);
-                establishCurrentToken(parser);
+                parser.clearCurrentToken();
+                parser.nextToken();
             } else {
                 parser.nextToken(); // Ignore field value we don't care about
             }
