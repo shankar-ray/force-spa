@@ -5,6 +5,8 @@
  */
 package com.force.spa.core.rest;
 
+import static com.force.spa.core.utils.YourKitUtils.clearYourKitData;
+import static com.force.spa.core.utils.YourKitUtils.isYourKitPresent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -13,12 +15,15 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
@@ -52,6 +58,8 @@ import com.force.spa.core.testbeans.SimpleContainerBean;
 import com.force.spa.core.testbeans.StandardFieldBean;
 
 public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
+
+    private static final int PROFILE_ITERATIONS = 1000;
 
     @Test
     public void testSimpleCreate() throws Exception {
@@ -87,6 +95,29 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(operation.getStatistics().getElapsedNanos(), is(greaterThan(0L)));
 
         verify(connector).post(URI.create("/sobjects/SimpleBean"), getResourceString("simpleCreateRequest.json"));
+    }
+
+    @Test
+    public void profileSimpleCreate() throws Exception {
+        assumeTrue("Profile tests are only run if YourKit is present", isYourKitPresent());
+
+        SimpleBean bean = new SimpleBean();
+        bean.setName("Name 1");
+        bean.setDescription("Description 1");
+
+        InputStream cachedResponseStream = new ByteArrayInputStream(IOUtils.toByteArray(getResourceStream("createSuccessResponse.json")));
+        when(connector.post(any(URI.class), anyString())).thenReturn(cachedResponseStream);
+
+        // Prime caches with a single initial iteration.
+        accessor.create(bean);
+        cachedResponseStream.reset();
+
+        clearYourKitData();
+
+        for (int i = 0; i < PROFILE_ITERATIONS; i++) {
+            accessor.create(bean);
+            cachedResponseStream.reset();
+        }
     }
 
     @Test
@@ -364,6 +395,25 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     }
 
     @Test
+    public void profileSimpleGet() throws Exception {
+        assumeTrue("Profile tests are only run if YourKit is present", isYourKitPresent());
+
+        InputStream cachedResponseStream = new ByteArrayInputStream(IOUtils.toByteArray(getResourceStream("simpleGetResponse.json")));
+        when(connector.get(any(URI.class))).thenReturn(cachedResponseStream);
+
+        // Prime caches with a single initial iteration.
+        accessor.get("a01i00000000001AAC", SimpleBean.class);
+        cachedResponseStream.reset();
+
+        clearYourKitData();
+
+        for (int i = 0; i < PROFILE_ITERATIONS; i++) {
+            accessor.get("a01i00000000001AAC", SimpleBean.class);
+            cachedResponseStream.reset();
+        }
+    }
+
+    @Test
     public void testSimpleQuery() throws Exception {
         when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
 
@@ -635,7 +685,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(value1.getDescription(), is(equalTo("Description 1")));
 
         assertThat(bean.getValues().get(1), is(instanceOf(ExplicitlyNamedBean.class)));
-        ExplicitlyNamedBean value2 = (ExplicitlyNamedBean)bean.getValues().get(1);
+        ExplicitlyNamedBean value2 = (ExplicitlyNamedBean) bean.getValues().get(1);
         assertThat(value2.getAttributes().get("type"), is(equalTo("ExplicitName")));
         assertThat(value2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/ExplicitName/a01i00000000002")));
         assertThat(value2.getId(), is(equalTo("a01i00000000002")));
@@ -644,11 +694,10 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
     public void testLotsOfGets() throws Exception {
-        for ( int i = 0; i < 25; i++) {
+        for (int i = 0; i < 25; i++) {
             when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
             SimpleBean bean = accessor.get("a01i00000000001AAC", SimpleBean.class);
             assertThat(bean, is(not(nullValue())));
         }
     }
-
 }

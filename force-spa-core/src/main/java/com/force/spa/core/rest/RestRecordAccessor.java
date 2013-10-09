@@ -42,7 +42,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         RestConnector connector = shouldBatch(operations) ? new BatchRestConnector(this.connector) : this.connector;
 
         for (RecordOperation<?> operation : operations) {
-            AbstractRestRecordOperation.class.cast(operation).start(connector, new Stopwatch().start());
+            AbstractRestRecordOperation.class.cast(operation).start(connector, Stopwatch.createStarted());
         }
         connector.join(); // Wait for all the operations to complete
     }

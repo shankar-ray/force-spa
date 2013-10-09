@@ -55,7 +55,7 @@ public abstract class AbstractRestRecordOperation<T, R> extends AbstractRecordOp
         return new OperationStatistics.Builder()
             .bytesSent((requestBody != null) ? requestBody.length() : 0)
             .bytesReceived((parser != null) ? parser.getCount() : 0)
-            .elapsedNanos(stopwatch.elapsedTime(TimeUnit.NANOSECONDS))
+            .elapsedNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS))
             .build();
     }
 

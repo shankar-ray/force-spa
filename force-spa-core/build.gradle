@@ -4,7 +4,7 @@ description = 'Simple Persistence API for Salesforce - Core components'
 
 dependencies {
     compile project(":force-spa-api")
-    compile "com.google.guava:guava:13.0"
+    compile "com.google.guava:guava:${guavaVersion}"
     compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
     compile "org.apache.geronimo.specs:geronimo-jpa_2.0_spec:1.0"
     compile "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
@@ -20,6 +20,7 @@ dependencies {
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
     testCompile "org.mockito:mockito-all:${mockitoVersion}"
     testCompile "joda-time:joda-time:2.2"
+
 
     testRuntime project(":config")
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"

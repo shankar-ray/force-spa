@@ -24,8 +24,8 @@ import com.force.spa.RecordResponseException;
 import com.force.spa.TooManyQueryRowsException;
 import com.force.spa.core.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
-import com.force.spa.core.utils.URLEncoderDecoderUtils;
 import com.google.common.base.Stopwatch;
+import com.google.common.net.UrlEscapers;
 
 final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
 
@@ -103,7 +103,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
         QueryRecordsStatistics.Builder statisticsBuilder = new QueryRecordsStatistics.Builder();
         try {
             List<R> records = new ArrayList<R>(INITIAL_ARRAY_ALLOCATION_SIZE);
-            URI queryUri = URI.create("/query?q=" + URLEncoderDecoderUtils.encode(soql));
+            URI queryUri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
             accumulateRecords(queryUri, connector, records, statisticsBuilder);
 
             RestQueryRecordsOperation.this.completed(records, buildStatistics(statisticsBuilder, stopwatch));
@@ -197,7 +197,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     }
 
     private static QueryRecordsStatistics buildStatistics(QueryRecordsStatistics.Builder builder, Stopwatch stopwatch) {
-        return builder.elapsedNanos(stopwatch.elapsedTime(TimeUnit.NANOSECONDS)).build();
+        return builder.elapsedNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS)).build();
     }
 
     private static class QueryOperationFailedException extends RuntimeException {

@@ -15,8 +15,8 @@ import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordResponseException;
 import com.force.spa.core.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
-import com.force.spa.core.utils.URLEncoderDecoderUtils;
 import com.google.common.base.Stopwatch;
+import com.google.common.net.UrlEscapers;
 
 class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implements GetRecordOperation<T> {
 
@@ -45,14 +45,14 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implem
 
         String soql = new SoqlBuilder(getRecordAccessor())
             .object(getObjectDescriptor())
-            .template(String.format("SELECT * FROM %s WHERE Id='%s'", getObjectDescriptor().getName(), id))
+            .template("SELECT * FROM " + getObjectDescriptor().getName() + " WHERE Id='" + id + "'")
             .limit(1)
             .build();
 
         setTitle("Get " + getObjectDescriptor().getName());
         setDetail(soql);
 
-        URI uri = URI.create("/query?q=" + URLEncoderDecoderUtils.encode(soql));
+        URI uri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
         connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
             public void completed(CountingJsonParser parser, Integer status) {

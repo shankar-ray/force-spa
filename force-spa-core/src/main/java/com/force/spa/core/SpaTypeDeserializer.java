@@ -42,7 +42,7 @@ class SpaTypeDeserializer extends TypeDeserializerBase {
 
     @Override
     public Object deserializeTypedFromArray(JsonParser parser, DeserializationContext context) throws IOException {
-        throw new UnsupportedOperationException("What are we doing here and how should we handle this?");
+        return _findDefaultImplDeserializer(context).deserialize(parser, context);
     }
 
     @Override
@@ -52,7 +52,15 @@ class SpaTypeDeserializer extends TypeDeserializerBase {
 
     @Override
     public Object deserializeTypedFromAny(JsonParser parser, DeserializationContext context) throws IOException {
-        return deserializeTypedFromObject(parser, context);
+        switch (parser.getCurrentToken()) {
+            case START_ARRAY:
+                return deserializeTypedFromArray(parser, context);
+            case START_OBJECT:
+                return deserializeTypedFromObject(parser, context);
+
+            default:
+                return deserializeTypedFromScalar(parser, context);
+        }
     }
 
     @Override
@@ -85,6 +93,8 @@ class SpaTypeDeserializer extends TypeDeserializerBase {
             tokenBuffer.copyCurrentStructure(parser);
             parser.nextToken();
         }
+        tokenBuffer.writeEndObject();
+        parser.clearCurrentToken();
         return null;
     }
 
@@ -100,11 +110,12 @@ class SpaTypeDeserializer extends TypeDeserializerBase {
             tokenBuffer.copyCurrentStructure(parser);
             parser.nextToken();
         }
+        tokenBuffer.writeEndObject();
+        parser.clearCurrentToken();
         return typeId;
     }
 
     private static JsonParser pushTokensBackOntoParser(JsonParser parser, TokenBuffer tokenBuffer) throws IOException {
-        tokenBuffer.copyCurrentStructure(parser);
         parser = JsonParserSequence.createFlattened(tokenBuffer.asParser(parser), parser);
         parser.nextToken();
         return parser;

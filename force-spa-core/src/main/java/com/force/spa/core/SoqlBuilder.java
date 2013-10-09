@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -29,8 +27,6 @@ import org.apache.commons.lang3.Validate;
  */
 public final class SoqlBuilder {
     private static final int DEFAULT_DEPTH = 5;
-    private static final Pattern SPLIT_AT_LITERAL_PATTERN = Pattern.compile("([^\'\"]+)(.*)");
-    private static final Pattern WILDCARD_PATTERN = Pattern.compile("([^\\*\\s]*?)\\.?\\*");
 
     private static final Map<CacheKey, String> sharedExpansionsCache = new ConcurrentHashMap<CacheKey, String>();
 
@@ -90,33 +86,48 @@ public final class SoqlBuilder {
 
     private StringBuilder expandWildcards() {
 
-        // Use a simple algorithm to make our job easy. Quoted literals are a headache in Regex and we really don't want
-        // to bite off full SOQL parsing at this point. Simplify by assuming that all wildcard substitutions will show
-        // up before any literals are encountered. Parts of the SOQL that show up after the first literal should not
-        // need substitution. With this simplifying assumption we can split the line up into two parts: the front part
-        // in which we perform substitutions and the back part (which contains literals) and which we leave alone.
-        Matcher splitMatcher = SPLIT_AT_LITERAL_PATTERN.matcher(template);
-        splitMatcher.find();
-        String partToScanForWildcards = splitMatcher.group(1);
-        String partToLeaveAlone = splitMatcher.group(2);
+        char[] chars = template.toCharArray();
+        StringBuilder builder = new StringBuilder(512);
 
-        // Replace wildcards with concrete field lists.
-        int lastEnd = 0;
-        StringBuilder builder = new StringBuilder();
-        Matcher wildcardMatcher = WILDCARD_PATTERN.matcher(partToScanForWildcards);
-        while (wildcardMatcher.find()) {
-            builder.append(partToScanForWildcards.substring(lastEnd, wildcardMatcher.start()));
-            String prefix = wildcardMatcher.group(1);
-            builder.append(expandObject(object, prefix, depth));
-            lastEnd = wildcardMatcher.end();
+        char quoteChar = 0;
+        int pendingCursor = 0;  // Scanned characters waiting to be transferred to builder
+        for (int i = 0, limit = chars.length; i < limit; i++) {
+            char c = chars[i];
+            if (c == '\\') {
+                i++; // Skip over the next character
+            } else if (quoteChar != 0) {
+                if (c == quoteChar) {
+                    quoteChar = 0;  // No longer inside of a quote
+                }
+            } else if (c == '*') {
+                int prefixCursor = findPrefixStart(chars, i);
+                builder.append(chars, pendingCursor, (prefixCursor - pendingCursor)); // Append pending chars up to start of prefix
+                pendingCursor = i + 1;
+
+                String prefix = (prefixCursor != i) ? new String(chars, prefixCursor, i - prefixCursor - 1) : null;
+                builder.append(expandObject(object, prefix, depth));
+            } else if (c == '\'' || c == '\"') {
+                quoteChar = c;
+            }
         }
-        builder.append(partToScanForWildcards.substring(lastEnd));
-        builder.append(partToLeaveAlone);
+        builder.append(chars, pendingCursor, (chars.length - pendingCursor)); // Append the rest of the chars
+
         return builder;
     }
 
+    private static int findPrefixStart(final char[] chars, final int wildcardCursor) {
+        if ((wildcardCursor > 0) && (chars[wildcardCursor - 1] == '.')) {
+            int prefixCursor = wildcardCursor - 1;
+            while (prefixCursor > 1 && chars[prefixCursor - 1] != ' ')
+                prefixCursor -= 1;
+
+            return prefixCursor;
+        }
+        return wildcardCursor;
+    }
+
     private String expandObject(ObjectDescriptor object, String prefix, int remainingDepth) {
-        CacheKey cacheKey = new CacheKey(object, prefix);       //TODO depth matters too
+        CacheKey cacheKey = new CacheKey(object, prefix, remainingDepth);
         String expansion = sharedExpansionsCache.get(cacheKey);
         if (expansion != null)
             return expansion;
@@ -196,20 +207,30 @@ public final class SoqlBuilder {
     }
 
     private String expandContainerField(FieldDescriptor field, String prefix, int remainingDepth) {
-        return new SoqlBuilder(accessor)
-            .object(field.getRelatedObject())
-            .template("(SELECT * from " + expandSimpleField(field, prefix) + ")")
-            .depth(remainingDepth - 1)
-            .build();
+        if (StringUtils.isEmpty(prefix)) {
+            return new SoqlBuilder(accessor)
+                .object(field.getRelatedObject())
+                .template("(SELECT * from " + expandSimpleField(field, prefix) + ")")
+                .depth(remainingDepth - 1)
+                .build();
+        } else {
+            // The server can't handle this kind of nesting. The server complains with "First SObject of a nested query
+            // must be a child of its outer query". We can only query down into collection fields if the container
+            // is at the top of the query. If the container is nested down inside somewhere then we have to skip the
+            // contained objects.
+            return null;
+        }
     }
 
     private static final class CacheKey {
         private final ObjectDescriptor descriptor;
         private final String prefix;
+        private final int remainingDepth;
 
-        CacheKey(ObjectDescriptor descriptor, String prefix) {
+        CacheKey(ObjectDescriptor descriptor, String prefix, int remainingDepth) {
             this.descriptor = descriptor;
             this.prefix = prefix;
+            this.remainingDepth = remainingDepth;
         }
 
         @Override
@@ -219,8 +240,8 @@ public final class SoqlBuilder {
 
             CacheKey cacheKey = (CacheKey) o;
 
-            if (descriptor != null ? !descriptor.equals(cacheKey.descriptor) : cacheKey.descriptor != null)
-                return false;
+            if (remainingDepth != cacheKey.remainingDepth) return false;
+            if (!descriptor.equals(cacheKey.descriptor)) return false;
             if (prefix != null ? !prefix.equals(cacheKey.prefix) : cacheKey.prefix != null) return false;
 
             return true;
@@ -228,8 +249,9 @@ public final class SoqlBuilder {
 
         @Override
         public int hashCode() {
-            int result = descriptor != null ? descriptor.hashCode() : 0;
+            int result = descriptor.hashCode();
             result = 31 * result + (prefix != null ? prefix.hashCode() : 0);
+            result = 31 * result + remainingDepth;
             return result;
         }
     }
