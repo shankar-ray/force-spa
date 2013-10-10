@@ -7,25 +7,29 @@ package com.force.spa;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import java.text.DecimalFormat;
-
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Simple statistics for an operation execution.
  */
 public class OperationStatistics {
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("###,###,###µs");
+    private static final ToStringStyle TO_STRING_STYLE = new OperationStatisticsToStringStyle();
 
     private final long bytesSent;
     private final long bytesReceived;
     private final long elapsedNanos;
+    private final long rowsProcessed;
+    private final long totalRows;
 
     protected OperationStatistics(Builder builder) {
         this.bytesSent = builder.bytesSent;
         this.bytesReceived = builder.bytesReceived;
         this.elapsedNanos = builder.elapsedNanos;
+        this.rowsProcessed = builder.rowsProcessed;
+        this.totalRows = builder.totalRows;
     }
 
     /**
@@ -64,14 +68,41 @@ public class OperationStatistics {
         return NANOSECONDS.toMicros(elapsedNanos);
     }
 
+    /**
+     * Returns the number of rows that were processed.
+     *
+     * @return the number of rows that were processed
+     */
+    public final long getRowsProcessed() {
+        return rowsProcessed;
+    }
+
+    /**
+     * Returns the total number of rows that satisfied the query.
+     *
+     * @return the total number of rows that satisfied the query
+     */
+    public final long getTotalRows() {
+        return totalRows;
+    }
+
     @Override
-    public String toString() {
-        String formattedElapsedTime = DECIMAL_FORMAT.format(getElapsedMicros());
-        StringBuilder builder = new StringBuilder();
-        builder.append("{bytesSent=").append(bytesSent);
-        builder.append(", bytesReceived=").append(bytesReceived);
-        builder.append(", elapsedTime=").append(formattedElapsedTime);
-        return builder.toString();
+    public final String toString() {
+        return toString(TO_STRING_STYLE);
+    }
+
+    public final String toString(ToStringStyle style) {
+        return appendToStringBuilder(new ToStringBuilder(this, style)).toString();
+    }
+
+    protected ToStringBuilder appendToStringBuilder(ToStringBuilder builder) {
+        builder.append("millis", getElapsedMicros() / 1000D);
+        builder.append("sent", bytesSent);
+        builder.append("received", bytesReceived);
+        builder.append("rows", rowsProcessed);
+        builder.append("totalRows", totalRows);
+
+        return builder;
     }
 
     public static class Builder {
@@ -79,17 +110,23 @@ public class OperationStatistics {
         private long bytesSent;
         private long bytesReceived;
         private long elapsedNanos;
+        private long rowsProcessed;
+        private long totalRows;
 
         public Builder() {
             bytesSent = 0;
             bytesReceived = 0;
             elapsedNanos = 0;
+            rowsProcessed = 0;
+            totalRows = 0;
         }
 
         public Builder(OperationStatistics that) {
             this.bytesSent = that.bytesSent;
             this.bytesReceived = that.bytesReceived;
             this.elapsedNanos = that.elapsedNanos;
+            this.rowsProcessed = that.rowsProcessed;
+            this.totalRows = that.totalRows;
         }
 
         public OperationStatistics build() {
@@ -111,6 +148,16 @@ public class OperationStatistics {
             return this;
         }
 
+        public Builder rowsProcessed(long rowsProcessed) {
+            this.rowsProcessed = rowsProcessed;
+            return this;
+        }
+
+        public Builder totalRows(long totalRows) {
+            this.totalRows = totalRows;
+            return this;
+        }
+
         public Builder additionalBytesSent(long additionalBytesSent) {
             this.bytesSent += additionalBytesSent;
             return this;
@@ -126,9 +173,34 @@ public class OperationStatistics {
             return this;
         }
 
+        public Builder additionalRowsProcessed(long additionalRowsProcessed) {
+            this.rowsProcessed = additionalRowsProcessed;
+            return this;
+        }
+
+        public Builder additionalTotalRows(long additionalTotalRows) {
+            this.totalRows += additionalTotalRows;
+            return this;
+        }
+
         @Override
         public String toString() {
             return ReflectionToStringBuilder.toString(this);
+        }
+    }
+
+    public static class OperationStatisticsToStringStyle extends ToStringStyle {
+        private static final long serialVersionUID = -8799177462827453155L;
+
+        OperationStatisticsToStringStyle() {
+            super();
+            this.setUseClassName(false);
+            this.setUseIdentityHashCode(false);
+            this.setUseFieldNames(true);
+        }
+
+        private Object readResolve() {
+            return OperationStatistics.TO_STRING_STYLE; // Ensure singleton after serialization
         }
     }
 }

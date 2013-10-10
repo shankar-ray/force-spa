@@ -17,8 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.force.spa.OperationStatistics;
 import com.force.spa.QueryRecordsOperation;
-import com.force.spa.QueryRecordsStatistics;
 import com.force.spa.RecordResponseException;
 import com.force.spa.TooManyQueryRowsException;
 import com.force.spa.core.CountingJsonParser;
@@ -82,11 +82,6 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     }
 
     @Override
-    public QueryRecordsStatistics getStatistics() {
-        return (QueryRecordsStatistics) super.getStatistics();
-    }
-
-    @Override
     protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
         String soql = new SoqlBuilder(getRecordAccessor())
@@ -99,7 +94,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
         setTitle("Query " + getObjectDescriptor().getName());
         setDetail(soql);
 
-        QueryRecordsStatistics.Builder statisticsBuilder = new QueryRecordsStatistics.Builder();
+        OperationStatistics.Builder statisticsBuilder = new OperationStatistics.Builder();
         try {
             List<R> records = new ArrayList<>(INITIAL_ARRAY_ALLOCATION_SIZE);
             URI queryUri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
@@ -112,7 +107,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
         }
     }
 
-    private void accumulateRecords(URI uri, final RestConnector connector, final List<R> records, final QueryRecordsStatistics.Builder statisticsBuilder) {
+    private void accumulateRecords(URI uri, final RestConnector connector, final List<R> records, final OperationStatistics.Builder statisticsBuilder) {
 
         connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
@@ -187,7 +182,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
         return records;
     }
 
-    private static void addStatistics(CountingJsonParser parser, QueryResult queryResult, QueryRecordsStatistics.Builder accumulatedStatistics) {
+    private static void addStatistics(CountingJsonParser parser, QueryResult queryResult, OperationStatistics.Builder accumulatedStatistics) {
         accumulatedStatistics.additionalBytesReceived(parser.getCount());
         accumulatedStatistics.additionalRowsProcessed(queryResult.getRecords().size());
         if (queryResult.getTotalSize() != 0) {
@@ -195,7 +190,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
         }
     }
 
-    private static QueryRecordsStatistics buildStatistics(QueryRecordsStatistics.Builder builder, Stopwatch stopwatch) {
+    private static OperationStatistics buildStatistics(OperationStatistics.Builder builder, Stopwatch stopwatch) {
         return builder.elapsedNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS)).build();
     }
 

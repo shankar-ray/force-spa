@@ -21,7 +21,4 @@ public interface QueryRecordsOperation<T, R> extends RecordOperation<List<R>> {
     void setMaxResults(int limit);
 
     int getMaxResults();
-
-    @Override
-    QueryRecordsStatistics getStatistics();
 }

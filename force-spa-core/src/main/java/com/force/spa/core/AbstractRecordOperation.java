@@ -8,12 +8,13 @@ package com.force.spa.core;
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import com.force.spa.OperationStatistics;
 import com.force.spa.RecordOperation;
-import com.force.spa.core.utils.MDCUtils;
 
 /**
  * @param <T> the type of record the operation is working with
@@ -21,14 +22,11 @@ import com.force.spa.core.utils.MDCUtils;
  */
 public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R>, CompletionHandler<R, OperationStatistics> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractRecordOperation.class);
-
-    private static final String BYTES_SENT_MDC_KEY = "spa.bytesSent";
-    private static final String BYTES_RECEIVED_MDC_KEY = "spa.bytesReceived";
-    private static final String ELAPSED_MICROS_MDC_KEY = "spa.elapsedMicros";
+    public static final String STATISTICS_MDC_KEY = "spa.statistics";
 
     private final ObjectDescriptor objectDescriptor;
     private final AbstractRecordAccessor recordAccessor;
+    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private R result;
     private Throwable exception;
@@ -69,16 +67,14 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.result = result;
         this.statistics = statistics;
 
-        MDCUtils.add(BYTES_RECEIVED_MDC_KEY, statistics.getBytesReceived());
-        MDCUtils.add(BYTES_SENT_MDC_KEY, statistics.getBytesSent());
-        MDCUtils.add(ELAPSED_MICROS_MDC_KEY, statistics.getElapsedMicros());
-
-        if (LOG.isInfoEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(getTitle() + ", statistics=" + statistics + ", detail=" + getDetail());
+        if (log.isInfoEnabled()) {
+            MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
+            if (log.isDebugEnabled()) {
+                log.debug(getTitle() + " completed: " + getDetail());
             } else {
-                LOG.info(getTitle() + ", statistics=" + statistics);
+                log.info(getTitle() + " completed");
             }
+            MDC.remove(STATISTICS_MDC_KEY);
         }
     }
 
@@ -91,16 +87,14 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.exception = exception;
         this.statistics = statistics;
 
-        MDCUtils.add(BYTES_RECEIVED_MDC_KEY, statistics.getBytesReceived());
-        MDCUtils.add(BYTES_SENT_MDC_KEY, statistics.getBytesSent());
-        MDCUtils.add(ELAPSED_MICROS_MDC_KEY, statistics.getElapsedMicros());
-
-        if (LOG.isInfoEnabled()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug(getTitle() + " failed, statistics=" + statistics + ", detail=" + getDetail(), exception);
+        if (log.isInfoEnabled()) {
+            MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
+            if (log.isDebugEnabled()) {
+                log.debug(getTitle() + " failed: " + getDetail(), exception);
             } else {
-                LOG.info(getTitle() + " failed, statistics=" + statistics, exception);
+                log.info(getTitle() + " failed", exception);
             }
+            MDC.remove(STATISTICS_MDC_KEY);
         }
     }
 
