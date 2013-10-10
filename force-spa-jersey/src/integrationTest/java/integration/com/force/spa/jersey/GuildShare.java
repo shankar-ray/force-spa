@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.jersey.integration;
+package integration.com.force.spa.jersey;
 
 import com.force.spa.SalesforceObject;
 import com.force.spa.beans.Share;
