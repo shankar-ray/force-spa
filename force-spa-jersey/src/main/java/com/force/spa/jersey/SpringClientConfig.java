@@ -20,6 +20,33 @@ import org.springframework.stereotype.Component;
 public class SpringClientConfig extends SpaClientConfig {
 
     /**
+     * Sets the connect timeout interval, in milliseconds.
+     * <p/>
+     * If not specified, the value defaults to 5000 (5 seconds).
+     */
+    public void setConnectionTimeout(long connectionTimeout) {
+        getProperties().put(SpaClientConfig.PROPERTY_CONNECT_TIMEOUT, connectionTimeout);
+    }
+
+    /**
+     * Sets the read timeout interval, in milliseconds.
+     * <p/>
+     * If not specified, the value defaults to 60000 (60 seconds).
+     */
+    public void setReadTimeout(long readTimeout) {
+        getProperties().put(SpaClientConfig.PROPERTY_READ_TIMEOUT, readTimeout);
+    }
+
+    /**
+     * Sets the maximum time to keep unused connections open in the Apache Http client pool, in milliseconds.
+     * <p/>
+     * If not specified, the value defaults to 300000 (5 minutes).
+     */
+    public void setConnectionTimeToLive(long connectionTimeToLive) {
+        getProperties().put(SpaClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE, connectionTimeToLive);
+    }
+
+    /**
      * Sets the maximum total number of connections to maintain in the Apache Http client pool.
      * <p/>
      * This only applies to the case when no explicit {@link ClientConnectionManager} is specified. The value is used

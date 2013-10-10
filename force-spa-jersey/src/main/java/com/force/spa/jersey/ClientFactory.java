@@ -5,12 +5,24 @@
  */
 package com.force.spa.jersey;
 
+import static com.force.spa.jersey.SpaClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE;
+import static com.force.spa.jersey.SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE;
+import static com.force.spa.jersey.SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL;
+import static com.force.spa.jersey.SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY;
+import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_CONNECT_TIMEOUT;
+import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_READ_TIMEOUT;
+import static com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 import javax.ws.rs.core.HttpHeaders;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.conn.SchemeRegistryFactory;
 
 import com.force.spa.AuthorizationConnector;
 import com.sun.jersey.api.client.Client;
@@ -36,6 +48,15 @@ import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
  */
 public final class ClientFactory {
 
+    // Defaults for important basic Jersey properties
+    static final long DEFAULT_CONNECT_TIMEOUT = MILLISECONDS.convert(5, SECONDS);
+    static final long DEFAULT_READ_TIMEOUT = MILLISECONDS.convert(60, SECONDS);
+
+    // Defaults for important Apache Jersey properties
+    static final boolean DEFAULT_DISABLE_COOKIES = true;
+
+    // Defaults for important Apache PooledClientConnectionManager properties
+    static final long DEFAULT_CONNECTION_TIME_TO_LIVE = MILLISECONDS.convert(5, MINUTES);
     static final int DEFAULT_MAX_CONNECTIONS_PER_ROUTE = 20;
     static final int DEFAULT_MAX_CONNECTIONS_TOTAL = 100;
 
@@ -68,10 +89,25 @@ public final class ClientFactory {
     }
 
     private static ClientConfig augmentClientConfig(ClientConfig clientConfig) {
+
+        applyDefaultIfAbsent(clientConfig, PROPERTY_CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_READ_TIMEOUT, DEFAULT_READ_TIMEOUT);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_DISABLE_COOKIES, DEFAULT_DISABLE_COOKIES);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_CONNECTION_TIME_TO_LIVE, DEFAULT_CONNECTION_TIME_TO_LIVE);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_MAX_CONNECTIONS_PER_ROUTE, DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+
         if (hasNoConnectionManagerConfigured(clientConfig)) {
             configureConnectionManager(clientConfig);
         }
+
         return clientConfig;
+    }
+
+    private static <T> void applyDefaultIfAbsent(ClientConfig clientConfig, String propertyName, T defaultValue) {
+        if (clientConfig.getProperty(propertyName) == null) {
+            clientConfig.getProperties().put(propertyName, defaultValue);
+        }
     }
 
     private static boolean hasNoConnectionManagerConfigured(ClientConfig clientConfig) {
@@ -79,7 +115,9 @@ public final class ClientFactory {
     }
 
     private static void configureConnectionManager(ClientConfig clientConfig) {
-        PoolingClientConnectionManager connectionManager = new PoolingClientConnectionManager();
+        PoolingClientConnectionManager connectionManager =
+            new PoolingClientConnectionManager(
+                SchemeRegistryFactory.createDefault(), getConnectionTimeToLive(clientConfig), MILLISECONDS);
         connectionManager.setDefaultMaxPerRoute(getMaxConnectionsPerRoute(clientConfig));
         connectionManager.setMaxTotal(getMaxConnectionsTotal(clientConfig));
 
@@ -90,33 +128,36 @@ public final class ClientFactory {
         clientConfig.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER, connectionManager);
     }
 
-    private static boolean hasSslSocketFactoryConfigured(ClientConfig clientConfig) {
-        return clientConfig.getProperty(SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY) != null;
+    private static long getConnectionTimeToLive(ClientConfig clientConfig) {
+        return getProperty(clientConfig, PROPERTY_CONNECTION_TIME_TO_LIVE);
     }
 
     private static int getMaxConnectionsPerRoute(ClientConfig clientConfig) {
-        return getProperty(clientConfig, SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, DEFAULT_MAX_CONNECTIONS_PER_ROUTE);
+        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_PER_ROUTE);
     }
 
     private static int getMaxConnectionsTotal(ClientConfig clientConfig) {
-        return getProperty(clientConfig, SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
+        return getProperty(clientConfig, PROPERTY_MAX_CONNECTIONS_TOTAL);
+    }
+
+    private static boolean hasSslSocketFactoryConfigured(ClientConfig clientConfig) {
+        return getSslSocketFactory(clientConfig) != null;
     }
 
     private static SSLSocketFactory getSslSocketFactory(ClientConfig clientConfig) {
-        return getProperty(clientConfig, SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY, null);
+        return getProperty(clientConfig, PROPERTY_SSL_SOCKET_FACTORY);
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> T getProperty(ClientConfig clientConfig, String propertyName, T defaultValue) {
-        T configuredValue = (T) clientConfig.getProperty(propertyName);
-        return configuredValue != null ? configuredValue : defaultValue;
+    private static <T> T getProperty(ClientConfig clientConfig, String propertyName) {
+        return (T) clientConfig.getProperty(propertyName);
     }
 
     private static void addAuthorizationFilter(ApacheHttpClient4 client, final AuthorizationConnector authorizationConnector) {
         client.addFilter(new ClientFilter() {
             @Override
             public ClientResponse handle(ClientRequest clientRequest) {
-                clientRequest.getHeaders().add(HttpHeaders.AUTHORIZATION, authorizationConnector.getAuthorization());
+                clientRequest.getHeaders().putSingle(HttpHeaders.AUTHORIZATION, authorizationConnector.getAuthorization());
                 return getNext().handle(clientRequest);
             }
         });

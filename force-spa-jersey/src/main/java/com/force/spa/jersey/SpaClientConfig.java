@@ -13,6 +13,15 @@ import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
  */
 public class SpaClientConfig extends DefaultApacheHttpClient4Config {
     /**
+     * The maximum time to keep unused connections open in the Apache Http client pool, in milliseconds.
+     * <p/>
+     * The value MUST be an instance of {@link java.lang.Integer} or {@link java.lang.Long}.
+     * <p/>
+     * If not specified, the value defaults to 300000 (5 minutes).
+     */
+    public static final String PROPERTY_CONNECTION_TIME_TO_LIVE = "com.force.spa.jersey.apacheConnectionTimeToLive";
+
+    /**
      * The maximum total number of connections to maintain in the Apache Http client pool.
      * <p/>
      * The value MUST be an instance of {@link java.lang.Integer}.
@@ -27,6 +36,8 @@ public class SpaClientConfig extends DefaultApacheHttpClient4Config {
      * The value MUST be an instance of {@link java.lang.Integer}.
      * <p/>
      * If not specified, the value defaults to 20.
+     *
+     * @see
      */
     public static final String PROPERTY_MAX_CONNECTIONS_PER_ROUTE = "com.force.spa.jersey.apacheMaxConnectionsPerRoute";
 
