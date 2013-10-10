@@ -22,15 +22,15 @@ import com.force.spa.RecordOperation;
  */
 public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R>, CompletionHandler<R, OperationStatistics> {
 
-    public static final String STATISTICS_MDC_KEY = "spa.statistics";
-
-    private final ObjectDescriptor objectDescriptor;
-    private final AbstractRecordAccessor recordAccessor;
     private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private final AbstractRecordAccessor recordAccessor;
+    private final ObjectDescriptor objectDescriptor;
 
     private R result;
     private Throwable exception;
-    private boolean completed = false;
+    private boolean completed;
+    private boolean batched;
     private String title;
     private Object detail;
     private OperationStatistics statistics;
@@ -38,11 +38,18 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     protected AbstractRecordOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
         this.objectDescriptor = recordAccessor.getMappingContext().getObjectDescriptor(recordClass);
+        this.completed = false;
+        this.batched = false;
     }
 
     @Override
     public final boolean isCompleted() {
         return completed;
+    }
+
+    @Override
+    public final boolean isBatched() {
+        return batched;
     }
 
     @Override
@@ -70,9 +77,9 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         if (log.isInfoEnabled()) {
             MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
             if (log.isDebugEnabled()) {
-                log.debug(getTitle() + " completed: " + getDetail());
+                log.debug(getTitle() + ": " + getDetail());
             } else {
-                log.info(getTitle() + " completed");
+                log.info(getTitle());
             }
             MDC.remove(STATISTICS_MDC_KEY);
         }
@@ -121,11 +128,15 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         return objectDescriptor;
     }
 
-    public final void setTitle(String title) {
-        this.title = title;
+    public final void setBatched(boolean batched) {
+        this.batched = batched;
     }
 
-    public final void setDetail(Object detail) {
+    protected final void setTitle(String title) {
+        this.title = isBatched() ? "(Batched) " + title : title;
+    }
+
+    protected final void setDetail(Object detail) {
         this.detail = detail;
     }
 

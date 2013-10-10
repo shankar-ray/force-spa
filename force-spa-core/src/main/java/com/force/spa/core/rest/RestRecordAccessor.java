@@ -39,8 +39,8 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     @Override
     public void execute(List<RecordOperation<?>> operations) {
-        RestConnector connector = shouldBatch(operations) ? new BatchRestConnector(this.connector) : this.connector;
 
+        RestConnector connector = chooseBatchedOrUnbatchedConnector(operations);
         for (RecordOperation<?> operation : operations) {
             AbstractRestRecordOperation.class.cast(operation).start(connector, Stopwatch.createStarted());
         }
@@ -112,6 +112,18 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     public RestConnector getConnector() {  // For unit test purposes only.
         return connector;
+    }
+
+    private RestConnector chooseBatchedOrUnbatchedConnector(List<RecordOperation<?>> operations) {
+        if (shouldBatch(operations)) {
+            for (RecordOperation<?> operation : operations) {
+                AbstractRestRecordOperation.class.cast(operation).setBatched(true);
+            }
+            return new BatchRestConnector(connector);
+        } else {
+            return connector;
+        }
+
     }
 
     private boolean shouldBatch(List<RecordOperation<?>> operations) {
