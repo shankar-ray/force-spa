@@ -38,6 +38,9 @@ public class SpringScanWithNoOverridesTest extends AbstractJUnit4SpringContextTe
     @Autowired
     private RecordAccessor recordAccessor;
 
+    @Autowired
+    private RecordAccessor recordAccessor2;
+
     @Test
     public void testAutowiring() {
         ClientConfig defaultClientConfig = applicationContext.getBean("spa.clientConfig", ClientConfig.class);
@@ -51,5 +54,10 @@ public class SpringScanWithNoOverridesTest extends AbstractJUnit4SpringContextTe
         assertThat(authorizationConnector, is(sameInstance(defaultAuthorizationConnector)));
         assertThat(recordAccessorConfig, is(sameInstance(defaultRecordAccessorConfig)));
         assertThat(recordAccessor, is(sameInstance(defaultRecordAccessor)));
+    }
+
+    @Test
+    public void testRecordAccessorIsSingleton() {
+        assertThat(recordAccessor, is(sameInstance(recordAccessor2)));
     }
 }

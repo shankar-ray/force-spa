@@ -61,14 +61,6 @@ public class SpringClientFactory implements FactoryBean<Client>, InitializingBea
 
     @Override
     public boolean isSingleton() {
-        return true;
-    }
-
-    protected AuthorizationConnector getAuthorizationConnector() {
-        return authorizationConnector;
-    }
-
-    protected ClientConfig getClientConfig() {
-        return clientConfig;
+        return false; // Mutable config of Client makes it dangerous to unknowingly share
     }
 }

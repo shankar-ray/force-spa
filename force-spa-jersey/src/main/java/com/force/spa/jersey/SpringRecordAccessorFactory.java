@@ -20,13 +20,13 @@ import com.sun.jersey.api.client.Client;
 @Component("spa.recordAccessor")
 public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor>, InitializingBean {
 
-    private RecordAccessorFactory delegate;
-
     @Autowired
     private RecordAccessorConfig config;
 
     @Autowired
     private Client client;
+
+    private RecordAccessor instance;
 
     public void setConfig(RecordAccessorConfig config) {
         this.config = config;
@@ -38,12 +38,12 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor>,
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        delegate = new RecordAccessorFactory(config, client);
+        instance = new RecordAccessorFactory(config, client).getRecordAccessor();
     }
 
     @Override
     public RecordAccessor getObject() {
-        return delegate.getRecordAccessor();
+        return instance;
     }
 
     @Override
@@ -56,11 +56,11 @@ public class SpringRecordAccessorFactory implements FactoryBean<RecordAccessor>,
         return true;
     }
 
-    RecordAccessorConfig getConfig() {
+    RecordAccessorConfig getConfig() {  // For unit tests only. Package private to protect integrity of mutable config.
         return config;
     }
 
-    Client getClient() {
+    Client getClient() {                // For unit tests only. Package private to protect integrity of mutable config.
         return client;
     }
 }

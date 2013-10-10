@@ -56,6 +56,6 @@ public class SpringRecordAccessorConfigFactory implements FactoryBean<RecordAcce
 
     @Override
     public boolean isSingleton() {
-        return true;
+        return false;
     }
 }
