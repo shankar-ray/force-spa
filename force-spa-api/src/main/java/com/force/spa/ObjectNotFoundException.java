@@ -9,7 +9,8 @@ package com.force.spa;
  * Thrown to indicate a specified object type was not found.
  */
 public class ObjectNotFoundException extends RecordRequestException {
-    private static final long serialVersionUID = 4772956989996123719L;
+
+    private static final long serialVersionUID = 6670757454605727160L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.

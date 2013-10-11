@@ -7,7 +7,12 @@ package com.force.spa;
 
 import java.io.Serializable;
 
+/**
+ * A Salesforce API version with support for structured comparison.
+ */
 public class ApiVersion implements Comparable<ApiVersion>, Serializable {
+
+    private static final long serialVersionUID = -8386918786648323039L;
 
     private final Integer majorVersion;
     private final Integer minorVersion;

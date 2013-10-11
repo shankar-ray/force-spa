@@ -9,6 +9,7 @@ package com.force.spa;
  * Thrown to indicate a problem with the authorization information for the request.
  */
 public class UnauthorizedException extends RecordRequestException {
+
     private static final long serialVersionUID = 4324008953795920810L;
 
     /**

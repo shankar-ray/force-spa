@@ -9,7 +9,8 @@ package com.force.spa;
  * Thrown to indicate a problem with how an annotated object is defined.
  */
 public class ObjectDefinitionException extends SpaException {
-    private static final long serialVersionUID = -4862812041864309165L;
+
+    private static final long serialVersionUID = -6588137233299664223L;
 
     private final String name;
 

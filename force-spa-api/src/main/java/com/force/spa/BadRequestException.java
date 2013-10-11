@@ -9,7 +9,8 @@ package com.force.spa;
  * Thrown to indicate a problem with the request.
  */
 public class BadRequestException extends RecordRequestException {
-    private static final long serialVersionUID = -4541948422240513930L;
+
+    private static final long serialVersionUID = -7124005059931071087L;
 
     /**
      * Constructs a new instance with <code>null</code> as the detail message.

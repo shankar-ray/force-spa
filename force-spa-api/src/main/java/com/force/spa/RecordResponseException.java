@@ -10,6 +10,7 @@ package com.force.spa;
  * was successfully issued and the error is coming from the server.
  */
 public class RecordResponseException extends SpaException {
+
     private static final long serialVersionUID = 634661220360809866L;
 
     /**

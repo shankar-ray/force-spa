@@ -5,6 +5,9 @@
  */
 package com.force.spa;
 
+/**
+ * @param <T> the type of record the operation is working with
+ */
 public interface GetRecordOperation<T> extends RecordOperation<T> {
     String getId();
 

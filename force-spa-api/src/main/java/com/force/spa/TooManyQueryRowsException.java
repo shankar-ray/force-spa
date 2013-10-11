@@ -9,7 +9,8 @@ package com.force.spa;
  * Thrown to indicate a query resulted in more rows than could be fetched using an asynchronous request.
  */
 public class TooManyQueryRowsException extends RecordRequestException {
-    private static final long serialVersionUID = 4772956989996123719L;
+
+    private static final long serialVersionUID = 1772902936994694082L;
 
     /**
      * Constructs a new instance with a default detail message.

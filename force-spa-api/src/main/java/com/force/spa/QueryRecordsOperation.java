@@ -7,6 +7,11 @@ package com.force.spa;
 
 import java.util.List;
 
+
+/**
+ * @param <T> the type of record the operation is working with
+ * @param <R> the type of result expected from the operation
+ */
 public interface QueryRecordsOperation<T, R> extends RecordOperation<List<R>> {
     String getSoqlTemplate();
 

@@ -9,6 +9,7 @@ package com.force.spa;
  * Thrown to indicate a specified record was not found.
  */
 public class RecordNotFoundException extends RecordRequestException {
+
     private static final long serialVersionUID = 4772956989996123719L;
 
     /**

@@ -10,6 +10,7 @@ package com.force.spa;
  * server or failed so severely that the server couldn't even begin to process it.
  */
 public class RecordRequestException extends SpaException {
+
     private static final long serialVersionUID = 4845607308105128355L;
 
     /**

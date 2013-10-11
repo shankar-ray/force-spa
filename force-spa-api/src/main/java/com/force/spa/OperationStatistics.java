@@ -7,6 +7,8 @@ package com.force.spa;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -14,9 +16,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 /**
  * Simple statistics for an operation execution.
  */
-public class OperationStatistics {
+public class OperationStatistics implements Serializable {
 
     private static final ToStringStyle TO_STRING_STYLE = new OperationStatisticsToStringStyle();
+
+    private static final long serialVersionUID = 5658021718579655518L;
 
     private final long bytesSent;
     private final long bytesReceived;
@@ -60,15 +64,6 @@ public class OperationStatistics {
     }
 
     /**
-     * Returns the number of microseconds elapsed during operation processing.
-     *
-     * @return the number of microseconds elapsed during operation processing
-     */
-    public final long getElapsedMicros() {
-        return NANOSECONDS.toMicros(elapsedNanos);
-    }
-
-    /**
      * Returns the number of rows that were processed.
      *
      * @return the number of rows that were processed
@@ -96,7 +91,7 @@ public class OperationStatistics {
     }
 
     protected ToStringBuilder appendToStringBuilder(ToStringBuilder builder) {
-        builder.append("millis", getElapsedMicros() / 1000D);
+        builder.append("millis", NANOSECONDS.toMicros(elapsedNanos) / 1000D); // Convert to floating point millis
         builder.append("sent", bytesSent);
         builder.append("received", bytesReceived);
         builder.append("rows", rowsProcessed);
@@ -199,6 +194,7 @@ public class OperationStatistics {
             this.setUseFieldNames(true);
         }
 
+        @SuppressWarnings("SameReturnValue")
         private Object readResolve() {
             return OperationStatistics.TO_STRING_STYLE; // Ensure singleton after serialization
         }

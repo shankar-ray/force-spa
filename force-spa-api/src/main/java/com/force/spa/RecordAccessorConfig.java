@@ -18,7 +18,7 @@ public class RecordAccessorConfig implements Serializable {
 
     public static final RecordAccessorConfig DEFAULT = new RecordAccessorConfig();
 
-    private static final long serialVersionUID = -697566942312359870L;
+    private static final long serialVersionUID = -8186749282640975493L;
 
     private final AuthorizationConnector authorizationConnector;
     private final ApiVersion apiVersion;

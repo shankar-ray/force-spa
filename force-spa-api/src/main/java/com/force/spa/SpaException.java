@@ -6,7 +6,8 @@
 package com.force.spa;
 
 public class SpaException extends RuntimeException {
-    private static final long serialVersionUID = -966474393052365313L;
+
+    private static final long serialVersionUID = 1903895475922758981L;
 
     /**
      * Convenience routine for dealing with {@link Exception} instances that may or may not contain a SpaException.

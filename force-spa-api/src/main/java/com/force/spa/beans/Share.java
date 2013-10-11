@@ -50,6 +50,33 @@ public class Share<T extends Record> extends Record {
         this.userOrGroupId = userOrGroupId;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Share)) return false;
+        if (!super.equals(o)) return false;
+
+        Share share = (Share) o;
+
+        if (accessLevel != share.accessLevel) return false;
+        if (parent != null ? !parent.equals(share.parent) : share.parent != null) return false;
+        if (rowCause != share.rowCause) return false;
+        if (userOrGroupId != null ? !userOrGroupId.equals(share.userOrGroupId) : share.userOrGroupId != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (accessLevel != null ? accessLevel.hashCode() : 0);
+        result = 31 * result + (parent != null ? parent.hashCode() : 0);
+        result = 31 * result + (rowCause != null ? rowCause.hashCode() : 0);
+        result = 31 * result + (userOrGroupId != null ? userOrGroupId.hashCode() : 0);
+        return result;
+    }
+
     public enum AccessLevel {
         Read,
         Edit,
