@@ -17,7 +17,7 @@ public interface RecordAccessor {
      * @param record the bean holding values to be persisted in the new record.
      * @return the id of the persisted record
      */
-    <T> String create(T record);
+    <T> String create(T record) throws ObjectNotFoundException, UnauthorizedException;
 
     /**
      * Deletes a record.
@@ -25,7 +25,7 @@ public interface RecordAccessor {
      * @param id          the Salesforce id of the persistent record.
      * @param recordClass the annotated class of the record's bean
      */
-    <T> void delete(String id, Class<T> recordClass);
+    <T> void delete(String id, Class<T> recordClass) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Deletes a record.
@@ -33,7 +33,7 @@ public interface RecordAccessor {
      * @param record the bean of the record to delete. The bean must contain a populated "id" field. Other fields can be
      *               populated but are ignored.
      */
-    <T> void delete(T record);
+    <T> void delete(T record) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Get a record by id. Also known as "read" (the R in CRUD).
@@ -43,7 +43,7 @@ public interface RecordAccessor {
      * @param <T>         the type of record
      * @return the record
      */
-    <T> T get(String id, Class<T> recordClass);
+    <T> T get(String id, Class<T> recordClass) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Updates selected fields in an existing record.
@@ -53,7 +53,7 @@ public interface RecordAccessor {
      *                      the non-null fields from the bean are updated in the persistent record. A null value in a
      *                      bean field means no change is desired for that field in the persistent record.
      */
-    <T> void patch(String id, T recordChanges);
+    <T> void patch(String id, T recordChanges) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Updates all fields in an existing record.
@@ -63,7 +63,7 @@ public interface RecordAccessor {
      *               record will be updated with values from the bean. A null value in a bean field will cause the
      *               corresponding field in the persistent record to be set to null.
      */
-    <T> void update(String id, T record);
+    <T> void update(String id, T record) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Updates all fields in an existing record.
@@ -73,7 +73,7 @@ public interface RecordAccessor {
      *               value in a bean field will cause the corresponding field in the persistent record to be set to
      *               null.
      */
-    <T> void update(T record);
+    <T> void update(T record) throws RecordNotFoundException, UnauthorizedException;
 
     /**
      * Creates an instance of {@link RecordQuery} for executing a SOQL query.

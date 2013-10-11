@@ -18,7 +18,8 @@ public interface RecordOperation<R> {
      * Returns the operation result.
      *
      * @return the operation result
-     * @throws ExecutionException if the operation threw an exception
+     * @throws ExecutionException if the operation threw an exception. Interesting 'cause' values for the execution
+     * exception include {@link UnauthorizedException}, {@link ObjectNotFoundException}, {@link RecordNotFoundException}
      */
     R get() throws ExecutionException;
 

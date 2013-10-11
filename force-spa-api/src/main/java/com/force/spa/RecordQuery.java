@@ -18,7 +18,7 @@ public interface RecordQuery<T> {
      *
      * @return the list of records satisfying the query
      */
-    List<T> execute();
+    List<T> execute() throws UnauthorizedException;
 
     /**
      * Execute a SOQL query and return the list of records satisfying the query.
@@ -32,7 +32,7 @@ public interface RecordQuery<T> {
      * @param <R>         the type of result records
      * @return the list of records satisfying the query
      */
-    <R> List<R> execute(Class<R> resultClass);
+    <R> List<R> execute(Class<R> resultClass) throws UnauthorizedException;
 
     /**
      * Sets the maximum number of results to retrieve.

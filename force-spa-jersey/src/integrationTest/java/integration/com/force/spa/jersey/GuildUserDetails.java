@@ -10,7 +10,6 @@ import java.util.List;
 import com.force.spa.SalesforceField;
 import com.force.spa.beans.UserBrief;
 
-//TODO There should be an intermediate "User" object here too between brief and details
 public class GuildUserDetails extends UserBrief {
 
     @SalesforceField(name = "GuildMemberships__r")

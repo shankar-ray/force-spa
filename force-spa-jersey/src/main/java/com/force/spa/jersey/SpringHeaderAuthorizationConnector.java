@@ -24,8 +24,6 @@ import com.force.spa.BadRequestException;
  * <p/>
  * The authorization header of the currently active inbound request is propagated to the outbound REST request. The
  * instance url information is expected in a header of name "Force-Instance-Url".
- * <p/>
- * TODO Need better mechanism than requiring “Force-Instance-Url” and “Force-UserId” headers, maybe session? Cookie?
  */
 @Component("spa.authorizationConnector")
 public class SpringHeaderAuthorizationConnector implements AuthorizationConnector {
@@ -60,6 +58,7 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
      * Extracts authentication information from the current inbound request.
      *
      * @param request the current request
+     *
      * @return a value for the outbound "Authorization" header
      */
     protected String getAuthorization(HttpServletRequest request) {
@@ -75,6 +74,7 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
      * Extracts the instance URL from the current inbound request.
      *
      * @param request the current request
+     *
      * @return the instance URL
      */
     protected URI getInstanceUrl(HttpServletRequest request) {
