@@ -23,7 +23,7 @@ import org.apache.commons.lang3.Validate;
  * The SOQL template can contain wildcard specifications. The wildcard specifications are replaced with a concrete list
  * of fields from the associated object descriptor. Wildcard specifications can look like this:
  * <p/>
- * TODO Need a lot more description!
+ * TODO Need more documentation here
  */
 public final class SoqlBuilder {
     private static final int DEFAULT_DEPTH = 5;

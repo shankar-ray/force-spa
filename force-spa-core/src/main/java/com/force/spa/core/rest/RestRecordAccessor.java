@@ -131,7 +131,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     private boolean isBatchingSupported() {
+        //TODO Need to check perm too, log message if perm not turned on and maybe a config option too
         return MINIMUM_VERSION_FOR_BATCHING.compareTo(connector.getApiVersion()) <= 0;
-        //TODO Need to check perm too, log message if perm not turned on...   or something like that, probably config option too
     }
 }

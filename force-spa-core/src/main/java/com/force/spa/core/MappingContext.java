@@ -44,8 +44,6 @@ import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordResponseException;
 import com.force.spa.SalesforceObject;
 
-//TODO Hmm. Looks like parameterized type might need to be part of key if object with different parameters used multiple times?
-
 /**
  * Context for mapping annotated persistent objects to and from the JSON representations of the Salesforce generic REST
  * API.
@@ -55,7 +53,7 @@ import com.force.spa.SalesforceObject;
  */
 public final class MappingContext implements Serializable {
 
-    private static final long serialVersionUID = 138801020026711582L;
+    private static final long serialVersionUID = 7444706031630632301L;
 
     private final RecordAccessorConfig config;
     private final ObjectMapper objectMapper;
