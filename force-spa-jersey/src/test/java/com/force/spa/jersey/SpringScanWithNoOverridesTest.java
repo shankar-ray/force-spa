@@ -50,7 +50,6 @@ public class SpringScanWithNoOverridesTest extends AbstractJUnit4SpringContextTe
         RecordAccessor defaultRecordAccessor = applicationContext.getBean("spa.recordAccessor", RecordAccessor.class);
 
         assertThat(clientConfig, is(sameInstance(defaultClientConfig)));
-        assertThat(client, is(sameInstance(defaultClient)));
         assertThat(authorizationConnector, is(sameInstance(defaultAuthorizationConnector)));
         assertThat(recordAccessorConfig, is(sameInstance(defaultRecordAccessorConfig)));
         assertThat(recordAccessor, is(sameInstance(defaultRecordAccessor)));

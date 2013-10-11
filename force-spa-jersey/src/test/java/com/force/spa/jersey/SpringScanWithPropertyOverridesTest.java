@@ -21,7 +21,6 @@ import com.force.spa.ApiVersion;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.core.rest.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 
@@ -46,13 +45,11 @@ public class SpringScanWithPropertyOverridesTest extends AbstractJUnit4SpringCon
     @Test
     public void testAutowiring() {
         ClientConfig defaultClientConfig = applicationContext.getBean("spa.clientConfig", ClientConfig.class);
-        Client defaultClient = applicationContext.getBean("spa.client", Client.class);
         AuthorizationConnector defaultAuthorizationConnector = applicationContext.getBean("spa.authorizationConnector", AuthorizationConnector.class);
         RecordAccessorConfig defaultRecordAccessorConfig = applicationContext.getBean("spa.recordAccessorConfig", RecordAccessorConfig.class);
         RecordAccessor defaultRecordAccessor = applicationContext.getBean("spa.recordAccessor", RecordAccessor.class);
 
         assertThat(clientConfig, is(sameInstance(defaultClientConfig)));
-        assertThat(client, is(sameInstance(defaultClient)));
         assertThat(authorizationConnector, is(sameInstance(defaultAuthorizationConnector)));
         assertThat(recordAccessorConfig, is(sameInstance(defaultRecordAccessorConfig)));
         assertThat(recordAccessor, is(sameInstance(defaultRecordAccessor)));
@@ -69,7 +66,6 @@ public class SpringScanWithPropertyOverridesTest extends AbstractJUnit4SpringCon
     @Test
     public void testClientOverrides() {
         Client client = applicationContext.getBean("spa.client", Client.class);
-        assertThat(client, is(sameInstance(this.client)));
         assertThat(client.getProperties(), not(hasEntry(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, (Object) 1000)));
         assertThat(client.getProperties(), not(hasEntry(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, (Object) 100)));
     }
@@ -100,8 +96,5 @@ public class SpringScanWithPropertyOverridesTest extends AbstractJUnit4SpringCon
 
         assertThat(recordAccessor, is(sameInstance(this.recordAccessor)));
         assertThat(recordAccessor.getConfig(), is(sameInstance(localRecordAccessorConfig)));
-
-        Client configuredClient = ((JerseyRestConnector) ((RestRecordAccessor) recordAccessor).getConnector()).getClient();
-        assertThat(configuredClient, is(sameInstance(localClient)));
     }
 }

@@ -17,7 +17,6 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.core.rest.RestRecordAccessor;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 
@@ -42,21 +41,16 @@ public class SpringScanWithAutowireOverridesTest extends AbstractJUnit4SpringCon
     @Test
     public void testAutowiring() {
         ClientConfig defaultClientConfig = applicationContext.getBean("local.clientConfig", ClientConfig.class);
-        Client defaultClient = applicationContext.getBean("local.client", Client.class);
         AuthorizationConnector defaultAuthorizationConnector = applicationContext.getBean("local.authorizationConnector", AuthorizationConnector.class);
         RecordAccessorConfig defaultRecordAccessorConfig = applicationContext.getBean("local.recordAccessorConfig", RecordAccessorConfig.class);
         RecordAccessor defaultRecordAccessor = applicationContext.getBean("local.recordAccessor", RecordAccessor.class);
 
         assertThat(clientConfig, is(sameInstance(defaultClientConfig)));
-        assertThat(client, is(sameInstance(defaultClient)));
         assertThat(authorizationConnector, is(sameInstance(defaultAuthorizationConnector)));
         assertThat(recordAccessorConfig, is(sameInstance(defaultRecordAccessorConfig)));
         assertThat(recordAccessor, is(sameInstance(defaultRecordAccessor)));
 
         assertThat(recordAccessorConfig.getAuthorizationConnector(), is(sameInstance(this.authorizationConnector)));
         assertThat(recordAccessor.getConfig(), is(sameInstance(this.recordAccessorConfig)));
-
-        Client configuredClient = ((JerseyRestConnector) ((RestRecordAccessor) recordAccessor).getConnector()).getClient();
-        assertThat(configuredClient, is(sameInstance(this.client)));
     }
 }
