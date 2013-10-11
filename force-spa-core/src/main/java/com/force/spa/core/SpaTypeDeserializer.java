@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.jsontype.impl.TypeDeserializerBase;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 
 class SpaTypeDeserializer extends TypeDeserializerBase {
+
     private static final long serialVersionUID = 4715905537436577142L;
 
     SpaTypeDeserializer(JavaType baseType, TypeIdResolver idResolver, Class<?> defaultImpl) {

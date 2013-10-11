@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 /**
  * A special version of MapSerializer that is used to serialize the object "attributes". This is needed so we can merge
- * our own information with caller specified information sometimes. For example, sometimes we need to add the "type"
- * entry to attributes already specified by the caller.
+ * our own information with caller specified information. For example, sometimes we need to add the "type" entry to
+ * attributes already specified by the caller.
  */
 final class AttributesSerializer extends JsonSerializer<Map<String, String>> {
 

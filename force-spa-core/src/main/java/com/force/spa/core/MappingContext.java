@@ -6,7 +6,7 @@
 package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
+import static com.force.spa.core.JavaTypeUtils.getJavaTypeFor;
 
 import java.io.InputStream;
 import java.io.Serializable;

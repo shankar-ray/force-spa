@@ -7,7 +7,7 @@ package com.force.spa.core.rest;
 
 import java.util.List;
 
-public class QueryResult {
+class QueryResult {
 
     private boolean done;
 

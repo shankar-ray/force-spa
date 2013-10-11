@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.JsonParserUtils.consumeExpectedToken;
 
 import java.io.IOException;
 import java.net.URI;
@@ -23,9 +23,7 @@ import com.force.spa.ApiVersion;
 import com.force.spa.RecordResponseException;
 import com.force.spa.core.CountingJsonParser;
 
-//TODO Maybe stopwatch has to be thread local to make all this batch time division stuff to work? That seems reasonable.
-
-public class BatchRestConnector implements RestConnector {
+class BatchRestConnector implements RestConnector {
 
     private static final Logger LOG = LoggerFactory.getLogger(BatchRestConnector.class);
 

@@ -7,7 +7,7 @@ package com.force.spa.core.rest;
 
 import java.util.List;
 
-public class ErrorResult {
+class ErrorResult {
 
     private List<String> fields;
 

@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.JsonParserUtils.consumeExpectedToken;
 
 import java.io.IOException;
 import java.net.URI;

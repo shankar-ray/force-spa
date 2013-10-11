@@ -13,7 +13,7 @@ import com.force.spa.core.MappingContext;
  * An implementation of {@link com.force.spa.RecordAccessor} that is based on the JSON representations of the Salesforce
  * REST API.
  */
-public final class RestMetadataAccessor extends AbstractMetadataAccessor {
+final class RestMetadataAccessor extends AbstractMetadataAccessor {
 
     @SuppressWarnings("FieldCanBeLocal")
     private final RestConnector connector;
