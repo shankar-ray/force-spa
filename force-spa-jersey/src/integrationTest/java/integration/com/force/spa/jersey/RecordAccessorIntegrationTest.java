@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 import org.junit.Test;
@@ -23,12 +24,13 @@ import com.force.spa.beans.UserBrief;
 import com.force.spa.jersey.PasswordAuthorizationConnector;
 
 public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegrationTest {
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     @Test
     public void testSimpleCreate() {
         Guild guild = createGuild();
 
-        Guild guild2 = accessor.get(guild.getId(), Guild.class);
+        Guild guild2 = getRecordAccessor().get(guild.getId(), Guild.class);
         assertThat(guild2.getId(), is(equalTo(guild.getId())));
         assertThat(guild2.getName(), is(equalTo(guild.getName())));
         assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
@@ -38,16 +40,16 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     public void testCreateWithRelationshipById() {
         Guild guild = createGuild();
         String userId = getCurrentUserId();
-        UserBrief user = accessor.get(userId, UserBrief.class);
+        UserBrief user = getRecordAccessor().get(userId, UserBrief.class);
 
         GuildMembership membership = new GuildMembership();
         membership.setGuild(guild);
         membership.setUser(user);
         membership.setLevel("Apprentice");
-        String id = accessor.create(membership);
+        String id = getRecordAccessor().create(membership);
         membership.setId(id);
 
-        GuildMembership membership2 = accessor.get(membership.getId(), GuildMembership.class);
+        GuildMembership membership2 = getRecordAccessor().get(membership.getId(), GuildMembership.class);
         assertThat(membership2.getId(), is(equalTo(membership.getId())));
         assertThat(membership2.getLevel(), is(equalTo(membership.getLevel())));
         assertThat(membership2.getGuild().getId(), is(equalTo(membership.getGuild().getId())));
@@ -58,7 +60,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     public void testCreateWithRelationshipByExternalId() {
         Guild guild = createGuild();
         String userId = getCurrentUserId();
-        UserBrief user = accessor.get(userId, UserBrief.class);
+        UserBrief user = getRecordAccessor().get(userId, UserBrief.class);
         UserBrief userByUsername = new UserBrief();
         userByUsername.setUsername(user.getUsername());
 
@@ -66,10 +68,10 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         membership.setGuild(guild);
         membership.setUser(userByUsername);
         membership.setLevel("Apprentice");
-        String id = accessor.create(membership);
+        String id = getRecordAccessor().create(membership);
         membership.setId(id);
 
-        GuildMembership membership2 = accessor.get(membership.getId(), GuildMembership.class);
+        GuildMembership membership2 = getRecordAccessor().get(membership.getId(), GuildMembership.class);
         assertThat(membership2.getId(), is(equalTo(membership.getId())));
         assertThat(membership2.getLevel(), is(equalTo(membership.getLevel())));
         assertThat(membership2.getGuild().getId(), is(equalTo(membership.getGuild().getId())));
@@ -81,13 +83,13 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         Guild guild = createGuild();
 
         guild.setName("Ultimate Speed Cyclists");
-        accessor.patch(guild.getId(), guild);
+        getRecordAccessor().patch(guild.getId(), guild);
 
         Guild guild2 = new Guild();
         guild2.setDescription("A guild for really fast bicycle racers.");
-        accessor.patch(guild.getId(), guild2);
+        getRecordAccessor().patch(guild.getId(), guild2);
 
-        Guild guild3 = accessor.get(guild.getId(), Guild.class);
+        Guild guild3 = getRecordAccessor().get(guild.getId(), Guild.class);
         assertThat(guild3.getId(), is(equalTo(guild.getId())));
         assertThat(guild3.getName(), is(equalTo(guild.getName())));
         assertThat(guild3.getDescription(), is(equalTo(guild2.getDescription())));
@@ -98,14 +100,14 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         Guild guild = createGuild();
 
 
-        Guild guild2 = accessor.get(guild.getId(), Guild.class);
+        Guild guild2 = getRecordAccessor().get(guild.getId(), Guild.class);
         assertThat(guild2.getId(), is(equalTo(guild.getId())));
 
-        accessor.delete(guild.getId(), Guild.class);
+        getRecordAccessor().delete(guild.getId(), Guild.class);
         objects.remove(guild);
 
         try {
-            accessor.get(guild.getId(), Guild.class);
+            getRecordAccessor().get(guild.getId(), Guild.class);
             fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected
@@ -115,7 +117,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     @Test
     public void testDeleteNonexistentId() {
         try {
-            accessor.delete("0123456789012345", Guild.class);
+            getRecordAccessor().delete("0123456789012345", Guild.class);
             fail("Didn't get expected RecordNotFoundException");
         } catch (RecordNotFoundException e) {
             // This is expected
@@ -133,9 +135,9 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         share.setParent(guild);
         share.setUserOrGroupId(group.getId());
 
-        String shareId = accessor.create(share);
+        String shareId = getRecordAccessor().create(share);
 
-        GuildShare share2 = accessor.get(shareId, GuildShare.class);
+        GuildShare share2 = getRecordAccessor().get(shareId, GuildShare.class);
         assertThat(share2.getId(), is(equalTo(shareId)));
         assertThat(share2.getAccessLevel(), is(equalTo(share.getAccessLevel())));
         assertThat(share2.getRowCause(), is(equalTo(share.getRowCause())));
@@ -151,15 +153,15 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         FeedItem feedItem = new FeedItem();
         feedItem.setParent(guild);
         feedItem.setBody("Feed item body");
-        String feedItemId = accessor.create(feedItem);
+        String feedItemId = getRecordAccessor().create(feedItem);
 
-        FeedItem feedItem2 = accessor.get(feedItemId, FeedItem.class);
+        FeedItem feedItem2 = getRecordAccessor().get(feedItemId, FeedItem.class);
         assertThat(feedItem2.getParent(), is(instanceOf(GuildBrief.class)));
     }
 
     private GroupBrief getAllInternalUsersGroup() {
         String soql = "select * from Group where DeveloperName=\'AllInternalUsers\'";
-        List<GroupBrief> groups = accessor.createQuery(soql, GroupBrief.class).execute();
+        List<GroupBrief> groups = getRecordAccessor().createQuery(soql, GroupBrief.class).execute();
         if (groups.size() == 0) {
             return null;
         }
@@ -167,21 +169,21 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     }
 
     private String getCurrentUserId() {
-        AuthorizationConnector connector = accessor.getConfig().getAuthorizationConnector();
-        if ( connector instanceof PasswordAuthorizationConnector) {
-            return ((PasswordAuthorizationConnector)connector).getUserId();
-        }    else {
+        AuthorizationConnector connector = getRecordAccessor().getConfig().getAuthorizationConnector();
+        if (connector instanceof PasswordAuthorizationConnector) {
+            return ((PasswordAuthorizationConnector) connector).getUserId();
+        } else {
             throw new IllegalStateException("I don't know how to get the user id from that kind of authorization connector");
         }
     }
 
     private Guild createGuild() {
-        String uniqueSuffix = generateUniqueNumber();
+        String uniqueSuffix = Integer.toHexString(secureRandom.nextInt());
 
         Guild guild = new Guild();
         guild.setName("Speed Cyclists - " + uniqueSuffix);
         guild.setDescription("A guild for bicycle racers - " + uniqueSuffix);
-        String id = accessor.create(guild);
+        String id = getRecordAccessor().create(guild);
         guild.setId(id);
         objects.add(guild);
 

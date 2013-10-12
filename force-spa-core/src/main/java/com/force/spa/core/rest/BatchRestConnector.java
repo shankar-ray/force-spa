@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
 import com.force.spa.ApiVersion;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 
 class BatchRestConnector implements RestConnector {
 

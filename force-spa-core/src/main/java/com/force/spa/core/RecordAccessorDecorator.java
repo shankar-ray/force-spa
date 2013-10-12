@@ -10,7 +10,6 @@ import java.util.List;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.MetadataAccessor;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
@@ -133,10 +132,5 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     @Override
     public final RecordAccessorConfig getConfig() {
         return delegate.getConfig();
-    }
-
-    @Override
-    public final MetadataAccessor getMetadataAccessor() {
-        return delegate.getMetadataAccessor();
     }
 }

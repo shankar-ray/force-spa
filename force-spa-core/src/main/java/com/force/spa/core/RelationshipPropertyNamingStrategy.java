@@ -7,7 +7,7 @@ package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
 import static com.force.spa.core.IntrospectionUtils.isStandardProperty;
-import static com.force.spa.core.JavaTypeUtils.getJavaTypeFor;
+import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;

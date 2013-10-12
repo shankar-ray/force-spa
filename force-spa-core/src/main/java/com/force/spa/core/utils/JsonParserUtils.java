@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa.core.utils;
 
 import java.io.IOException;
 

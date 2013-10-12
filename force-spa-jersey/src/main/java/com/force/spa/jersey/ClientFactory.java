@@ -5,10 +5,10 @@
  */
 package com.force.spa.jersey;
 
-import static com.force.spa.jersey.SpaClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE;
-import static com.force.spa.jersey.SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE;
-import static com.force.spa.jersey.SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL;
-import static com.force.spa.jersey.SpaClientConfig.PROPERTY_SSL_SOCKET_FACTORY;
+import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE;
+import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE;
+import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL;
+import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_SSL_SOCKET_FACTORY;
 import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_CONNECT_TIMEOUT;
 import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_READ_TIMEOUT;
 import static com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES;

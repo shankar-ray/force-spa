@@ -10,6 +10,7 @@ import java.net.URI;
 import java.nio.channels.CompletionHandler;
 
 import com.force.spa.core.rest.RestConnector;
+import com.force.spa.core.utils.CountingJsonParser;
 
 /**
  * A {@link com.force.spa.core.rest.RestConnector} implementation that is designed for use in unit tests. The asynchronous callback interface of

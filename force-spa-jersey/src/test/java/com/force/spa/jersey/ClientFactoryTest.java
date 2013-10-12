@@ -56,7 +56,7 @@ public class ClientFactoryTest {
         assertThat(getConnectionManager(client), instanceOf(PoolingClientConnectionManager.class));
 
         assertThat((boolean) client.getProperties().get(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES), is(equalTo(ClientFactory.DEFAULT_DISABLE_COOKIES)));
-        assertThat((long) client.getProperties().get(SpaClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE), is(equalTo(ClientFactory.DEFAULT_CONNECTION_TIME_TO_LIVE)));
+        assertThat((long) client.getProperties().get(ExtendedClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE), is(equalTo(ClientFactory.DEFAULT_CONNECTION_TIME_TO_LIVE)));
         assertThat((long) client.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT), is(equalTo(ClientFactory.DEFAULT_READ_TIMEOUT)));
         assertThat((long) client.getProperties().get(ClientConfig.PROPERTY_CONNECT_TIMEOUT), is(equalTo(ClientFactory.DEFAULT_CONNECT_TIMEOUT)));
 
@@ -68,8 +68,8 @@ public class ClientFactoryTest {
     public void testNewFactoryWithSpecifiedPoolLimits() {
 
         ApacheHttpClient4Config clientConfig = new DefaultApacheHttpClient4Config();
-        clientConfig.getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, 101);
-        clientConfig.getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, 1001);
+        clientConfig.getProperties().put(ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, 101);
+        clientConfig.getProperties().put(ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, 1001);
 
         Client client = new ClientFactory(mockConnector, clientConfig).getClient();
 

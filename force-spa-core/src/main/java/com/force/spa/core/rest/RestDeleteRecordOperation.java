@@ -9,7 +9,7 @@ import java.net.URI;
 import java.nio.channels.CompletionHandler;
 
 import com.force.spa.DeleteRecordOperation;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
 class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements DeleteRecordOperation<T> {

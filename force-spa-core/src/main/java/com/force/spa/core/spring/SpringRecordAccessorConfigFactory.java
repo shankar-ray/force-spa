@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa.core.spring;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +14,9 @@ import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessorConfig;
 
 /**
- * A Spring bean for creating {@link RecordAccessorConfig} instances.
+ * A Spring bean for creating {@link com.force.spa.RecordAccessorConfig} instances.
  *
- * @see RecordAccessorConfig
+ * @see com.force.spa.RecordAccessorConfig
  */
 @Component("spa.recordAccessorConfig")
 public class SpringRecordAccessorConfigFactory implements FactoryBean<RecordAccessorConfig> {

@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.ObjectNotFoundException;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
 final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, String> implements CreateRecordOperation<T> {

@@ -14,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
+import com.force.spa.RecordAccessorConfig;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
-import com.force.spa.RecordAccessorConfig;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 
@@ -25,9 +25,6 @@ public class SpringScanWithNoOverridesTest extends AbstractJUnit4SpringContextTe
 
     @Autowired
     private ClientConfig clientConfig;
-
-    @Autowired
-    private Client client;
 
     @Autowired
     private AuthorizationConnector authorizationConnector;
@@ -44,7 +41,6 @@ public class SpringScanWithNoOverridesTest extends AbstractJUnit4SpringContextTe
     @Test
     public void testAutowiring() {
         ClientConfig defaultClientConfig = applicationContext.getBean("spa.clientConfig", ClientConfig.class);
-        Client defaultClient = applicationContext.getBean("spa.client", Client.class);
         AuthorizationConnector defaultAuthorizationConnector = applicationContext.getBean("spa.authorizationConnector", AuthorizationConnector.class);
         RecordAccessorConfig defaultRecordAccessorConfig = applicationContext.getBean("spa.recordAccessorConfig", RecordAccessorConfig.class);
         RecordAccessor defaultRecordAccessor = applicationContext.getBean("spa.recordAccessor", RecordAccessor.class);

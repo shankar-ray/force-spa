@@ -14,7 +14,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.force.spa.ApiVersion;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordRequestException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.core.MappingContext;
 import com.force.spa.core.rest.RestConnector;
 import com.force.spa.core.rest.RestVersionManager;

@@ -119,13 +119,6 @@ public interface RecordAccessor {
     RecordAccessorConfig getConfig();
 
     /**
-     * Returns the {@link MetadataAccessor}.
-     *
-     * @return the metadata accessor
-     */
-    MetadataAccessor getMetadataAccessor();
-
-    /**
      * Returns a new create operation that can be combined into a batch. The operation, along with any others that it is
      * batched with, can be executed at a later time using {@link #execute}.
      *

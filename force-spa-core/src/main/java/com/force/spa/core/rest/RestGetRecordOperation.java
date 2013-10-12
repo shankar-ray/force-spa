@@ -13,7 +13,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
 import com.google.common.base.Stopwatch;
 import com.google.common.net.UrlEscapers;

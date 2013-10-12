@@ -33,7 +33,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     private final RestConnector connector;
 
     public RestRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext, RestConnector connector) {
-        super(config, mappingContext, new RestMetadataAccessor(config, mappingContext, connector));
+        super(config, mappingContext);
         this.connector = connector;
     }
 

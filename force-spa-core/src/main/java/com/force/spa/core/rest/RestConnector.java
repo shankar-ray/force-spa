@@ -9,7 +9,7 @@ import java.net.URI;
 import java.nio.channels.CompletionHandler;
 
 import com.force.spa.ApiVersion;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 
 /**
  * A connector which knows how to issue requests to the Salesforce "data" REST API.

@@ -24,7 +24,7 @@ import com.force.spa.UpdateRecordOperation;
 public class DummyRecordAccessor extends AbstractRecordAccessor {
 
     public DummyRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext) {
-        super(config, mappingContext, new DummyMetadataAccessor(config, mappingContext));
+        super(config, mappingContext);
     }
 
     @Override

@@ -11,7 +11,7 @@ import java.nio.channels.CompletionHandler;
 
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
 class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements PatchRecordOperation<T> {

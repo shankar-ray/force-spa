@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,7 +21,7 @@ import com.force.spa.OperationStatistics;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordResponseException;
 import com.force.spa.TooManyQueryRowsException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
 import com.google.common.base.Stopwatch;
 import com.google.common.net.UrlEscapers;

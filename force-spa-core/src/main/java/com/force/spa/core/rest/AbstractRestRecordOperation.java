@@ -5,7 +5,7 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UnauthorizedException;
 import com.force.spa.core.AbstractRecordOperation;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
 /**

@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa.core.utils;
 
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonParser;

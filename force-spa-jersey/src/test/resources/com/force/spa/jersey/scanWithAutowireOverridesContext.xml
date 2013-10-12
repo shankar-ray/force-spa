@@ -10,7 +10,7 @@
     <context:component-scan base-package="com.force.spa.jersey"/>
 
 
-    <bean id="local.clientConfig" class="com.force.spa.jersey.SpringClientConfig" primary="true">
+    <bean id="local.clientConfig" class="com.force.spa.jersey.spring.SpringClientConfig" primary="true">
         <property name="readTimeout" value="#{120000}"/>
         <property name="connectionTimeout" value="#{10000}"/>
         <property name="connectionTimeToLive" value="#{60000}"/>
@@ -18,12 +18,12 @@
         <property name="maxConnectionsTotal" value="#{1000}"/>
     </bean>
 
-    <bean id="local.client" class="com.force.spa.jersey.SpringClientFactory" primary="true">
+    <bean id="local.client" class="com.force.spa.jersey.spring.SpringClientFactory" primary="true">
         <property name="authorizationConnector" ref="local.authorizationConnector"/>
         <property name="clientConfig" ref="local.clientConfig"/>
     </bean>
 
-    <bean id="local.recordAccessorConfig" class="com.force.spa.core.SpringRecordAccessorConfigFactory" primary="true">
+    <bean id="local.recordAccessorConfig" class="com.force.spa.core.spring.SpringRecordAccessorConfigFactory" primary="true">
         <property name="authorizationConnector" ref="local.authorizationConnector"/>
         <property name="apiVersion" value="28.0"/>
         <property name="auditFieldWritingAllowed" value="true"/>
@@ -31,11 +31,21 @@
         <property name="objectAnnotationRequired" value="true"/>
     </bean>
 
-    <bean id="local.authorizationConnector" class="com.force.spa.jersey.SpringHeaderAuthorizationConnector" primary="true"/>
+    <bean id="local.authorizationConnector" class="com.force.spa.jersey.spring.SpringHeaderAuthorizationConnector" primary="true"/>
 
-    <bean id="local.recordAccessor" class="com.force.spa.jersey.SpringRecordAccessorFactory" primary="true">
+    <bean id="local.mappingContext" class="com.force.spa.core.spring.SpringMappingContextFactory" primary="true">
         <property name="config" ref="local.recordAccessorConfig"/>
-        <property name="client" ref="local.client"/>
     </bean>
 
+    <bean id="local.restConnector" class="com.force.spa.jersey.spring.SpringRestConnectorFactory" primary="true">
+        <property name="config" ref="local.recordAccessorConfig"/>
+        <property name="client" ref="local.client"/>
+        <property name="mappingContext" ref="local.mappingContext"/>
+    </bean>
+
+    <bean id="local.recordAccessor" class="com.force.spa.core.spring.SpringRestRecordAccessorFactory" primary="true">
+        <property name="config" ref="local.recordAccessorConfig"/>
+        <property name="mappingContext" ref="local.mappingContext"/>
+        <property name="connector" ref="local.restConnector"/>
+    </bean>
 </beans>

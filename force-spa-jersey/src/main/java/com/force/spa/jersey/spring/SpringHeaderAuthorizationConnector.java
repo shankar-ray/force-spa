@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.jersey;
+package com.force.spa.jersey.spring;
 
 import java.net.URI;
 import java.net.URISyntaxException;

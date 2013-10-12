@@ -6,7 +6,7 @@
 package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.JavaTypeUtils.getJavaTypeFor;
+import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -43,6 +43,8 @@ import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordResponseException;
 import com.force.spa.SalesforceObject;
+import com.force.spa.core.utils.CountingJsonFactory;
+import com.force.spa.core.utils.CountingJsonParser;
 
 /**
  * Context for mapping annotated persistent objects to and from the JSON representations of the Salesforce generic REST

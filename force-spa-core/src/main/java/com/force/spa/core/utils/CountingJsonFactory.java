@@ -3,7 +3,7 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.core;
+package com.force.spa.core.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,17 +19,17 @@ import com.fasterxml.jackson.databind.MappingJsonFactory;
  */
 public class CountingJsonFactory extends MappingJsonFactory {
     @Override
-    protected JsonParser _createParser(Reader r, IOContext ctxt) throws IOException {
-        return new CountingJsonParser(super._createParser(r, ctxt));
+    protected JsonParser _createParser(Reader reader, IOContext context) throws IOException {
+        return new CountingJsonParser(super._createParser(reader, context));
     }
 
     @Override
-    protected JsonParser _createParser(InputStream in, IOContext ctxt) throws IOException {
-        return new CountingJsonParser(super._createParser(in, ctxt));
+    protected JsonParser _createParser(InputStream inputStream, IOContext context) throws IOException {
+        return new CountingJsonParser(super._createParser(inputStream, context));
     }
 
     @Override
-    protected JsonParser _createParser(byte[] data, int offset, int len, IOContext ctxt) throws IOException {
-        return new CountingJsonParser(super._createParser(data, offset, len, ctxt));
+    protected JsonParser _createParser(byte[] data, int offset, int length, IOContext context) throws IOException {
+        return new CountingJsonParser(super._createParser(data, offset, length, context));
     }
 }

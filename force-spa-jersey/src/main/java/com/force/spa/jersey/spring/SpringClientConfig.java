@@ -3,12 +3,14 @@
  * All Rights Reserved
  * Company Confidential
  */
-package com.force.spa.jersey;
+package com.force.spa.jersey.spring;
 
 import java.util.Map;
 
 import org.apache.http.conn.ClientConnectionManager;
 import org.springframework.stereotype.Component;
+
+import com.force.spa.jersey.ExtendedClientConfig;
 
 /**
  * A Spring bean for configuring the Jersey {@link com.sun.jersey.api.client.config.ClientConfig} used by {@link
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Component;
  * @see SpringClientFactory
  */
 @Component("spa.clientConfig")
-public class SpringClientConfig extends SpaClientConfig {
+public class SpringClientConfig extends ExtendedClientConfig {
 
     /**
      * Sets the connect timeout interval, in milliseconds.
@@ -25,7 +27,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to 5000 (5 seconds).
      */
     public void setConnectionTimeout(long connectionTimeout) {
-        getProperties().put(SpaClientConfig.PROPERTY_CONNECT_TIMEOUT, connectionTimeout);
+        getProperties().put(ExtendedClientConfig.PROPERTY_CONNECT_TIMEOUT, connectionTimeout);
     }
 
     /**
@@ -34,7 +36,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to 60000 (60 seconds).
      */
     public void setReadTimeout(long readTimeout) {
-        getProperties().put(SpaClientConfig.PROPERTY_READ_TIMEOUT, readTimeout);
+        getProperties().put(ExtendedClientConfig.PROPERTY_READ_TIMEOUT, readTimeout);
     }
 
     /**
@@ -43,7 +45,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to 300000 (5 minutes).
      */
     public void setConnectionTimeToLive(long connectionTimeToLive) {
-        getProperties().put(SpaClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE, connectionTimeToLive);
+        getProperties().put(ExtendedClientConfig.PROPERTY_CONNECTION_TIME_TO_LIVE, connectionTimeToLive);
     }
 
     /**
@@ -55,7 +57,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to 100.
      */
     public void setMaxConnectionsTotal(int maxConnectionsTotal) {
-        getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, maxConnectionsTotal);
+        getProperties().put(ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_TOTAL, maxConnectionsTotal);
     }
 
     /**
@@ -67,7 +69,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to 20.
      */
     public void setMaxConnectionsPerRoute(int maxConnectionsPerRoute) {
-        getProperties().put(SpaClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, maxConnectionsPerRoute);
+        getProperties().put(ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS_PER_ROUTE, maxConnectionsPerRoute);
     }
 
     /**
@@ -76,7 +78,7 @@ public class SpringClientConfig extends SpaClientConfig {
      * If not specified, the value defaults to an instance of {@link org.apache.http.impl.conn.PoolingClientConnectionManager}.
      */
     public void setConnectionManager(ClientConnectionManager connectionManager) {
-        getProperties().put(SpaClientConfig.PROPERTY_CONNECTION_MANAGER, connectionManager);
+        getProperties().put(ExtendedClientConfig.PROPERTY_CONNECTION_MANAGER, connectionManager);
     }
 
     /**

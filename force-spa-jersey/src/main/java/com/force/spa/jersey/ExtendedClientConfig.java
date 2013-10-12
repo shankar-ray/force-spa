@@ -11,7 +11,7 @@ import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
  * A {@link com.sun.jersey.api.client.config.ClientConfig} for Jersey {@link com.sun.jersey.api.client.Client} instances
  * created by the {@link ClientFactory}.
  */
-public class SpaClientConfig extends DefaultApacheHttpClient4Config {
+public class ExtendedClientConfig extends DefaultApacheHttpClient4Config {
     /**
      * The maximum time to keep unused connections open in the Apache Http client pool, in milliseconds.
      * <p/>

@@ -17,7 +17,6 @@ import org.apache.commons.lang3.Validate;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.MetadataAccessor;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
@@ -31,12 +30,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
     private final RecordAccessorConfig config;
     private final MappingContext mappingContext;
-    private final MetadataAccessor metadataAccessor;
 
-    protected AbstractRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext, MetadataAccessor metadataAccessor) {
+    protected AbstractRecordAccessor(RecordAccessorConfig config, MappingContext mappingContext) {
         this.config = config;
         this.mappingContext = mappingContext;
-        this.metadataAccessor = metadataAccessor;
     }
 
     @Override
@@ -124,11 +121,6 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     @Override
     public final RecordAccessorConfig getConfig() {
         return config;
-    }
-
-    @Override
-    public final MetadataAccessor getMetadataAccessor() {
-        return metadataAccessor;
     }
 
     public final MappingContext getMappingContext() {

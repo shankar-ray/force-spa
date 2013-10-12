@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.force.spa.ApiVersion;
 import com.force.spa.SpaException;
-import com.force.spa.core.CountingJsonParser;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.util.concurrent.UncheckedExecutionException;
