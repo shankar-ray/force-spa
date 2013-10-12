@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+description = 'Simple Persistence API for Salesforce - Optional components based on Salesforce SOAP'
+
+dependencies {
+    compile project(":force-spa-api")
+    compile "com.force.api:force-partner-api:${salesforceApiVersion}"
+    compile "com.force.api:force-wsc:${salesforceApiVersion}"
+
+    testCompile "junit:junit:${junitVersion}"
+
+    testRuntime project(":config")
+    testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
+    testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+}

@@ -1,6 +1,6 @@
 apply plugin: 'java'
 
-description = 'Simple Persistence API for Salesforce - Jersey components'
+description = 'Simple Persistence API for Salesforce - Jersey-based REST connector implementation'
 
 dependencies {
     compile project(":force-spa-core")
@@ -16,12 +16,13 @@ dependencies {
     compile "org.springframework:spring-web:${springVersion}", provided
 
     testCompile "junit:junit:${junitVersion}"
-    testCompile "org.hamcrest:hamcrest-core:${hamcrestVersion}"
     testCompile "org.hamcrest:hamcrest-library:${hamcrestVersion}"
-    testCompile "org.mockito:mockito-all:${mockitoVersion}"
+    testCompile "org.mockito:mockito-core:${mockitoVersion}"
     testCompile "org.springframework:spring-test:${springVersion}"
 
     testRuntime project(":config")
     testRuntime "ch.qos.logback:logback-classic:${logbackVersion}"
     testRuntime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+
+    integrationTestCompile project(":force-spa-soap")
 }
