@@ -14,10 +14,12 @@ import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
-class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements UpdateRecordOperation<T> {
+class RestUpdateRecordOperation<T> extends AbstractRestOperation<T, Void> implements UpdateRecordOperation<T> {
 
     private final String id;
     private final T record;
+
+    private String jsonBody;
 
     @SuppressWarnings("unchecked")
     public RestUpdateRecordOperation(RestRecordAccessor accessor, String id, T record) {
@@ -38,19 +40,25 @@ class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<T, Void> 
     }
 
     @Override
+    public String toString() {
+        String string = "Update " + getObjectDescriptor().getName() + " with id " + id;
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + jsonBody;
+        }
+        return string;
+    }
+
+    @Override
     protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        final String json = encodeRecordForUpdate(record);
-
-        setTitle("Update " + getObjectDescriptor().getName());
-        setDetail(json);
+        jsonBody = encodeRecordForUpdate(record);
 
         URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
-        connector.patch(uri, json, new CompletionHandler<CountingJsonParser, Integer>() {
+        connector.patch(uri, jsonBody, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
             public void completed(CountingJsonParser parser, Integer status) {
                 checkStatus(status, parser);
-                RestUpdateRecordOperation.this.completed(null, buildStatistics(json, null, stopwatch));
+                RestUpdateRecordOperation.this.completed(null, buildStatistics(jsonBody, null, stopwatch));
             }
 
             @Override

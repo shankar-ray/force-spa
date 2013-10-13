@@ -12,7 +12,7 @@ import com.force.spa.DeleteRecordOperation;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
-class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements DeleteRecordOperation<T> {
+class RestDeleteRecordOperation<T> extends AbstractRestOperation<T, Void> implements DeleteRecordOperation<T> {
 
     private final String id;
     private final Class<T> recordClass;
@@ -35,10 +35,12 @@ class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<T, Void> 
     }
 
     @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
+    public String toString() {
+        return "Delete " + getObjectDescriptor().getName() + " with id " + id;
+    }
 
-        setTitle("Delete " + getObjectDescriptor().getName());
-        setDetail(id);
+    @Override
+    protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
         URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
         connector.delete(uri, new CompletionHandler<CountingJsonParser, Integer>() {

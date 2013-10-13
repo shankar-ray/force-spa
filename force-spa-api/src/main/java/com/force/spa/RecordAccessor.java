@@ -7,6 +7,8 @@ package com.force.spa;
 
 import java.util.List;
 
+import com.force.spa.metadata.ObjectMetadata;
+
 /**
  * A CRUD-based interface for interacting with persistent records in Salesforce through the use of annotated Javabeans.
  */
@@ -88,28 +90,35 @@ public interface RecordAccessor {
     <T> RecordQuery<T> createQuery(String soqlTemplate, Class<T> recordClass);
 
     /**
-     * Executes a list of record operations.
-     * <p/>
-     * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link com.force.spa.RecordOperation#get()}). If
-     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
-     * is thrown.
+     * Describes an object.
      *
-     * @param operations the operations
+     * @param name the object name
      */
-    void execute(RecordOperation<?>... operations);
+    ObjectMetadata describeObject(String name) throws ObjectNotFoundException, UnauthorizedException;
 
     /**
      * Executes a list of record operations.
      * <p/>
      * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link com.force.spa.RecordOperation#get()}). If
+     * status is determined by asking for the operation result (using {@link Operation#get()}). If
      * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
      * is thrown.
      *
      * @param operations the operations
      */
-    void execute(List<RecordOperation<?>> operations);
+    void execute(Operation<?>... operations);
+
+    /**
+     * Executes a list of record operations.
+     * <p/>
+     * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
+     * status is determined by asking for the operation result (using {@link Operation#get()}). If
+     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
+     * is thrown.
+     *
+     * @param operations the operations
+     */
+    void execute(List<Operation<?>> operations);
 
     /**
      * Returns the {@link RecordAccessorConfig}.
@@ -196,4 +205,13 @@ public interface RecordAccessor {
      * @return the operation
      */
     <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass);
+
+    /**
+     * Returns a new describe object operation that can be combined into a batch. The operation, along with any others
+     * that it is batched with, can be executed at a later time using {@link #execute}.
+     *
+     * @param name the name of the object
+     * @return the operation
+     */
+    DescribeObjectOperation newDescribeObjectOperation(String name);
 }

@@ -9,11 +9,12 @@ import java.util.List;
 
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
+import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
+import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.RecordOperation;
 import com.force.spa.UpdateRecordOperation;
 
 /**
@@ -28,7 +29,7 @@ public class DummyRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public void execute(List<RecordOperation<?>> operations) {
+    public void execute(List<Operation<?>> operations) {
         throw new UnsupportedOperationException();
     }
 
@@ -43,6 +44,11 @@ public class DummyRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
+    public DescribeObjectOperation newDescribeObjectOperation(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public <T> GetRecordOperation<T> newGetRecordOperation(String id, Class<T> recordClass) {
         throw new UnsupportedOperationException();
     }
@@ -53,17 +59,17 @@ public class DummyRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <T> UpdateRecordOperation<T> newUpdateRecordOperation(String id, T record) {
         throw new UnsupportedOperationException();
     }
 }

@@ -13,15 +13,17 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 import com.google.common.net.UrlEscapers;
 
-class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implements GetRecordOperation<T> {
+class RestGetRecordOperation<T> extends AbstractRestOperation<T, T> implements GetRecordOperation<T> {
 
     private final String id;
     private final Class<T> recordClass;
+
+    private String soql;
 
     public RestGetRecordOperation(RestRecordAccessor accessor, String id, Class<T> recordClass) {
         super(accessor, recordClass);
@@ -41,16 +43,22 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implem
     }
 
     @Override
+    public String toString() {
+        String string = "Get " + getObjectDescriptor().getName() + " with id " + id;
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + soql;
+        }
+        return string;
+    }
+
+    @Override
     protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        String soql = new SoqlBuilder(getRecordAccessor())
+        soql = new SoqlBuilder(getRecordAccessor())
             .object(getObjectDescriptor())
             .template("SELECT * FROM " + getObjectDescriptor().getName() + " WHERE Id='" + id + "'")
             .limit(1)
             .build();
-
-        setTitle("Get " + getObjectDescriptor().getName());
-        setDetail(soql);
 
         URI uri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
         connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
@@ -75,7 +83,7 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implem
             }
             return recordClass.cast(queryResult.getRecords().get(0));
         } catch (IOException e) {
-            throw new RecordResponseException("Failed to decode JSON record", e);
+            throw new RecordResponseException("Failed to parse JSON response", e);
         }
     }
 }

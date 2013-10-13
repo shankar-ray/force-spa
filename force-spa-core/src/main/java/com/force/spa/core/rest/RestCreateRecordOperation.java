@@ -17,9 +17,14 @@ import com.force.spa.RecordResponseException;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
-final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, String> implements CreateRecordOperation<T> {
+/**
+ * @param <T> the type of record the operation is working with
+ */
+final class RestCreateRecordOperation<T> extends AbstractRestOperation<T, String> implements CreateRecordOperation<T> {
 
     private final T record;
+
+    private String jsonBody;
 
     @SuppressWarnings("unchecked")
     public RestCreateRecordOperation(RestRecordAccessor accessor, T record) {
@@ -34,6 +39,15 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, 
     }
 
     @Override
+    public String toString() {
+        String string = "Create " + getObjectDescriptor().getName();
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + jsonBody;
+        }
+        return string;
+    }
+
+    @Override
     protected RuntimeException exceptionFor(int status, JsonParser parser) {
         if (status == 404) {
             throw new ObjectNotFoundException(buildErrorMessage(status, parser));
@@ -45,22 +59,19 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, 
     @Override
     protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        final String json = encodeRecordForCreate(record);
-
-        setTitle("Create " + getObjectDescriptor().getName());
-        setDetail(json);
+        jsonBody = encodeRecordForCreate(record);
 
         URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName());
-        connector.post(uri, json, new CompletionHandler<CountingJsonParser, Integer>() {
+        connector.post(uri, jsonBody, new CompletionHandler<CountingJsonParser, Integer>() {
             @Override
             public void completed(CountingJsonParser parser, Integer status) {
                 checkStatus(status, parser);
-                RestCreateRecordOperation.this.completed(parseResponseUsing(parser), buildStatistics(json, parser, stopwatch));
+                RestCreateRecordOperation.this.completed(parseResponseUsing(parser), buildStatistics(jsonBody, parser, stopwatch));
             }
 
             @Override
             public void failed(Throwable exception, Integer status) {
-                RestCreateRecordOperation.this.failed(exception, buildStatistics(json, null, stopwatch));
+                RestCreateRecordOperation.this.failed(exception, buildStatistics(jsonBody, null, stopwatch));
             }
         });
     }

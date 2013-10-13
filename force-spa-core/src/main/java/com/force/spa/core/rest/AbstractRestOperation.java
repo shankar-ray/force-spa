@@ -21,7 +21,7 @@ import com.force.spa.OperationStatistics;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UnauthorizedException;
-import com.force.spa.core.AbstractRecordOperation;
+import com.force.spa.core.AbstractOperation;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.base.Stopwatch;
 
@@ -29,9 +29,9 @@ import com.google.common.base.Stopwatch;
  * @param <T> the type of record the operation is working with
  * @param <R> the type of result expected from the operation
  */
-public abstract class AbstractRestRecordOperation<T, R> extends AbstractRecordOperation<T, R> {
+public abstract class AbstractRestOperation<T, R> extends AbstractOperation<T, R> {
 
-    protected AbstractRestRecordOperation(RestRecordAccessor accessor, Class<T> recordClass) {
+    protected AbstractRestOperation(RestRecordAccessor accessor, Class<T> recordClass) {
         super(accessor, recordClass);
     }
 

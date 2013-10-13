@@ -13,16 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import com.force.spa.Operation;
 import com.force.spa.OperationStatistics;
-import com.force.spa.RecordOperation;
 
 /**
  * @param <T> the type of record the operation is working with
  * @param <R> the type of result expected from the operation
  */
-public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R>, CompletionHandler<R, OperationStatistics> {
+public abstract class AbstractOperation<T, R> implements Operation<R>, CompletionHandler<R, OperationStatistics> {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final String STATISTICS_MDC_KEY = "spa.statistics";
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final AbstractRecordAccessor recordAccessor;
     private final ObjectDescriptor objectDescriptor;
@@ -31,15 +33,15 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     private Throwable exception;
     private boolean completed;
     private boolean batched;
-    private String title;
-    private Object detail;
     private OperationStatistics statistics;
 
-    protected AbstractRecordOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
+    protected AbstractOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
-        this.objectDescriptor = recordAccessor.getMappingContext().getObjectDescriptor(recordClass);
         this.completed = false;
         this.batched = false;
+
+        // Get the descriptor at early to make sure mapping context is loaded and ready to handle inbound polymorphism.
+        this.objectDescriptor = (recordClass != null) ? getMappingContext().getObjectDescriptor(recordClass) : null;
     }
 
     @Override
@@ -74,13 +76,9 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.result = result;
         this.statistics = statistics;
 
-        if (log.isInfoEnabled()) {
+        if (getLogger().isInfoEnabled()) {
             MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
-            if (log.isDebugEnabled()) {
-                log.debug(getTitle() + ": " + getDetail());
-            } else {
-                log.info(getTitle());
-            }
+            getLogger().info((isBatched() ? "(Batched) " : "") + this);
             MDC.remove(STATISTICS_MDC_KEY);
         }
     }
@@ -94,25 +92,11 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.exception = exception;
         this.statistics = statistics;
 
-        if (log.isInfoEnabled()) {
+        if (getLogger().isInfoEnabled()) {
             MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
-            if (log.isDebugEnabled()) {
-                log.debug(getTitle() + " failed: " + getDetail(), exception);
-            } else {
-                log.info(getTitle() + " failed", exception);
-            }
+            getLogger().info((isBatched() ? "(Batched) " : "") + this, exception);
             MDC.remove(STATISTICS_MDC_KEY);
         }
-    }
-
-    @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public Object getDetail() {
-        return detail;
     }
 
     @Override
@@ -132,15 +116,11 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.batched = batched;
     }
 
-    protected final void setTitle(String title) {
-        this.title = isBatched() ? "(Batched) " + title : title;
-    }
-
-    protected final void setDetail(Object detail) {
-        this.detail = detail;
-    }
-
     protected final MappingContext getMappingContext() {
         return recordAccessor.getMappingContext();
+    }
+
+    protected final Logger getLogger() {
+        return logger;
     }
 }

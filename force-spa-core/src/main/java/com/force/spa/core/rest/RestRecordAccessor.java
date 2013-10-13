@@ -12,11 +12,12 @@ import org.apache.commons.lang3.Validate;
 import com.force.spa.ApiVersion;
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
+import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
+import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.RecordOperation;
 import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.AbstractRecordAccessor;
 import com.force.spa.core.MappingContext;
@@ -38,11 +39,11 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public void execute(List<RecordOperation<?>> operations) {
+    public void execute(List<Operation<?>> operations) {
 
         RestConnector connector = chooseBatchedOrUnbatchedConnector(operations);
-        for (RecordOperation<?> operation : operations) {
-            AbstractRestRecordOperation.class.cast(operation).start(connector, Stopwatch.createStarted());
+        for (Operation<?> operation : operations) {
+            AbstractRestOperation.class.cast(operation).start(connector, Stopwatch.createStarted());
         }
         connector.join(); // Wait for all the operations to complete
     }
@@ -62,6 +63,14 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         Validate.notNull(recordClass, "recordClass must not be null");
 
         return new RestDeleteRecordOperation<>(this, id, recordClass);
+    }
+
+    @Override
+    public DescribeObjectOperation newDescribeObjectOperation(String name) {
+
+        Validate.notEmpty(name, "name must not be empty");
+
+        return new RestDescribeObjectOperation(this, name);
     }
 
     @Override
@@ -114,10 +123,10 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         return connector;
     }
 
-    private RestConnector chooseBatchedOrUnbatchedConnector(List<RecordOperation<?>> operations) {
+    private RestConnector chooseBatchedOrUnbatchedConnector(List<Operation<?>> operations) {
         if (shouldBatch(operations)) {
-            for (RecordOperation<?> operation : operations) {
-                AbstractRestRecordOperation.class.cast(operation).setBatched(true);
+            for (Operation<?> operation : operations) {
+                AbstractRestOperation.class.cast(operation).setBatched(true);
             }
             return new BatchRestConnector(connector);
         } else {
@@ -126,7 +135,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     }
 
-    private boolean shouldBatch(List<RecordOperation<?>> operations) {
+    private boolean shouldBatch(List<Operation<?>> operations) {
         return operations.size() > 1 && isBatchingSupported();
     }
 

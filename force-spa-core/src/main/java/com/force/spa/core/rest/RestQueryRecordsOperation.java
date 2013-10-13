@@ -26,7 +26,7 @@ import com.force.spa.core.SoqlBuilder;
 import com.google.common.base.Stopwatch;
 import com.google.common.net.UrlEscapers;
 
-final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
+final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
 
     private static final int INITIAL_ARRAY_ALLOCATION_SIZE = 500;  // Avoid a few growth cycles, but don't waste too much memory
 
@@ -35,6 +35,8 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     private final Class<R> resultClass;
     private int startPosition;
     private int maxResults;
+
+    private String soql;
 
     RestQueryRecordsOperation(RestRecordAccessor accessor, String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
         super(accessor, recordClass);
@@ -82,17 +84,23 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     }
 
     @Override
+    public String toString() {
+        String string = "Query " + getObjectDescriptor().getName();
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + soql;
+        }
+        return string;
+    }
+
+    @Override
     protected void start(RestConnector connector, final Stopwatch stopwatch) {
 
-        String soql = new SoqlBuilder(getRecordAccessor())
+        soql = new SoqlBuilder(getRecordAccessor())
             .object(getObjectDescriptor())
             .template(soqlTemplate)
             .offset(startPosition)
             .limit(maxResults)
             .build();
-
-        setTitle("Query " + getObjectDescriptor().getName());
-        setDetail(soql);
 
         OperationStatistics.Builder statisticsBuilder = new OperationStatistics.Builder();
         try {

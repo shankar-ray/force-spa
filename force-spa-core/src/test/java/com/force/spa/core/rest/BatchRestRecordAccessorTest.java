@@ -15,9 +15,10 @@ import static org.mockito.Mockito.when;
 
 import java.net.URI;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.force.spa.RecordOperation;
+import com.force.spa.Operation;
 import com.force.spa.core.testbeans.SimpleBean;
 
 public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest {
@@ -27,16 +28,41 @@ public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest 
         SimpleBean bean1 = new SimpleBean();
         bean1.setName("Name 1");
         bean1.setDescription("Description 1");
-        RecordOperation<String> createOperation1 = accessor.newCreateRecordOperation(bean1);
+        Operation<String> createOperation1 = accessor.newCreateRecordOperation(bean1);
 
         SimpleBean bean2 = new SimpleBean();
         bean2.setName("Name 2");
         bean2.setDescription("Description 2");
-        RecordOperation<String> createOperation2 = accessor.newCreateRecordOperation(bean2);
+        Operation<String> createOperation2 = accessor.newCreateRecordOperation(bean2);
 
         when(
             connector.post(any(URI.class), anyString()))
             .thenReturn(getResourceStream("twoCreatesResponse.json"));
+
+        accessor.execute(createOperation1, createOperation2);
+
+        assertThat(createOperation1.get(), is(equalTo("a01i00000000001AAC")));
+        assertThat(createOperation2.get(), is(equalTo("a01i00000000002AAC")));
+
+        verify(connector).post(URI.create("/connect/batch"), getResourceString("twoCreatesRequest.json"));
+    }
+
+    @Test
+    @Ignore("Still working on this one")
+    public void testTwoCreatesWithError() throws Exception {
+        SimpleBean bean1 = new SimpleBean();
+        bean1.setName("Name 1");
+        bean1.setDescription("Description 1");
+        Operation<String> createOperation1 = accessor.newCreateRecordOperation(bean1);
+
+        SimpleBean bean2 = new SimpleBean();
+        bean2.setName("Name 2");
+        bean2.setDescription("Description 2");
+        Operation<String> createOperation2 = accessor.newCreateRecordOperation(bean2);
+
+        when(
+            connector.post(any(URI.class), anyString()))
+            .thenReturn(getResourceStream("twoCreatesErrorResponse.json"));
 
         accessor.execute(createOperation1, createOperation2);
 

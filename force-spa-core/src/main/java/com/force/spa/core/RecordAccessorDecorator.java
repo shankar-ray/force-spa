@@ -9,14 +9,16 @@ import java.util.List;
 
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
+import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
+import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.UpdateRecordOperation;
+import com.force.spa.metadata.ObjectMetadata;
 
 /**
  * A convenience class for {@link RecordAccessor} decorators. This abstract base class delegates all of the {@link
@@ -38,7 +40,7 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     }
 
     @Override
-    public void execute(List<RecordOperation<?>> operations) {
+    public void execute(List<Operation<?>> operations) {
         delegate.execute(operations);
     }
 
@@ -50,6 +52,11 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     @Override
     public <T> DeleteRecordOperation<T> newDeleteRecordOperation(String id, Class<T> recordClass) {
         return delegate.newDeleteRecordOperation(id, recordClass);
+    }
+
+    @Override
+    public DescribeObjectOperation newDescribeObjectOperation(String name) {
+        return delegate.newDescribeObjectOperation(name);
     }
 
     @Override
@@ -82,8 +89,6 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
         return delegate.toString();
     }
 
-// ***** Starting here are things you should not decorate (or need to decorate). *****
-
     @Override
     public final <T> String create(T record) {
         return delegate.create(record);
@@ -105,7 +110,12 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     }
 
     @Override
-    public final void execute(RecordOperation<?>... operations) {
+    public ObjectMetadata describeObject(String name) {
+        return delegate.describeObject(name);
+    }
+
+    @Override
+    public final void execute(Operation<?>... operations) {
         delegate.execute(operations);
     }
 

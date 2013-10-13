@@ -1,0 +1,19 @@
+{"hasErrors": true, "results": [
+    {
+        "result": [
+            {
+                "message": "Cannot access this resource in a batch request",
+                "errorCode": "INVALID_BATCH_REQUEST"
+            }
+        ],
+        "statusCode": 400
+    },
+    {
+        "result": {
+            "id": "a01i00000000002AAC",
+            "success": true,
+            "errors": []
+        },
+        "statusCode": 201
+    }
+]}

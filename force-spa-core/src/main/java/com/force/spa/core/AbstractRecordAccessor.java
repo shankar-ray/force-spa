@@ -16,15 +16,17 @@ import org.apache.commons.lang3.Validate;
 
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
+import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
+import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
-import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
+import com.force.spa.metadata.ObjectMetadata;
 
 public abstract class AbstractRecordAccessor implements RecordAccessor {
 
@@ -37,7 +39,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final void execute(RecordOperation<?>... operations) {
+    public final void execute(Operation<?>... operations) {
         execute(Arrays.asList(operations));
     }
 
@@ -116,6 +118,17 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         Validate.notNull(type, "type must not be null");
 
         return new RecordQueryImpl<>(soqlTemplate, type);
+    }
+
+    @Override
+    public ObjectMetadata describeObject(String name) {
+        DescribeObjectOperation operation = newDescribeObjectOperation(name);
+        execute(operation);
+        try {
+            return operation.get();
+        } catch (ExecutionException e) {
+            throw getCauseAsSpaException(e);
+        }
     }
 
     @Override

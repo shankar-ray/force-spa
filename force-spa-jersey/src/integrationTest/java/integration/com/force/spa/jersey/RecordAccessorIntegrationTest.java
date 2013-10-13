@@ -8,7 +8,10 @@ package integration.com.force.spa.jersey;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
 import java.security.SecureRandom;
@@ -22,6 +25,7 @@ import com.force.spa.beans.GroupBrief;
 import com.force.spa.beans.Share;
 import com.force.spa.beans.UserBrief;
 import com.force.spa.jersey.PasswordAuthorizationConnector;
+import com.force.spa.metadata.ObjectMetadata;
 
 public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegrationTest {
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -145,7 +149,6 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         assertThat(share2.getUserOrGroupId(), is(equalTo(share.getUserOrGroupId())));
     }
 
-
     @Test
     public void testFeedItemPolymorphism() {
         Guild guild = createGuild();
@@ -157,6 +160,16 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
 
         FeedItem feedItem2 = getRecordAccessor().get(feedItemId, FeedItem.class);
         assertThat(feedItem2.getParent(), is(instanceOf(GuildBrief.class)));
+    }
+
+    @Test
+    public void testDescribeObject() {
+        ObjectMetadata objectMetadata = getRecordAccessor().describeObject("FeedItem");
+
+        //Just checking a few values for now. Too much to check it all. Should come back and beef up someday.
+        assertThat(objectMetadata, is(not(nullValue())));
+        assertThat(objectMetadata.getName(), is(equalTo("FeedItem")));
+        assertThat(objectMetadata.getFields().size(), is(greaterThan(0)));
     }
 
     private GroupBrief getAllInternalUsersGroup() {
