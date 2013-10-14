@@ -7,6 +7,10 @@ package com.force.spa.core.rest;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@SuppressWarnings("UnusedDeclaration")
+@JsonIgnoreProperties(ignoreUnknown = true)
 class ErrorResult {
 
     private List<String> fields;

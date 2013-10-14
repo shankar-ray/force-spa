@@ -36,5 +36,5 @@ public interface Operation<R> {
      * Returns statistics for the operation execution. The information is only available after the operation has
      * completed (or failed).
      */
-    OperationStatistics getStatistics();
+    Statistics getStatistics();
 }

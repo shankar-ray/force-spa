@@ -6,18 +6,23 @@
 package com.force.spa.jersey;
 
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.force.spa.ApiVersion;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordRequestException;
-import com.force.spa.core.utils.CountingJsonParser;
+import com.force.spa.RecordResponseException;
+import com.force.spa.Statistics;
 import com.force.spa.core.MappingContext;
 import com.force.spa.core.rest.RestConnector;
+import com.force.spa.core.rest.RestResponseHandler;
 import com.force.spa.core.rest.RestVersionManager;
+import com.force.spa.core.utils.CountingJsonParser;
+import com.google.common.base.Stopwatch;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientHandlerException;
 import com.sun.jersey.api.client.ClientResponse;
@@ -44,77 +49,72 @@ final class JerseyRestConnector implements RestConnector {
     }
 
     @Override
-    public void delete(URI uri, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
+    public void delete(URI uri, RestResponseHandler<Void> responseHandler) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            ClientResponse response = getConfiguredResource(uri).delete(ClientResponse.class);
             try {
-                ClientResponse response = getConfiguredResource(uri).delete(ClientResponse.class);
-                try {
-                    completionHandler.completed(parserFor(response), response.getStatus());
-                } finally {
-                    closeQuietly(response);
-                }
-            } catch (UniformInterfaceException e) {
-                throw new RecordRequestException(e);
+                responseHandler.handleStatus(response.getStatus());
+                responseHandler.completed(null, buildStatistics(stopwatch, null, null));
+            } finally {
+                closeQuietly(response);
             }
         } catch (Exception e) {
-            completionHandler.failed(e, null);
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, null));
         }
     }
 
     @Override
-    public void get(URI uri, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
+    public <T> void get(URI uri, RestResponseHandler<T> responseHandler) {
+        CountingJsonParser parser = null;
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            ClientResponse response = getConfiguredResource(uri).get(ClientResponse.class);
             try {
-                ClientResponse response = getConfiguredResource(uri).get(ClientResponse.class);
-                try {
-                    completionHandler.completed(parserFor(response), response.getStatus());
-                } finally {
-                    closeQuietly(response);
-                }
-
-            } catch (UniformInterfaceException e) {
-                throw new RecordRequestException(e);
+                parser = parserFor(response);
+                responseHandler.handleStatus(response.getStatus(), parser);
+                T result = (response.getStatus() < 300) ? responseHandler.deserialize(parser) : null;
+                responseHandler.completed(result, buildStatistics(stopwatch, null, parser));
+            } finally {
+                closeQuietly(response);
             }
         } catch (Exception e) {
-            completionHandler.failed(e, null);
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, parser));
         }
     }
 
     @Override
-    public void patch(URI uri, String jsonBody, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
+    public void patch(URI uri, String jsonBody, RestResponseHandler<Void> responseHandler) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            ClientResponse response = getConfiguredResource(uri).method("PATCH", ClientResponse.class, jsonBody);
             try {
-                ClientResponse response = getConfiguredResource(uri).method("PATCH", ClientResponse.class, jsonBody);
-                try {
-                    completionHandler.completed(parserFor(response), response.getStatus());
-                } finally {
-                    closeQuietly(response);
-                }
-
-            } catch (UniformInterfaceException e) {
-                throw new RecordRequestException(e);
+                responseHandler.handleStatus(response.getStatus());
+                responseHandler.completed(null, buildStatistics(stopwatch, jsonBody, null));
+            } finally {
+                closeQuietly(response);
             }
         } catch (Exception e) {
-            completionHandler.failed(e, null);
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, jsonBody, null));
         }
     }
 
     @Override
-    public void post(URI uri, String jsonBody, CompletionHandler<CountingJsonParser, Integer> completionHandler) {
+    public <T> void post(URI uri, String jsonBody, RestResponseHandler<T> responseHandler) {
+        CountingJsonParser parser = null;
+        Stopwatch stopwatch = Stopwatch.createStarted();
         try {
+            ClientResponse response = getConfiguredResource(uri).post(ClientResponse.class, jsonBody);
             try {
-                ClientResponse response = getConfiguredResource(uri).post(ClientResponse.class, jsonBody);
-                try {
-                    completionHandler.completed(parserFor(response), response.getStatus());
-                } finally {
-                    closeQuietly(response);
-                }
-
-            } catch (UniformInterfaceException e) {
-                throw new RecordRequestException(e);
+                parser = parserFor(response);
+                responseHandler.handleStatus(response.getStatus(), parser);
+                T result = (response.getStatus() < 300) ? responseHandler.deserialize(parser) : null;
+                responseHandler.completed(result, buildStatistics(stopwatch, jsonBody, parser));
+            } finally {
+                closeQuietly(response);
             }
         } catch (Exception e) {
-            completionHandler.failed(e, null);
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, parser));
         }
     }
 
@@ -125,7 +125,7 @@ final class JerseyRestConnector implements RestConnector {
 
     @Override
     public void join() {
-        // Nothing to flush for a synchronous connector.
+        // Nothing to do for a synchronous connector.
     }
 
     @Override
@@ -140,13 +140,6 @@ final class JerseyRestConnector implements RestConnector {
         } else {
             return versionManager.getHighestSupportedVersion();
         }
-    }
-
-    /**
-     * For unit test purposes only.
-     */
-    Client getClient() {
-        return client;
     }
 
     private WebResource.Builder getConfiguredResource(URI relativeUri) {
@@ -173,6 +166,24 @@ final class JerseyRestConnector implements RestConnector {
             response.close();
         } catch (ClientHandlerException e) {
             // Swallow the exception so a close failure doesn't obscure any exception already in the pipe
+        }
+    }
+
+    private Statistics buildStatistics(Stopwatch stopwatch, String jsonBody, CountingJsonParser parser) {
+        return new Statistics.Builder()
+            .bytesSent((jsonBody != null) ? jsonBody.length() : 0)
+            .bytesReceived((parser != null) ? parser.getCount() : 0)
+            .elapsedNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS))
+            .build();
+    }
+
+    private static Exception mapSelectedExceptions(Exception exception) {
+        if (exception instanceof JsonParseException) {
+            return new RecordResponseException("Failed to parse response body", exception);
+        } else if (exception instanceof UniformInterfaceException) {
+            return new RecordRequestException(exception.getMessage(), exception);
+        } else {
+            return exception;
         }
     }
 }

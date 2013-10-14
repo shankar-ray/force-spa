@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -68,13 +67,7 @@ public class RestVersionManagerTest extends AbstractRestRecordAccessorTest {
             .thenReturn(getResourceStream("badVersionsResponse.json"));
 
         RestVersionManager versionManager = new RestVersionManager(connector);
-        try {
-            versionManager.getHighestSupportedVersion();
-            fail("Didn't get expected exception");
-        } catch (Exception e) {
-            assertThat(e, is(instanceOf(SpaException.class)));
-            assertThat(e.getCause(), is(instanceOf(SpaException.class)));
-        }
+        assertThat(versionManager.getHighestSupportedVersion(), is(equalTo(RestVersionManager.DEFAULT_API_VERSION)));
     }
 
     @Test
@@ -84,12 +77,6 @@ public class RestVersionManagerTest extends AbstractRestRecordAccessorTest {
             .thenReturn(getResourceStream("badVersionsResponse.json"));
 
         RestVersionManager versionManager = new RestVersionManager(connector);
-        try {
-            versionManager.getHighestSupportedVersion();
-            fail("Didn't get expected exception");
-        } catch (Exception e) {
-            assertThat(e, is(instanceOf(SpaException.class)));
-            assertThat(e.getCause(), is(instanceOf(SpaException.class)));
-        }
+        assertThat(versionManager.getHighestSupportedVersion(), is(equalTo(RestVersionManager.DEFAULT_API_VERSION)));
     }
 }

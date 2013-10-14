@@ -7,15 +7,12 @@ package com.force.spa.core.rest;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.force.spa.GetRecordOperation;
 import com.force.spa.RecordNotFoundException;
-import com.force.spa.RecordResponseException;
 import com.force.spa.core.SoqlBuilder;
 import com.force.spa.core.utils.CountingJsonParser;
-import com.google.common.base.Stopwatch;
 import com.google.common.net.UrlEscapers;
 
 class RestGetRecordOperation<T> extends AbstractRestOperation<T, T> implements GetRecordOperation<T> {
@@ -43,16 +40,7 @@ class RestGetRecordOperation<T> extends AbstractRestOperation<T, T> implements G
     }
 
     @Override
-    public String toString() {
-        String string = "Get " + getObjectDescriptor().getName() + " with id " + id;
-        if (getLogger().isDebugEnabled()) {
-            string += ": " + soql;
-        }
-        return string;
-    }
-
-    @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
+    protected void start(RestConnector connector) {
 
         soql = new SoqlBuilder(getRecordAccessor())
             .object(getObjectDescriptor())
@@ -61,29 +49,28 @@ class RestGetRecordOperation<T> extends AbstractRestOperation<T, T> implements G
             .build();
 
         URI uri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
-        connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
+        connector.get(uri, new ResponseHandler() {
             @Override
-            public void completed(CountingJsonParser parser, Integer status) {
-                checkStatus(status, parser);
-                RestGetRecordOperation.this.completed(parseResponseUsing(parser), buildStatistics(null, parser, stopwatch));
-            }
-
-            @Override
-            public void failed(Throwable exception, Integer status) {
-                RestGetRecordOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
+            public T deserialize(CountingJsonParser parser) throws IOException {
+                return deserializeRecord(parser);
             }
         });
     }
 
-    private T parseResponseUsing(JsonParser parser) {
-        try {
-            QueryResult queryResult = parser.readValueAs(QueryResult.class);
-            if (queryResult.getRecords() == null || queryResult.getRecords().size() < 1) {
-                throw new RecordNotFoundException();
-            }
-            return recordClass.cast(queryResult.getRecords().get(0));
-        } catch (IOException e) {
-            throw new RecordResponseException("Failed to parse JSON response", e);
+    private T deserializeRecord(JsonParser parser) throws IOException {
+        QueryResult queryResult = parser.readValueAs(QueryResult.class);
+        if (queryResult.getRecords() == null || queryResult.getRecords().size() < 1) {
+            throw new RecordNotFoundException(id);
         }
+        return recordClass.cast(queryResult.getRecords().get(0));
+    }
+
+    @Override
+    public String toString() {
+        String string = "Get " + getObjectDescriptor().getName() + " with id " + id;
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + soql;
+        }
+        return string;
     }
 }

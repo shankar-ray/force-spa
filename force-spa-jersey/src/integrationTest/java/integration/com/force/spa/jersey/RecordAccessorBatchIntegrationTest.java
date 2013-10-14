@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.force.spa.CreateRecordOperation;
@@ -159,6 +160,7 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     }
 
     @Test
+    @Ignore("Describe not supported in a batch yet")
     public void testMultipleDescribeObjects() throws Exception {
         Operation<ObjectMetadata> describeFeedItemOperation = getRecordAccessor().newDescribeObjectOperation("FeedItem");
         Operation<ObjectMetadata> describeFeedCommentOperation = getRecordAccessor().newDescribeObjectOperation("FeedComment");

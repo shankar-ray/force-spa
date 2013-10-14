@@ -7,12 +7,9 @@ package com.force.spa.core.rest;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
 
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordResponseException;
-import com.force.spa.core.utils.CountingJsonParser;
-import com.google.common.base.Stopwatch;
 
 class RestPatchRecordOperation<T> extends AbstractRestOperation<T, Void> implements PatchRecordOperation<T> {
 
@@ -40,39 +37,28 @@ class RestPatchRecordOperation<T> extends AbstractRestOperation<T, Void> impleme
     }
 
     @Override
+    protected void start(RestConnector connector) {
+
+        jsonBody = serializeRecord(record);
+
+        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
+        connector.patch(uri, jsonBody, new ResponseHandler());
+    }
+
+    private String serializeRecord(Object record) {
+        try {
+            return getMappingContext().getObjectWriterForPatch().writeValueAsString(record);
+        } catch (IOException e) {
+            throw new RecordResponseException("Failed to serialize record", e);
+        }
+    }
+
+    @Override
     public String toString() {
         String string = "Patch " + getObjectDescriptor().getName() + " with id " + id;
         if (getLogger().isDebugEnabled()) {
             string += ": " + jsonBody;
         }
         return string;
-    }
-
-    @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
-
-        jsonBody = encodeRecordForPatch(record);
-
-        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
-        connector.patch(uri, jsonBody, new CompletionHandler<CountingJsonParser, Integer>() {
-            @Override
-            public void completed(CountingJsonParser parser, Integer status) {
-                checkStatus(status, parser);
-                RestPatchRecordOperation.this.completed(null, buildStatistics(jsonBody, null, stopwatch));
-            }
-
-            @Override
-            public void failed(Throwable exception, Integer status) {
-                RestPatchRecordOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
-            }
-        });
-    }
-
-    private String encodeRecordForPatch(Object record) {
-        try {
-            return getMappingContext().getObjectWriterForPatch().writeValueAsString(record);
-        } catch (IOException e) {
-            throw new RecordResponseException("Failed to encode record as JSON", e);
-        }
     }
 }

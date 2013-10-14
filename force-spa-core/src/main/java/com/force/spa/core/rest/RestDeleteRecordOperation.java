@@ -6,11 +6,8 @@
 package com.force.spa.core.rest;
 
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
 
 import com.force.spa.DeleteRecordOperation;
-import com.force.spa.core.utils.CountingJsonParser;
-import com.google.common.base.Stopwatch;
 
 class RestDeleteRecordOperation<T> extends AbstractRestOperation<T, Void> implements DeleteRecordOperation<T> {
 
@@ -35,25 +32,14 @@ class RestDeleteRecordOperation<T> extends AbstractRestOperation<T, Void> implem
     }
 
     @Override
-    public String toString() {
-        return "Delete " + getObjectDescriptor().getName() + " with id " + id;
+    protected void start(RestConnector connector) {
+
+        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
+        connector.delete(uri, new ResponseHandler());
     }
 
     @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
-
-        URI uri = URI.create("/sobjects/" + getObjectDescriptor().getName() + "/" + id);
-        connector.delete(uri, new CompletionHandler<CountingJsonParser, Integer>() {
-            @Override
-            public void completed(CountingJsonParser parser, Integer status) {
-                checkStatus(status, parser);
-                RestDeleteRecordOperation.this.completed(null, buildStatistics(null, null, stopwatch));
-            }
-
-            @Override
-            public void failed(Throwable exception, Integer status) {
-                RestDeleteRecordOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
-            }
-        });
+    public String toString() {
+        return "Delete " + getObjectDescriptor().getName() + " with id " + id;
     }
 }

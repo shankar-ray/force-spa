@@ -152,7 +152,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
             accessor.create(bean);
             fail("Didn't get expected exception");
         } catch (RecordResponseException e) {
-            assertThat(e.getMessage(), is(equalTo("JSON response is missing expected fields")));
+            assertThat(e.getMessage(), is(equalTo("Failed to parse response body")));
         }
     }
 

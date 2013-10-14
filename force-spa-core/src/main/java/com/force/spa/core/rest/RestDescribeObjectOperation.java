@@ -7,20 +7,14 @@ package com.force.spa.core.rest;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.force.spa.DescribeObjectOperation;
-import com.force.spa.RecordResponseException;
+import com.force.spa.ObjectNotFoundException;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.metadata.ObjectMetadata;
-import com.google.common.base.Stopwatch;
 
 class RestDescribeObjectOperation extends AbstractRestOperation<Void, ObjectMetadata> implements DescribeObjectOperation {
-
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String name;
 
@@ -38,42 +32,36 @@ class RestDescribeObjectOperation extends AbstractRestOperation<Void, ObjectMeta
     }
 
     @Override
-    public String toString() {
-        String string = "Describe " + getName();
-        if (getLogger().isDebugEnabled() && objectMetadata != null) {
-            try {
-                string += ": " + objectMapper.writeValueAsString(objectMetadata);
-            } catch (JsonProcessingException e) {
-                string += ": (Failed to re-encode object metadata as JSON)"; // Don't want a debugging exception to make real operation fail
-            }
-        }
-        return string;
-    }
+    protected void start(RestConnector connector) {
 
-    @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
-
-        URI uri = URI.create("/sobjects/" + getName() + "/describe");
-        connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
+        connector.get(URI.create("/sobjects/" + getName() + "/describe"), new ResponseHandler() {
             @Override
-            public void completed(CountingJsonParser parser, Integer status) {
-                checkStatus(status, parser);
-                RestDescribeObjectOperation.this.completed(parseResponseUsing(parser), buildStatistics(null, parser, stopwatch));
+            public ObjectMetadata deserialize(CountingJsonParser parser) throws IOException {
+                return deserializeObjectMetadata(parser);
             }
 
             @Override
-            public void failed(Throwable exception, Integer status) {
-                RestDescribeObjectOperation.this.failed(exception, buildStatistics(null, null, stopwatch));
+            public void handleStatus(int status, JsonParser parser) {
+                if (status == 404) {
+                    throw new ObjectNotFoundException(getExceptionMessage(status, parser));
+                } else {
+                    super.handleStatus(status, parser);
+                }
             }
         });
     }
 
-    private ObjectMetadata parseResponseUsing(JsonParser parser) {
-        try {
-            objectMetadata = parser.readValueAs(ObjectMetadata.class);
-            return objectMetadata;
-        } catch (IOException e) {
-            throw new RecordResponseException("Failed to parse JSON response", e);
+    private ObjectMetadata deserializeObjectMetadata(JsonParser parser) throws IOException {
+        objectMetadata = parser.readValueAs(ObjectMetadata.class);
+        return objectMetadata;
+    }
+
+    @Override
+    public String toString() {
+        String string = "Describe " + getName();
+        if (getLogger().isDebugEnabled() && objectMetadata != null) {
+            string += ": " + objectMetadata;
         }
+        return string;
     }
 }

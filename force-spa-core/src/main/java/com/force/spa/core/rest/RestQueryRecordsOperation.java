@@ -6,29 +6,27 @@
 package com.force.spa.core.rest;
 
 import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.channels.CompletionHandler;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.force.spa.OperationStatistics;
 import com.force.spa.QueryRecordsOperation;
-import com.force.spa.RecordResponseException;
+import com.force.spa.Statistics;
 import com.force.spa.TooManyQueryRowsException;
-import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.core.SoqlBuilder;
-import com.google.common.base.Stopwatch;
+import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.net.UrlEscapers;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
 
-    private static final int INITIAL_ARRAY_ALLOCATION_SIZE = 500;  // Avoid a few growth cycles, but don't waste too much memory
+    private static final int INITIAL_ARRAY_ALLOCATION_SIZE = 500;  // Avoid a few growth cycles, but don't waste too much space
 
     private final String soqlTemplate;
     private final Class<T> recordClass;
@@ -84,16 +82,7 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, Lis
     }
 
     @Override
-    public String toString() {
-        String string = "Query " + getObjectDescriptor().getName();
-        if (getLogger().isDebugEnabled()) {
-            string += ": " + soql;
-        }
-        return string;
-    }
-
-    @Override
-    protected void start(RestConnector connector, final Stopwatch stopwatch) {
+    protected void start(RestConnector connector) {
 
         soql = new SoqlBuilder(getRecordAccessor())
             .object(getObjectDescriptor())
@@ -102,28 +91,32 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, Lis
             .limit(maxResults)
             .build();
 
-        OperationStatistics.Builder statisticsBuilder = new OperationStatistics.Builder();
+        Statistics.Builder statisticsBuilder = new Statistics.Builder();
         try {
             List<R> records = new ArrayList<>(INITIAL_ARRAY_ALLOCATION_SIZE);
             URI queryUri = URI.create("/query?q=" + UrlEscapers.urlFormParameterEscaper().escape(soql));
             accumulateRecords(queryUri, connector, records, statisticsBuilder);
 
-            RestQueryRecordsOperation.this.completed(records, buildStatistics(statisticsBuilder, stopwatch));
+            RestQueryRecordsOperation.this.completed(records, statisticsBuilder.build());
 
-        } catch (QueryOperationFailedException e) {
-            RestQueryRecordsOperation.this.failed(e.getCause(), buildStatistics(statisticsBuilder, stopwatch));
+        } catch (UncheckedExecutionException e) {
+            RestQueryRecordsOperation.this.failed(e.getCause(), statisticsBuilder.build());
         }
     }
 
-    private void accumulateRecords(URI uri, final RestConnector connector, final List<R> records, final OperationStatistics.Builder statisticsBuilder) {
+    private void accumulateRecords(URI uri, final RestConnector connector, final List<R> records, final Statistics.Builder statisticsBuilder) {
 
-        connector.get(uri, new CompletionHandler<CountingJsonParser, Integer>() {
+        connector.get(uri, new RestResponseHandler<QueryResult>() {
             @Override
-            public void completed(CountingJsonParser parser, Integer status) {
+            public QueryResult deserialize(CountingJsonParser parser) throws IOException {
+                return deserializeQueryResult(parser);
+            }
 
-                checkStatus(status, parser);
-                QueryResult queryResult = parseResponseUsing(parser);
-                addStatistics(parser, queryResult, statisticsBuilder);
+            @Override
+            public void completed(QueryResult queryResult, Statistics statistics) {
+
+                addStatisticsTo(statisticsBuilder, statistics);
+                addQueryResultTo(statisticsBuilder, queryResult);
 
                 for (Object record : queryResult.getRecords()) {
                     records.add(resultClass.cast(record));
@@ -139,27 +132,24 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, Lis
             }
 
             @Override
-            public void failed(Throwable exception, Integer status) {
-                throw new QueryOperationFailedException(exception);
+            public void failed(Throwable exception, Statistics statistics) {
+                addStatisticsTo(statisticsBuilder, statistics);
+                throw new UncheckedExecutionException(exception);
             }
         });
     }
 
-    private QueryResult parseResponseUsing(JsonParser parser) {
-        try {
-            if (resultClass.equals(recordClass)) {
-                return parser.readValueAs(QueryResult.class); // Fast and simple default case
-            } else {
-                return manuallyParseQueryResult(parser);      // A little more work for alternate return types
-            }
-        } catch (IOException e) {
-            throw new RecordResponseException("Failed to parse JSON response", e);
+    private QueryResult deserializeQueryResult(JsonParser parser) throws IOException {
+        if (resultClass.equals(recordClass)) {
+            return parser.readValueAs(QueryResult.class); // Fast and simple default case
+        } else {
+            return manuallyParseQueryResult(parser);      // A little more work for alternate return types
         }
     }
 
     private QueryResult manuallyParseQueryResult(JsonParser parser) throws IOException {
         QueryResult queryResult = new QueryResult();
-        parser.nextToken();
+        establishCurrentToken(parser);
         consumeExpectedToken(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();
@@ -190,21 +180,23 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, Lis
         return records;
     }
 
-    private static void addStatistics(CountingJsonParser parser, QueryResult queryResult, OperationStatistics.Builder accumulatedStatistics) {
-        accumulatedStatistics.additionalBytesReceived(parser.getCount());
+    private static void addQueryResultTo(Statistics.Builder accumulatedStatistics, QueryResult queryResult) {
         accumulatedStatistics.additionalRowsProcessed(queryResult.getRecords().size());
-        if (queryResult.getTotalSize() != 0) {
-            accumulatedStatistics.totalRows(queryResult.getTotalSize());
-        }
+        accumulatedStatistics.totalRows(queryResult.getTotalSize());
     }
 
-    private static OperationStatistics buildStatistics(OperationStatistics.Builder builder, Stopwatch stopwatch) {
-        return builder.elapsedNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS)).build();
+    private static void addStatisticsTo(Statistics.Builder accumulatedStatistics, Statistics statistics) {
+        accumulatedStatistics.additionalBytesReceived(statistics.getBytesReceived());
+        accumulatedStatistics.additionalBytesSent(statistics.getBytesSent());
+        accumulatedStatistics.additionalElapsedNanos(statistics.getElapsedNanos());
     }
 
-    private static class QueryOperationFailedException extends RuntimeException {
-        QueryOperationFailedException(Throwable cause) {
-            super(cause);
+    @Override
+    public String toString() {
+        String string = "Query " + getObjectDescriptor().getName();
+        if (getLogger().isDebugEnabled()) {
+            string += ": " + soql;
         }
+        return string;
     }
 }

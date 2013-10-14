@@ -21,7 +21,6 @@ import com.force.spa.RecordAccessorConfig;
 import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.AbstractRecordAccessor;
 import com.force.spa.core.MappingContext;
-import com.google.common.base.Stopwatch;
 
 /**
  * An implementation of {@link com.force.spa.RecordAccessor} that is based on the JSON representations of the Salesforce
@@ -43,7 +42,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
         RestConnector connector = chooseBatchedOrUnbatchedConnector(operations);
         for (Operation<?> operation : operations) {
-            AbstractRestOperation.class.cast(operation).start(connector, Stopwatch.createStarted());
+            AbstractRestOperation.class.cast(operation).start(connector);
         }
         connector.join(); // Wait for all the operations to complete
     }

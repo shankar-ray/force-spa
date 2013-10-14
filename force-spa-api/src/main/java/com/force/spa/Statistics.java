@@ -14,9 +14,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
- * Simple statistics for an operation execution.
+ * Simple statistics for a SPA operation.
  */
-public class OperationStatistics implements Serializable {
+public class Statistics implements Serializable {
 
     private static final ToStringStyle TO_STRING_STYLE = new OperationStatisticsToStringStyle();
 
@@ -28,7 +28,7 @@ public class OperationStatistics implements Serializable {
     private final long rowsProcessed;
     private final long totalRows;
 
-    protected OperationStatistics(Builder builder) {
+    protected Statistics(Builder builder) {
         this.bytesSent = builder.bytesSent;
         this.bytesReceived = builder.bytesReceived;
         this.elapsedNanos = builder.elapsedNanos;
@@ -116,7 +116,7 @@ public class OperationStatistics implements Serializable {
             totalRows = 0;
         }
 
-        public Builder(OperationStatistics that) {
+        public Builder(Statistics that) {
             this.bytesSent = that.bytesSent;
             this.bytesReceived = that.bytesReceived;
             this.elapsedNanos = that.elapsedNanos;
@@ -124,8 +124,8 @@ public class OperationStatistics implements Serializable {
             this.totalRows = that.totalRows;
         }
 
-        public OperationStatistics build() {
-            return new OperationStatistics(this);
+        public Statistics build() {
+            return new Statistics(this);
         }
 
         public Builder bytesSent(long bytesSent) {
@@ -196,7 +196,7 @@ public class OperationStatistics implements Serializable {
 
         @SuppressWarnings("SameReturnValue")
         private Object readResolve() {
-            return OperationStatistics.TO_STRING_STYLE; // Ensure singleton after serialization
+            return Statistics.TO_STRING_STYLE; // Ensure singleton after serialization
         }
     }
 }

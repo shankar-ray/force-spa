@@ -14,13 +14,13 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import com.force.spa.Operation;
-import com.force.spa.OperationStatistics;
+import com.force.spa.Statistics;
 
 /**
  * @param <T> the type of record the operation is working with
  * @param <R> the type of result expected from the operation
  */
-public abstract class AbstractOperation<T, R> implements Operation<R>, CompletionHandler<R, OperationStatistics> {
+public abstract class AbstractOperation<T, R> implements Operation<R>, CompletionHandler<R, Statistics> {
 
     private static final String STATISTICS_MDC_KEY = "spa.statistics";
 
@@ -33,7 +33,7 @@ public abstract class AbstractOperation<T, R> implements Operation<R>, Completio
     private Throwable exception;
     private boolean completed;
     private boolean batched;
-    private OperationStatistics statistics;
+    private Statistics statistics;
 
     protected AbstractOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
@@ -68,7 +68,7 @@ public abstract class AbstractOperation<T, R> implements Operation<R>, Completio
     }
 
     @Override
-    public void completed(R result, OperationStatistics statistics) {
+    public void completed(R result, Statistics statistics) {
         if (completed) {
             throw new IllegalStateException("Operation is already completed");
         }
@@ -84,7 +84,7 @@ public abstract class AbstractOperation<T, R> implements Operation<R>, Completio
     }
 
     @Override
-    public void failed(Throwable exception, OperationStatistics statistics) {
+    public void failed(Throwable exception, Statistics statistics) {
         if (completed) {
             throw new IllegalStateException("Operation is already completed");
         }
@@ -100,7 +100,7 @@ public abstract class AbstractOperation<T, R> implements Operation<R>, Completio
     }
 
     @Override
-    public OperationStatistics getStatistics() {
+    public Statistics getStatistics() {
         return statistics;
     }
 
