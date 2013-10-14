@@ -6,15 +6,15 @@
 package com.force.spa.core.rest;
 
 import com.force.spa.Statistics;
-import com.force.spa.core.AbstractOperation;
+import com.force.spa.core.AbstractRecordOperation;
 
 /**
  * @param <T> the type of record the operation is working with
  * @param <R> the type of result expected from the operation
  */
-public abstract class AbstractRestOperation<T, R> extends AbstractOperation<T, R> {
+public abstract class AbstractRestRecordOperation<T, R> extends AbstractRecordOperation<T, R> {
 
-    protected AbstractRestOperation(RestRecordAccessor accessor, Class<T> recordClass) {
+    protected AbstractRestRecordOperation(RestRecordAccessor accessor, Class<T> recordClass) {
         super(accessor, recordClass);
     }
 
@@ -37,12 +37,12 @@ public abstract class AbstractRestOperation<T, R> extends AbstractOperation<T, R
     protected class ResponseHandler extends RestResponseHandler<R> {
         @Override
         public void completed(R result, Statistics statistics) {
-            AbstractRestOperation.this.completed(result, statistics);
+            AbstractRestRecordOperation.this.completed(result, statistics);
         }
 
         @Override
         public void failed(Throwable exception, Statistics statistics) {
-            AbstractRestOperation.this.failed(exception, statistics);
+            AbstractRestRecordOperation.this.failed(exception, statistics);
         }
     }
 }

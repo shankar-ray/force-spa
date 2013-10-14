@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 /**
  * @param <R> the type of result expected from the operation
  */
-public interface Operation<R> {
+public interface RecordOperation<R> {
 
     /**
      * Returns the operation result.

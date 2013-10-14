@@ -18,11 +18,11 @@ import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
-import com.force.spa.QueryRecordsOperation;
+import com.force.spa.QueryRecordsExOperation;
 import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
+import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
 import com.force.spa.UpdateRecordOperation;
@@ -39,7 +39,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
     }
 
     @Override
-    public final void execute(Operation<?>... operations) {
+    public final void execute(RecordOperation<?>... operations) {
         execute(Arrays.asList(operations));
     }
 
@@ -172,7 +172,7 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
 
         @Override
         public <R> List<R> execute(Class<R> resultClass) {
-            QueryRecordsOperation<T, R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
+            QueryRecordsExOperation<T, R> operation = newQueryRecordsOperation(soqlTemplate, type, resultClass);
             if (startPosition != 0)
                 operation.setStartPosition(startPosition);
             if (maxResults != 0)

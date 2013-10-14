@@ -100,25 +100,25 @@ public interface RecordAccessor {
      * Executes a list of record operations.
      * <p/>
      * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link Operation#get()}). If
+     * status is determined by asking for the operation result (using {@link RecordOperation#get()}). If
      * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
      * is thrown.
      *
      * @param operations the operations
      */
-    void execute(Operation<?>... operations);
+    void execute(RecordOperation<?>... operations);
 
     /**
      * Executes a list of record operations.
      * <p/>
      * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link Operation#get()}). If
+     * status is determined by asking for the operation result (using {@link RecordOperation#get()}). If
      * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
      * is thrown.
      *
      * @param operations the operations
      */
-    void execute(List<Operation<?>> operations);
+    void execute(List<RecordOperation<?>> operations);
 
     /**
      * Returns the {@link RecordAccessorConfig}.
@@ -190,7 +190,7 @@ public interface RecordAccessor {
      * @param recordClass  the annotated class of the requested object's bean
      * @return the operation
      */
-    <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass);
+    <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass);
 
     /**
      * Returns a new query operation that can be combined into a batch. The operation, along with any others that it is
@@ -201,10 +201,10 @@ public interface RecordAccessor {
      *                     field names as described by the annotations in the record class.
      * @param recordClass  the annotated class of the requested object's bean
      * @param resultClass  the class of the desired return type that differs from the record class. A typical choice is
-     *                     com.fasterxml.jackson.databind.JsonNode.
+     *                     {@link com.fasterxml.jackson.databind.JsonNode} or {@link java.util.Map}.
      * @return the operation
      */
-    <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass);
+    <T, R> QueryRecordsExOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass);
 
     /**
      * Returns a new describe object operation that can be combined into a batch. The operation, along with any others

@@ -3,8 +3,8 @@ apply plugin: 'java'
 description = 'Simple Persistence API for Salesforce - Public API'
 
 dependencies {
-    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-    compile "org.apache.commons:commons-lang3:${commonsLangVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jackson2Version}"
+    compile "org.apache.commons:commons-lang3:${commonsLang3Version}"
     compile "joda-time:joda-time:2.2"
 
     testCompile "junit:junit:${junitVersion}"

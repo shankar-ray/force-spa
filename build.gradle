@@ -11,11 +11,11 @@ configure(allprojects) {
     ext {
         apacheHttpVersion = '4.2'
         commonsIoVersion = '2.4'
-        commonsLangVersion = '3.1'
+        commonsLang3Version = '3.1'
         gradleVersion = '1.8'
         guavaVersion = '15.0'
         hamcrestVersion = '1.3'
-        jacksonVersion = '2.1.4'
+        jackson2Version = '2.1.4'
         jerseyVersion = '1.17.1'
         junitVersion = '4.11'
         logbackVersion = '1.0.13'

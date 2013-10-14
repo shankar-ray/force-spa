@@ -9,7 +9,7 @@ import java.net.URI;
 
 import com.force.spa.DeleteRecordOperation;
 
-class RestDeleteRecordOperation<T> extends AbstractRestOperation<T, Void> implements DeleteRecordOperation<T> {
+class RestDeleteRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements DeleteRecordOperation<T> {
 
     private final String id;
     private final Class<T> recordClass;

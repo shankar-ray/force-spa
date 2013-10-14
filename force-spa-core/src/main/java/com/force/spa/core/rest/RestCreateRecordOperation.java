@@ -19,7 +19,7 @@ import com.force.spa.core.utils.CountingJsonParser;
 /**
  * @param <T> the type of record the operation is working with
  */
-final class RestCreateRecordOperation<T> extends AbstractRestOperation<T, String> implements CreateRecordOperation<T> {
+final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, String> implements CreateRecordOperation<T> {
 
     private final T record;
 

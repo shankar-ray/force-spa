@@ -8,7 +8,7 @@ package com.force.spa;
 /**
  * @param <T> the type of record the operation is working with
  */
-public interface PatchRecordOperation<T> extends Operation<Void> {
+public interface PatchRecordOperation<T> extends RecordOperation<Void> {
     String getId();
 
     T getRecord();

@@ -17,7 +17,6 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.AuthorizationConnector;
 import com.force.spa.RecordAccessor;
-import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.config.ClientConfig;
 
 @ContextConfiguration(locations = {"classpath:com/force/spa/jersey/scanWithNoOverridesContext.xml"})

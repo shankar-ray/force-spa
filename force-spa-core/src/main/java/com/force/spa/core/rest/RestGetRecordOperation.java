@@ -15,7 +15,7 @@ import com.force.spa.core.SoqlBuilder;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.net.UrlEscapers;
 
-class RestGetRecordOperation<T> extends AbstractRestOperation<T, T> implements GetRecordOperation<T> {
+class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implements GetRecordOperation<T> {
 
     private final String id;
     private final Class<T> recordClass;

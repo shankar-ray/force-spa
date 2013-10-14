@@ -16,6 +16,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.force.spa.QueryRecordsExOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.Statistics;
 import com.force.spa.TooManyQueryRowsException;
@@ -24,7 +25,7 @@ import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.net.UrlEscapers;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
-final class RestQueryRecordsOperation<T, R> extends AbstractRestOperation<T, List<R>> implements QueryRecordsOperation<T, R> {
+final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<T, List<R>> implements QueryRecordsOperation<R>, QueryRecordsExOperation<T, R> {
 
     private static final int INITIAL_ARRAY_ALLOCATION_SIZE = 500;  // Avoid a few growth cycles, but don't waste too much space
 

@@ -14,10 +14,11 @@ import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.Operation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
+import com.force.spa.QueryRecordsExOperation;
 import com.force.spa.RecordAccessorConfig;
+import com.force.spa.RecordOperation;
 import com.force.spa.UpdateRecordOperation;
 import com.force.spa.core.AbstractRecordAccessor;
 import com.force.spa.core.MappingContext;
@@ -38,11 +39,11 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public void execute(List<Operation<?>> operations) {
+    public void execute(List<RecordOperation<?>> operations) {
 
         RestConnector connector = chooseBatchedOrUnbatchedConnector(operations);
-        for (Operation<?> operation : operations) {
-            AbstractRestOperation.class.cast(operation).start(connector);
+        for (RecordOperation<?> operation : operations) {
+            AbstractRestRecordOperation.class.cast(operation).start(connector);
         }
         connector.join(); // Wait for all the operations to complete
     }
@@ -91,7 +92,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soql, Class<T> recordClass) {
+    public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soql, Class<T> recordClass) {
 
         Validate.notEmpty(soql, "soql must not be empty");
         Validate.notNull(recordClass, "recordClass must not be null");
@@ -100,7 +101,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
     }
 
     @Override
-    public <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
+    public <T, R> QueryRecordsExOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
 
         Validate.notEmpty(soqlTemplate, "soqlTemplate must not be empty");
         Validate.notNull(recordClass, "recordClass must not be null");
@@ -122,10 +123,10 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
         return connector;
     }
 
-    private RestConnector chooseBatchedOrUnbatchedConnector(List<Operation<?>> operations) {
+    private RestConnector chooseBatchedOrUnbatchedConnector(List<RecordOperation<?>> operations) {
         if (shouldBatch(operations)) {
-            for (Operation<?> operation : operations) {
-                AbstractRestOperation.class.cast(operation).setBatched(true);
+            for (RecordOperation<?> operation : operations) {
+                AbstractRestRecordOperation.class.cast(operation).setBatched(true);
             }
             return new BatchRestConnector(connector);
         } else {
@@ -134,7 +135,7 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     }
 
-    private boolean shouldBatch(List<Operation<?>> operations) {
+    private boolean shouldBatch(List<RecordOperation<?>> operations) {
         return operations.size() > 1 && isBatchingSupported();
     }
 

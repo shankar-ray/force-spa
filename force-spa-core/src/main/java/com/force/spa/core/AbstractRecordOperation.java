@@ -13,14 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import com.force.spa.Operation;
+import com.force.spa.RecordOperation;
 import com.force.spa.Statistics;
 
 /**
  * @param <T> the type of record the operation is working with
  * @param <R> the type of result expected from the operation
  */
-public abstract class AbstractOperation<T, R> implements Operation<R>, CompletionHandler<R, Statistics> {
+public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R>, CompletionHandler<R, Statistics> {
 
     private static final String STATISTICS_MDC_KEY = "spa.statistics";
 
@@ -35,7 +35,7 @@ public abstract class AbstractOperation<T, R> implements Operation<R>, Completio
     private boolean batched;
     private Statistics statistics;
 
-    protected AbstractOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
+    protected AbstractRecordOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
         this.completed = false;
         this.batched = false;

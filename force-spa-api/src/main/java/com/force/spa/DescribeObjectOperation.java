@@ -7,6 +7,6 @@ package com.force.spa;
 
 import com.force.spa.metadata.ObjectMetadata;
 
-public interface DescribeObjectOperation extends Operation<ObjectMetadata> {
+public interface DescribeObjectOperation extends RecordOperation<ObjectMetadata> {
     String getName();
 }

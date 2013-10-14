@@ -441,7 +441,7 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
 
         String soql = "select * from SimpleBean";
-        QueryRecordsOperation<SimpleBean, SimpleBean> operation = accessor.newQueryRecordsOperation(soql, SimpleBean.class);
+        QueryRecordsOperation<SimpleBean> operation = accessor.newQueryRecordsOperation(soql, SimpleBean.class);
         accessor.execute(operation);
         List<SimpleBean> beans = operation.get();
 

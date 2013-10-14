@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.Operation;
+import com.force.spa.RecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
@@ -34,16 +34,16 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         Guild guild = new Guild();
         guild.setName("Speed Cyclists");
         guild.setDescription("A guild for bicycle racers.");
-        Operation<String> createOperation = getRecordAccessor().newCreateRecordOperation(guild);
-        getRecordAccessor().execute(createOperation);
+        RecordOperation<String> createRecordOperation = getRecordAccessor().newCreateRecordOperation(guild);
+        getRecordAccessor().execute(createRecordOperation);
 
-        String id = createOperation.get();
+        String id = createRecordOperation.get();
         guild.setId(id);
         objects.add(guild);
 
-        Operation<Guild> getOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getOperation);
-        Guild guild2 = getOperation.get();
+        RecordOperation<Guild> getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
+        getRecordAccessor().execute(getRecordOperation);
+        Guild guild2 = getRecordOperation.get();
         assertThat(guild2.getId(), is(equalTo(id)));
         assertThat(guild2.getName(), is(equalTo(guild.getName())));
         assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
@@ -54,10 +54,10 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         Guild guild = new Guild();
         guild.setName("Speed Cyclists");
         guild.setDescription("A guild for bicycle racers.");
-        Operation<String> createOperation = getRecordAccessor().newCreateRecordOperation(guild);
-        getRecordAccessor().execute(createOperation);
+        RecordOperation<String> createRecordOperation = getRecordAccessor().newCreateRecordOperation(guild);
+        getRecordAccessor().execute(createRecordOperation);
 
-        String id = createOperation.get();
+        String id = createRecordOperation.get();
         guild.setId(id);
         objects.add(guild);
 
@@ -72,10 +72,10 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         firstPatchOperation.get();  // Check for exceptions
         secondPatchOperation.get(); // Check for exceptions
 
-        Operation<Guild> getOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getOperation);
+        RecordOperation<Guild> getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
+        getRecordAccessor().execute(getRecordOperation);
 
-        Guild guild3 = getOperation.get();
+        Guild guild3 = getRecordOperation.get();
         assertThat(guild3.getId(), is(equalTo(id)));
         assertThat(guild3.getId(), is(equalTo(id)));
         assertThat(guild3.getName(), is(equalTo(guild.getName())));
@@ -87,27 +87,27 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     public void testLotsOfCreates() throws Exception {
         int numberOfCreates = 25;
         long before = System.currentTimeMillis();
-        List<Operation<?>> createOperations = new ArrayList<>();
+        List<RecordOperation<?>> createRecordOperations = new ArrayList<>();
         for (int i = 0; i < numberOfCreates; i++) {
             Guild guild = new Guild();
             guild.setName("Speed Cyclists" + i);
             guild.setDescription("A guild for bicycle racers." + i);
-            createOperations.add(getRecordAccessor().newCreateRecordOperation(guild));
+            createRecordOperations.add(getRecordAccessor().newCreateRecordOperation(guild));
         }
-        getRecordAccessor().execute(createOperations);
+        getRecordAccessor().execute(createRecordOperations);
         long after = System.currentTimeMillis();
         System.out.println("Elapsed create time: " + (after - before));
 
-        List<Operation<?>> getOperations = new ArrayList<>();
+        List<RecordOperation<?>> getRecordOperations = new ArrayList<>();
         for (int i = 0; i < numberOfCreates; i++) {
-            String id = ((CreateRecordOperation<Guild>) createOperations.get(i)).get();
-            getOperations.add(getRecordAccessor().newGetRecordOperation(id, Guild.class));
+            String id = ((CreateRecordOperation<Guild>) createRecordOperations.get(i)).get();
+            getRecordOperations.add(getRecordAccessor().newGetRecordOperation(id, Guild.class));
         }
-        getRecordAccessor().execute(getOperations);
+        getRecordAccessor().execute(getRecordOperations);
 
         for (int i = 0; i < numberOfCreates; i++) {
-            Guild originalGuild = ((CreateRecordOperation<Guild>) createOperations.get(i)).getRecord();
-            Guild persistentGuild = ((GetRecordOperation<Guild>) getOperations.get(i)).get();
+            Guild originalGuild = ((CreateRecordOperation<Guild>) createRecordOperations.get(i)).getRecord();
+            Guild persistentGuild = ((GetRecordOperation<Guild>) getRecordOperations.get(i)).get();
             assertThat(originalGuild.getName(), is(equalTo(persistentGuild.getName())));
             assertThat(originalGuild.getDescription(), is(equalTo(persistentGuild.getDescription())));
         }
@@ -118,26 +118,26 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         Guild guild = new Guild();
         guild.setName("Speed Cyclists");
         guild.setDescription("A guild for bicycle racers.");
-        Operation<String> createOperation = getRecordAccessor().newCreateRecordOperation(guild);
-        getRecordAccessor().execute(createOperation);
+        RecordOperation<String> createRecordOperation = getRecordAccessor().newCreateRecordOperation(guild);
+        getRecordAccessor().execute(createRecordOperation);
 
-        String id = createOperation.get();
+        String id = createRecordOperation.get();
         guild.setId(id);
         objects.add(guild);
 
-        Operation<Guild> getOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getOperation);
+        RecordOperation<Guild> getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
+        getRecordAccessor().execute(getRecordOperation);
 
-        Guild guild2 = getOperation.get();
+        Guild guild2 = getRecordOperation.get();
         assertThat(guild2.getId(), is(equalTo(id)));
 
         getRecordAccessor().execute(getRecordAccessor().newDeleteRecordOperation(id, Guild.class));
         objects.remove(guild);
 
-        getOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getOperation);
+        getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
+        getRecordAccessor().execute(getRecordOperation);
         try {
-            getOperation.get();
+            getRecordOperation.get();
             fail("Didn't get expected RecordNotFoundException");
         } catch (ExecutionException e) {
             //noinspection StatementWithEmptyBody
@@ -162,10 +162,10 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
     @Test
     @Ignore("Describe not supported in a batch yet")
     public void testMultipleDescribeObjects() throws Exception {
-        Operation<ObjectMetadata> describeFeedItemOperation = getRecordAccessor().newDescribeObjectOperation("FeedItem");
-        Operation<ObjectMetadata> describeFeedCommentOperation = getRecordAccessor().newDescribeObjectOperation("FeedComment");
-        Operation<ObjectMetadata> describeGroupOperation = getRecordAccessor().newDescribeObjectOperation("Group");
-        Operation<ObjectMetadata> describeCustomReportTypeOperation = getRecordAccessor().newDescribeObjectOperation("CustomReportType");
+        RecordOperation<ObjectMetadata> describeFeedItemOperation = getRecordAccessor().newDescribeObjectOperation("FeedItem");
+        RecordOperation<ObjectMetadata> describeFeedCommentOperation = getRecordAccessor().newDescribeObjectOperation("FeedComment");
+        RecordOperation<ObjectMetadata> describeGroupOperation = getRecordAccessor().newDescribeObjectOperation("Group");
+        RecordOperation<ObjectMetadata> describeCustomReportTypeOperation = getRecordAccessor().newDescribeObjectOperation("CustomReportType");
 
         getRecordAccessor().execute(describeFeedItemOperation, describeFeedCommentOperation, describeGroupOperation, describeCustomReportTypeOperation);
 

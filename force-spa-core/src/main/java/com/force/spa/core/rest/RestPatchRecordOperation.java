@@ -11,7 +11,7 @@ import java.net.URI;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.RecordResponseException;
 
-class RestPatchRecordOperation<T> extends AbstractRestOperation<T, Void> implements PatchRecordOperation<T> {
+class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<T, Void> implements PatchRecordOperation<T> {
 
     private final String id;
     private final T record;

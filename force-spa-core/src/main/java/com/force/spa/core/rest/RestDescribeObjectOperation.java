@@ -14,7 +14,7 @@ import com.force.spa.ObjectNotFoundException;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.force.spa.metadata.ObjectMetadata;
 
-class RestDescribeObjectOperation extends AbstractRestOperation<Void, ObjectMetadata> implements DescribeObjectOperation {
+class RestDescribeObjectOperation extends AbstractRestRecordOperation<Void, ObjectMetadata> implements DescribeObjectOperation {
 
     private final String name;
 

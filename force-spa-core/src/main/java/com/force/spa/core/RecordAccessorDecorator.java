@@ -11,7 +11,8 @@ import com.force.spa.CreateRecordOperation;
 import com.force.spa.DeleteRecordOperation;
 import com.force.spa.DescribeObjectOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.Operation;
+import com.force.spa.QueryRecordsExOperation;
+import com.force.spa.RecordOperation;
 import com.force.spa.PatchRecordOperation;
 import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordAccessor;
@@ -40,7 +41,7 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     }
 
     @Override
-    public void execute(List<Operation<?>> operations) {
+    public void execute(List<RecordOperation<?>> operations) {
         delegate.execute(operations);
     }
 
@@ -70,12 +71,12 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     }
 
     @Override
-    public <T> QueryRecordsOperation<T, T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
+    public <T> QueryRecordsOperation<T> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass) {
         return delegate.newQueryRecordsOperation(soqlTemplate, recordClass);
     }
 
     @Override
-    public <T, R> QueryRecordsOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
+    public <T, R> QueryRecordsExOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass) {
         return delegate.newQueryRecordsOperation(soqlTemplate, recordClass, resultClass);
     }
 
@@ -115,7 +116,7 @@ public abstract class RecordAccessorDecorator implements RecordAccessor {
     }
 
     @Override
-    public final void execute(Operation<?>... operations) {
+    public final void execute(RecordOperation<?>... operations) {
         delegate.execute(operations);
     }
 
