@@ -5,11 +5,20 @@
  */
 package com.force.spa.jersey;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.force.spa.ApiVersion;
@@ -34,6 +43,8 @@ import com.sun.jersey.api.client.WebResource;
  * the REST API.
  */
 final class JerseyRestConnector implements RestConnector {
+
+    private static final Logger LOG = LoggerFactory.getLogger(JerseyRestConnector.class);
 
     private final Client client;
     private final RecordAccessorConfig config;
@@ -85,6 +96,11 @@ final class JerseyRestConnector implements RestConnector {
 
     @Override
     public void patch(URI uri, String jsonBody, RestResponseHandler<Void> responseHandler) {
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Request body: " + jsonBody);
+        }
+
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             ClientResponse response = getConfiguredResource(uri).method("PATCH", ClientResponse.class, jsonBody);
@@ -101,6 +117,11 @@ final class JerseyRestConnector implements RestConnector {
 
     @Override
     public <T> void post(URI uri, String jsonBody, RestResponseHandler<T> responseHandler) {
+
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Request body: " + jsonBody);
+        }
+
         CountingJsonParser parser = null;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
@@ -157,8 +178,17 @@ final class JerseyRestConnector implements RestConnector {
         return builder.build();
     }
 
-    private CountingJsonParser parserFor(ClientResponse response) {
-        return mappingContext.createParser(response.getEntityInputStream());
+    private CountingJsonParser parserFor(ClientResponse response) throws IOException {
+        InputStream responseStream = response.getEntityInputStream();
+        if (LOG.isTraceEnabled()) {
+            ByteArrayOutputStream bufferedResponseStream = new ByteArrayOutputStream(8192);
+            IOUtils.copy(responseStream, bufferedResponseStream);
+            byte[] streamBytes = bufferedResponseStream.toByteArray();
+            responseStream = new ByteArrayInputStream(streamBytes);
+
+            LOG.trace("Response body: " + new String(streamBytes, Charset.forName("UTF-8")));
+        }
+        return mappingContext.createParser(responseStream);
     }
 
     private void closeQuietly(ClientResponse response) {

@@ -28,7 +28,7 @@ import com.force.spa.core.testbeans.SimpleBean;
 public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
     @Test
-    public void testTwoCreates() throws Throwable {
+    public void testTwoCreatesHasErrorsFirst() throws Throwable {
         try {
             SimpleBean bean1 = new SimpleBean();
             bean1.setName("Name 1");
@@ -42,7 +42,35 @@ public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest 
 
             when(
                 connector.post(any(URI.class), anyString()))
-                .thenReturn(getResourceStream("twoCreatesResponse.json"));
+                .thenReturn(getResourceStream("twoCreatesHasErrorsFirstResponse.json"));
+
+            accessor.execute(createRecordOperation1, createRecordOperation2);
+
+            assertThat(createRecordOperation1.get(), is(equalTo("a01i00000000001AAC")));
+            assertThat(createRecordOperation2.get(), is(equalTo("a01i00000000002AAC")));
+
+            verify(connector).post(URI.create("/connect/batch"), getResourceString("twoCreatesRequest.json"));
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void testTwoCreatesHasErrorsLast() throws Throwable {
+        try {
+            SimpleBean bean1 = new SimpleBean();
+            bean1.setName("Name 1");
+            bean1.setDescription("Description 1");
+            RecordOperation<String> createRecordOperation1 = accessor.newCreateRecordOperation(bean1);
+
+            SimpleBean bean2 = new SimpleBean();
+            bean2.setName("Name 2");
+            bean2.setDescription("Description 2");
+            RecordOperation<String> createRecordOperation2 = accessor.newCreateRecordOperation(bean2);
+
+            when(
+                connector.post(any(URI.class), anyString()))
+                .thenReturn(getResourceStream("twoCreatesHasErrorsLastResponse.json"));
 
             accessor.execute(createRecordOperation1, createRecordOperation2);
 

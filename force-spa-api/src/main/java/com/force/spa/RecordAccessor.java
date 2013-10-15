@@ -201,7 +201,7 @@ public interface RecordAccessor {
      *                     field names as described by the annotations in the record class.
      * @param recordClass  the annotated class of the requested object's bean
      * @param resultClass  the class of the desired return type that differs from the record class. A typical choice is
-     *                     {@link com.fasterxml.jackson.databind.JsonNode} or {@link java.util.Map}.
+     *                     {@link java.util.Map}.
      * @return the operation
      */
     <T, R> QueryRecordsExOperation<T, R> newQueryRecordsOperation(String soqlTemplate, Class<T> recordClass, Class<R> resultClass);

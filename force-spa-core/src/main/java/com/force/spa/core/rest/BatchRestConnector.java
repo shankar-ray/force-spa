@@ -189,6 +189,7 @@ class BatchRestConnector implements RestConnector {
             parser.nextValue();
             if (parser.getCurrentName().equals("hasErrors")) {
                 hasErrors = parser.getBooleanValue();
+                parser.nextToken();
             } else if (parser.getCurrentName().equals("results")) {
                 deserializeResults(parser, requests, hasErrors);
             } else {
@@ -224,7 +225,7 @@ class BatchRestConnector implements RestConnector {
             } else if (parser.getCurrentName().equals("result")) {
                 request.deserializeAndSaveResult(parser, batchHasErrors);
             }
-            parser.nextToken();
+            establishCurrentToken(parser);
         }
         consumeExpectedToken(parser, JsonToken.END_OBJECT);
     }
@@ -266,11 +267,11 @@ class BatchRestConnector implements RestConnector {
                 result = responseHandler.deserialize(parser);
             }
             bytesReceived = CountingJsonParser.differenceBetween(startLocation, parser.getCurrentLocation());
-            parser.clearCurrentToken();
         }
 
         final void deserializeAndSaveStatus(CountingJsonParser parser) throws IOException {
             status = parser.getIntValue();
+            parser.nextToken();
         }
 
         final void handleStatus() throws IOException {

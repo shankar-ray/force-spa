@@ -43,7 +43,16 @@ public abstract class RestResponseHandler<R> implements CompletionHandler<R, Sta
      * thrown from the {@link #handleStatus} method or {@link #completed}.
      */
     public R deserialize(CountingJsonParser parser) throws IOException {
-        parser.skipChildren();
+        switch (parser.getCurrentToken()) {
+            case START_OBJECT:
+            case START_ARRAY:
+                parser.skipChildren();
+                break;
+
+            default:
+                parser.nextToken();
+                break;
+        }
         return null;
     }
 

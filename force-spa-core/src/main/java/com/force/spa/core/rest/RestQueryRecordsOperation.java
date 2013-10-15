@@ -156,10 +156,13 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
             parser.nextValue();
             if (parser.getCurrentName().equals("totalSize")) {
                 queryResult.setTotalSize(parser.getIntValue());
+                parser.nextToken();
             } else if (parser.getCurrentName().equals("done")) {
                 queryResult.setDone(parser.getBooleanValue());
+                parser.nextToken();
             } else if (parser.getCurrentName().equals("nextRecordsUrl")) {
                 queryResult.setNextRecordsUrl(parser.getValueAsString());
+                parser.nextToken();
             } else if (parser.getCurrentName().equals("records")) {
                 queryResult.setRecords(manuallyParseRecords(parser));
             } else {
