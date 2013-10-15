@@ -279,7 +279,7 @@ class BatchRestConnector implements RestConnector {
                 responseHandler.handleStatus(status, deferredResultParser);
                 result = responseHandler.deserialize(new CountingJsonParser(deferredResultParser));
             } else {
-                responseHandler.handleStatus(status);
+                responseHandler.handleStatus(status, null);
             }
         }
 

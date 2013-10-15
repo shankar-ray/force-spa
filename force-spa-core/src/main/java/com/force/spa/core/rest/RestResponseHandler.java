@@ -78,16 +78,6 @@ public abstract class RestResponseHandler<R> implements CompletionHandler<R, Sta
     }
 
     /**
-     * Called to handle an HTTP response status for methods that have no response body.
-     * <p/>
-     * This is just a convenience wrapper for {@link #handleStatus(int, JsonParser)}. To modify behavior you should
-     * override {@link #handleStatus(int, JsonParser)} instead.
-     */
-    public final void handleStatus(int status) {
-        handleStatus(status, null);
-    }
-
-    /**
      * Called to extract an exception message from a response.
      * <p/>
      * The default implementation handles the standard Salesforce REST error response. You only need to override this

@@ -61,17 +61,19 @@ final class JerseyRestConnector implements RestConnector {
 
     @Override
     public void delete(URI uri, RestResponseHandler<Void> responseHandler) {
+        CountingJsonParser parser = null;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             ClientResponse response = getConfiguredResource(uri).delete(ClientResponse.class);
             try {
-                responseHandler.handleStatus(response.getStatus());
-                responseHandler.completed(null, buildStatistics(stopwatch, null, null));
+                parser = parserFor(response);
+                responseHandler.handleStatus(response.getStatus(), parser);
+                responseHandler.completed(null, buildStatistics(stopwatch, null, parser));
             } finally {
                 closeQuietly(response);
             }
         } catch (Exception e) {
-            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, null));
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, parser));
         }
     }
 
@@ -101,17 +103,19 @@ final class JerseyRestConnector implements RestConnector {
             LOG.trace("Request body: " + jsonBody);
         }
 
+        CountingJsonParser parser = null;
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             ClientResponse response = getConfiguredResource(uri).method("PATCH", ClientResponse.class, jsonBody);
             try {
-                responseHandler.handleStatus(response.getStatus());
-                responseHandler.completed(null, buildStatistics(stopwatch, jsonBody, null));
+                parser = parserFor(response);
+                responseHandler.handleStatus(response.getStatus(), parser);
+                responseHandler.completed(null, buildStatistics(stopwatch, jsonBody, parser));
             } finally {
                 closeQuietly(response);
             }
         } catch (Exception e) {
-            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, jsonBody, null));
+            responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, jsonBody, parser));
         }
     }
 

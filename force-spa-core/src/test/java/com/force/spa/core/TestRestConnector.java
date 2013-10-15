@@ -54,7 +54,7 @@ public abstract class TestRestConnector implements RestConnector {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             delete(uri);
-            responseHandler.handleStatus(getStatus());
+            responseHandler.handleStatus(getStatus(), null);
             responseHandler.completed(null, buildStatistics(stopwatch, null, null));
         } catch (Exception e) {
             responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, null, null));
@@ -82,7 +82,7 @@ public abstract class TestRestConnector implements RestConnector {
         Stopwatch stopwatch = Stopwatch.createStarted();
         try {
             patch(uri, jsonBody);
-            responseHandler.handleStatus(getStatus());
+            responseHandler.handleStatus(getStatus(), null);
             responseHandler.completed(null, buildStatistics(stopwatch, jsonBody, null));
         } catch (Exception e) {
             responseHandler.failed(mapSelectedExceptions(e), buildStatistics(stopwatch, jsonBody, null));
