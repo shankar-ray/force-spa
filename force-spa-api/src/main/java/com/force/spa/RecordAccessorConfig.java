@@ -42,8 +42,8 @@ public class RecordAccessorConfig implements Serializable {
     }
 
     /**
-     * Returns the {@link AuthorizationConnector} to use for {@link RecordAccessor} or {@link MetadataAccessor} accessor
-     * instances created with this configuration.
+     * Returns the {@link AuthorizationConnector} to use for {@link RecordAccessor} instances created with this
+     * configuration.
      *
      * @return the authorization connector or <code>null</code> if not specified
      */
@@ -52,8 +52,7 @@ public class RecordAccessorConfig implements Serializable {
     }
 
     /**
-     * Returns the {@link ApiVersion} to use for {@link RecordAccessor} or {@link MetadataAccessor} accessor instances
-     * created with this configuration.
+     * Returns the {@link ApiVersion} to use for {@link RecordAccessor} instances created with this configuration.
      * <p/>
      * If not specified, the most recent api version supported by the server is used.
      *
