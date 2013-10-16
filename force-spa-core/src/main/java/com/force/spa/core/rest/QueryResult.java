@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @SuppressWarnings("UnusedDeclaration")
 @JsonIgnoreProperties(ignoreUnknown = true)
-class QueryResult {
+class QueryResult<R> {
 
     private boolean done;
 
@@ -19,7 +19,7 @@ class QueryResult {
 
     private String nextRecordsUrl;
 
-    private List<Object> records;
+    private List<R> records;
 
     public boolean isDone() {
         return done;
@@ -45,11 +45,11 @@ class QueryResult {
         this.nextRecordsUrl = nextRecordsUrl;
     }
 
-    public List<Object> getRecords() {
+    public List<R> getRecords() {
         return records;
     }
 
-    public void setRecords(List<Object> records) {
+    public void setRecords(List<R> records) {
         this.records = records;
     }
 }

@@ -700,4 +700,36 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
             assertThat(bean, is(not(nullValue())));
         }
     }
+
+    @Test
+    public void testAlternateResultTypeFromQuery() throws Exception {
+        when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleQueryResponse.json"));
+
+        List<JsonNode> nodes = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute(JsonNode.class);
+
+        assertThat(nodes.size(), is(equalTo(2)));
+
+        JsonNode node1 = nodes.get(0);
+        assertThat(node1.get("attributes").get("type").asText(), is(equalTo("SimpleBean")));
+        assertThat(node1.get("attributes").get("url").asText(), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(node1.get("Id").asText(), is(equalTo("a01i00000000001")));
+        assertThat(node1.get("Name").asText(), is(equalTo("Name 1")));
+        assertThat(node1.get("Description").asText(), is(equalTo("Description 1")));
+
+        JsonNode node2 = nodes.get(1);
+        assertThat(node2.get("attributes").get("type").asText(), is(equalTo("SimpleBean")));
+        assertThat(node2.get("attributes").get("url").asText(), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000002")));
+        assertThat(node2.get("Id").asText(), is(equalTo("a01i00000000002")));
+        assertThat(node2.get("Name").asText(), is(equalTo("Name 2")));
+        assertThat(node2.get("Description").asText(), is(equalTo("Description 2")));
+    }
+
+    @Test
+    public void testAlternateResultTypeFromEmptyQuery() throws Exception {
+        when(connector.get(any(URI.class))).thenReturn(getResourceStream("emptySimpleQueryResponse.json"));
+
+        List<JsonNode> nodes = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute(JsonNode.class);
+
+        assertThat(nodes.size(), is(equalTo(0)));
+    }
 }

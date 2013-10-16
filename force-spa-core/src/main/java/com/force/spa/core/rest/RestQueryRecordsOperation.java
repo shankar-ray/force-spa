@@ -9,9 +9,10 @@ import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
 import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonParser;
@@ -149,39 +150,30 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     }
 
     private QueryResult manuallyParseQueryResult(JsonParser parser) throws IOException {
-        QueryResult queryResult = new QueryResult();
+        QueryResult<R> queryResult = new QueryResult<>();
         establishCurrentToken(parser);
         consumeExpectedToken(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();
             if (parser.getCurrentName().equals("totalSize")) {
                 queryResult.setTotalSize(parser.getIntValue());
-                parser.nextToken();
             } else if (parser.getCurrentName().equals("done")) {
                 queryResult.setDone(parser.getBooleanValue());
-                parser.nextToken();
             } else if (parser.getCurrentName().equals("nextRecordsUrl")) {
                 queryResult.setNextRecordsUrl(parser.getValueAsString());
-                parser.nextToken();
             } else if (parser.getCurrentName().equals("records")) {
                 queryResult.setRecords(manuallyParseRecords(parser));
-            } else {
-                parser.nextToken(); // Ignore field value we don't care about
             }
+            parser.nextToken();
         }
         consumeExpectedToken(parser, JsonToken.END_OBJECT);
         return queryResult;
     }
 
-    private List<Object> manuallyParseRecords(JsonParser parser) throws IOException {
-        List<Object> records = new ArrayList<>();
-        consumeExpectedToken(parser, JsonToken.START_ARRAY);
-        Iterator<R> it = parser.readValuesAs(resultClass);
-        while (it.hasNext()) {
-            records.add(it.next());
-        }
-        consumeExpectedToken(parser, JsonToken.END_ARRAY);
-        return records;
+    @SuppressWarnings("unchecked")
+    private List<R> manuallyParseRecords(JsonParser parser) throws IOException {
+        Class<R[]> resultArrayClass = (Class<R[]>) Array.newInstance(resultClass, 0).getClass();
+        return Arrays.asList(parser.readValueAs(resultArrayClass));
     }
 
     private static void addQueryResultTo(Statistics.Builder accumulatedStatistics, QueryResult queryResult) {
