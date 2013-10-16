@@ -5,7 +5,7 @@
  */
 package com.force.spa.core;
 
-import static com.force.spa.core.HasFieldName.hasFieldName;
+import static com.force.spa.core.utils.HasFieldName.hasFieldName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
