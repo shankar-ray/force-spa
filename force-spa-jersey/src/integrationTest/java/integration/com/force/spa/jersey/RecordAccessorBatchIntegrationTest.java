@@ -10,21 +10,17 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.force.spa.CreateRecordOperation;
 import com.force.spa.GetRecordOperation;
-import com.force.spa.RecordOperation;
 import com.force.spa.PatchRecordOperation;
-import com.force.spa.RecordNotFoundException;
-import com.force.spa.RecordRequestException;
+import com.force.spa.RecordOperation;
 import com.force.spa.metadata.ObjectMetadata;
 
 public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIntegrationTest {
@@ -128,52 +124,6 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
             Guild persistentGuild = ((GetRecordOperation<Guild>) getRecordOperations.get(i)).get();
             assertThat(originalGuild.getName(), is(equalTo(persistentGuild.getName())));
             assertThat(originalGuild.getDescription(), is(equalTo(persistentGuild.getDescription())));
-        }
-    }
-
-    @Test
-    public void testDelete() throws Exception {
-        Guild guild = new Guild();
-        guild.setName("Speed Cyclists");
-        guild.setDescription("A guild for bicycle racers.");
-        RecordOperation<String> createRecordOperation = getRecordAccessor().newCreateRecordOperation(guild);
-        getRecordAccessor().execute(createRecordOperation);
-
-        String id = createRecordOperation.get();
-        guild.setId(id);
-        objects.add(guild);
-
-        RecordOperation<Guild> getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getRecordOperation);
-
-        Guild guild2 = getRecordOperation.get();
-        assertThat(guild2.getId(), is(equalTo(id)));
-
-        getRecordAccessor().execute(getRecordAccessor().newDeleteRecordOperation(id, Guild.class));
-        objects.remove(guild);
-
-        getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getRecordOperation);
-        try {
-            getRecordOperation.get();
-            fail("Didn't get expected RecordNotFoundException");
-        } catch (ExecutionException e) {
-            //noinspection StatementWithEmptyBody
-            if (e.getCause() instanceof RecordRequestException) {
-                // This is expected.
-            } else {
-                throw e;
-            }
-        }
-    }
-
-    @Test
-    public void testDeleteNonexistentId() {
-        try {
-            getRecordAccessor().delete("0123456789012345", Guild.class);
-            fail("Didn't get expected RecordNotFoundException");
-        } catch (RecordNotFoundException e) {
-            // This is expected
         }
     }
 
