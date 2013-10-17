@@ -30,23 +30,41 @@ import com.force.spa.metadata.ObjectMetadata;
 public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIntegrationTest {
 
     @Test
-    public void testSingleCreateAndGet() throws Exception {
-        Guild guild = new Guild();
-        guild.setName("Speed Cyclists");
-        guild.setDescription("A guild for bicycle racers.");
-        RecordOperation<String> createRecordOperation = getRecordAccessor().newCreateRecordOperation(guild);
-        getRecordAccessor().execute(createRecordOperation);
+    public void testMultipleCreatesAndGets() throws Exception {
+        Guild guild1 = new Guild();
+        guild1.setName("Speed Cyclists");
+        guild1.setDescription("A guild for bicycle racers.");
+        RecordOperation<String> createRecordOperation1 = getRecordAccessor().newCreateRecordOperation(guild1);
 
-        String id = createRecordOperation.get();
-        guild.setId(id);
-        objects.add(guild);
+        Guild guild2 = new Guild();
+        guild2.setName("<b>Speed Cyclists with some html</b>");
+        guild2.setDescription("A guild for bicycle <em>racers</em>.");
+        RecordOperation<String> createRecordOperation2 = getRecordAccessor().newCreateRecordOperation(guild2);
 
-        RecordOperation<Guild> getRecordOperation = getRecordAccessor().newGetRecordOperation(id, Guild.class);
-        getRecordAccessor().execute(getRecordOperation);
-        Guild guild2 = getRecordOperation.get();
-        assertThat(guild2.getId(), is(equalTo(id)));
-        assertThat(guild2.getName(), is(equalTo(guild.getName())));
-        assertThat(guild2.getDescription(), is(equalTo(guild.getDescription())));
+        getRecordAccessor().execute(createRecordOperation1, createRecordOperation2);
+
+        String id1 = createRecordOperation1.get();
+        guild1.setId(id1);
+        objects.add(guild1);
+
+        String id2 = createRecordOperation2.get();
+        guild2.setId(id2);
+        objects.add(guild2);
+
+        RecordOperation<Guild> getRecordOperation1 = getRecordAccessor().newGetRecordOperation(id1, Guild.class);
+        RecordOperation<Guild> getRecordOperation2 = getRecordAccessor().newGetRecordOperation(id2, Guild.class);
+
+        getRecordAccessor().execute(getRecordOperation1, getRecordOperation2);
+
+        Guild guild3 = getRecordOperation1.get();
+        assertThat(guild3.getId(), is(equalTo(id1)));
+        assertThat(guild3.getName(), is(equalTo(guild1.getName())));
+        assertThat(guild3.getDescription(), is(equalTo(guild1.getDescription())));
+
+        Guild guild4 = getRecordOperation2.get();
+        assertThat(guild4.getId(), is(equalTo(id2)));
+        assertThat(guild4.getName(), is(equalTo(guild2.getName())));
+        assertThat(guild4.getDescription(), is(equalTo(guild2.getDescription())));
     }
 
     @Test

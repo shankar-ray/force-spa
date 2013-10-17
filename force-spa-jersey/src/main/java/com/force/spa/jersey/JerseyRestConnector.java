@@ -170,7 +170,8 @@ final class JerseyRestConnector implements RestConnector {
     private WebResource.Builder getConfiguredResource(URI relativeUri) {
         return client.resource(buildAbsoluteUri(relativeUri))
             .accept(MediaType.APPLICATION_JSON_TYPE)
-            .type(MediaType.APPLICATION_JSON_TYPE);
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .header("X-Chatter-Entity-Encoding", false);
     }
 
     private URI buildAbsoluteUri(URI relativeUri) {
