@@ -30,7 +30,7 @@ import com.google.common.util.concurrent.UncheckedExecutionException;
  */
 public final class RestVersionManager {
 
-    private static final Logger LOG = LoggerFactory.getLogger(BatchRestConnector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RestVersionManager.class);
 
     static final ApiVersion DEFAULT_API_VERSION = new ApiVersion("28.0");
 
@@ -86,6 +86,10 @@ public final class RestVersionManager {
             }
         });
         connector.join();
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Supported API versions for " + connector.getInstanceUrl() + ": " + supportedVersions);
+        }
 
         return supportedVersions;
     }
