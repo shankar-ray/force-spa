@@ -149,7 +149,6 @@ public final class MappingContext implements Serializable {
      * introspected to build a new descriptor and the new descriptor cached for future use.
      *
      * @param type the class for which a descriptor is desired
-     *
      * @return the descriptor
      */
     public ObjectDescriptor getObjectDescriptor(Class<?> type) {
@@ -167,7 +166,6 @@ public final class MappingContext implements Serializable {
      * introspected to build a new descriptor and the new descriptor cached for future use.
      *
      * @param type the class for which a descriptor is desired
-     *
      * @return the descriptor or null if none applies to the object
      */
     public ObjectDescriptor findObjectDescriptor(Class<?> type) {
@@ -192,7 +190,6 @@ public final class MappingContext implements Serializable {
      * Finds the {@link ObjectDescriptor} with the specified name.
      *
      * @param name the name of the object for which a descriptor is desired
-     *
      * @return the descriptor or null if not found
      */
     public ObjectDescriptor findObjectDescriptor(String name) {
@@ -246,7 +243,7 @@ public final class MappingContext implements Serializable {
     }
 
     private ObjectDescriptor buildObjectDescriptor(BasicBeanDescription bean) {
-        return new ObjectDescriptor(findObjectName(bean), bean.getType(), isMetadataAware(bean));
+        return new ObjectDescriptor(findObjectName(bean), bean.getType(), isMetadataAware(bean), isPrimary(bean));
     }
 
     private String findObjectName(BasicBeanDescription bean) {
@@ -258,9 +255,14 @@ public final class MappingContext implements Serializable {
         return bean.getClassInfo().getRawType().getSimpleName();
     }
 
-    private boolean isMetadataAware(BasicBeanDescription bean) {
+    private static boolean isMetadataAware(BasicBeanDescription bean) {
         SalesforceObject annotation = bean.getClassAnnotations().get(SalesforceObject.class);
         return (annotation != null) && annotation.metadataAware();
+    }
+
+    private static boolean isPrimary(BasicBeanDescription bean) {
+        SalesforceObject annotation = bean.getClassAnnotations().get(SalesforceObject.class);
+        return (annotation != null) && annotation.primary();
     }
 
     private List<FieldDescriptor> buildFieldDescriptors(BasicBeanDescription bean) {
@@ -317,7 +319,17 @@ public final class MappingContext implements Serializable {
         for (Map.Entry<Class<?>, ObjectDescriptor> entry : descriptors.entrySet()) {
             ObjectDescriptor descriptor = entry.getValue();
             descriptorsByClass.put(entry.getKey(), descriptor);
-            descriptorsByName.put(descriptor.getName(), descriptor);
+
+            ObjectDescriptor existingDescriptor = descriptorsByName.put(descriptor.getName(), descriptor);
+            if (existingDescriptor != null) {
+                if (descriptor.isPrimary() && existingDescriptor.isPrimary()) {
+                    throw new IllegalStateException(String.format(
+                        "Two different classes claim to be the primary bean for object type '%s': %s, %s",
+                        descriptor.getName(), descriptor.getJavaType(), existingDescriptor.getJavaType()));
+                } else if (existingDescriptor.isPrimary()) {
+                    descriptorsByName.put(descriptor.getName(), existingDescriptor);  // Put the primary back
+                }
+            }
         }
     }
 }

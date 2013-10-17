@@ -23,11 +23,19 @@ public final class JsonParserUtils {
         }
     }
 
-    public static void consumeExpectedToken(JsonParser parser, JsonToken token) throws IOException {
+    public static void checkExpectedTokenThenNext(JsonParser parser, JsonToken token) throws IOException {
         if (parser.getCurrentToken() != token) {
             throw new JsonParseException("Didn't find expected " + token, parser.getCurrentLocation());
         } else {
             parser.nextToken();
+        }
+    }
+
+    public static void checkExpectedTokenThenClear(JsonParser parser, JsonToken token) throws IOException {
+        if (parser.getCurrentToken() != token) {
+            throw new JsonParseException("Didn't find expected " + token, parser.getCurrentLocation());
+        } else {
+            parser.clearCurrentToken();
         }
     }
 }

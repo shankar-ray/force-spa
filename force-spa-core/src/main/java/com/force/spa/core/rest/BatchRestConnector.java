@@ -5,7 +5,8 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.core.utils.JsonParserUtils.consumeExpectedToken;
+import static com.force.spa.core.utils.JsonParserUtils.checkExpectedTokenThenClear;
+import static com.force.spa.core.utils.JsonParserUtils.checkExpectedTokenThenNext;
 import static com.force.spa.core.utils.JsonParserUtils.establishCurrentToken;
 
 import java.io.IOException;
@@ -118,8 +119,8 @@ class BatchRestConnector implements RestConnector {
                         Request request = batchRequests.remove(0);
                         try {
                             request.handleStatus();
-                            numberOfSuccesses.value = numberOfSuccesses.value + 1;
                             request.completed(null, elapsedNanosPerRequest);
+                            numberOfSuccesses.value = numberOfSuccesses.value + 1;
                         } catch (Exception e) {
                             numberOfFailures.value = numberOfFailures.value + 1;
                             request.failed(e, elapsedNanosPerRequest);
@@ -184,7 +185,7 @@ class BatchRestConnector implements RestConnector {
     private Void deserializeBatchResult(CountingJsonParser parser, List<Request> requests) throws IOException {
         boolean hasErrors = false;
         establishCurrentToken(parser);
-        consumeExpectedToken(parser, JsonToken.START_OBJECT);
+        checkExpectedTokenThenNext(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();
             if (parser.getCurrentName().equals("hasErrors")) {
@@ -196,12 +197,12 @@ class BatchRestConnector implements RestConnector {
                 parser.nextToken(); // Ignore field value we don't care about
             }
         }
-        consumeExpectedToken(parser, JsonToken.END_OBJECT);
+        checkExpectedTokenThenClear(parser, JsonToken.END_OBJECT);
         return null;
     }
 
     private static void deserializeResults(CountingJsonParser parser, List<Request> requests, boolean batchHasErrors) throws IOException {
-        consumeExpectedToken(parser, JsonToken.START_ARRAY);
+        checkExpectedTokenThenNext(parser, JsonToken.START_ARRAY);
         Iterator<Request> requestCursor = requests.iterator();
         while (parser.getCurrentToken() == JsonToken.START_OBJECT) {
             if (!requestCursor.hasNext()) {
@@ -209,7 +210,7 @@ class BatchRestConnector implements RestConnector {
             }
             deserializeResult(parser, requestCursor.next(), batchHasErrors);
         }
-        consumeExpectedToken(parser, JsonToken.END_ARRAY);
+        checkExpectedTokenThenNext(parser, JsonToken.END_ARRAY);
 
         if (requestCursor.hasNext()) {
             throw new JsonParseException("Not enough batch results were returned", parser.getCurrentLocation());
@@ -217,7 +218,7 @@ class BatchRestConnector implements RestConnector {
     }
 
     private static void deserializeResult(CountingJsonParser parser, Request request, boolean batchHasErrors) throws IOException {
-        consumeExpectedToken(parser, JsonToken.START_OBJECT);
+        checkExpectedTokenThenNext(parser, JsonToken.START_OBJECT);
         while (parser.getCurrentToken() != JsonToken.END_OBJECT) {
             parser.nextValue();
             if (parser.getCurrentName().equals("statusCode")) {
@@ -227,7 +228,7 @@ class BatchRestConnector implements RestConnector {
             }
             establishCurrentToken(parser);
         }
-        consumeExpectedToken(parser, JsonToken.END_OBJECT);
+        checkExpectedTokenThenNext(parser, JsonToken.END_OBJECT);
     }
 
     private static class Request<R> implements CompletionHandler<Void, Long> {

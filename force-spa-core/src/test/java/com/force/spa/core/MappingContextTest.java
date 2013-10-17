@@ -8,15 +8,19 @@ package com.force.spa.core;
 import static com.force.spa.core.utils.HasFieldName.hasFieldName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.force.spa.core.testbeans.AlternatePrimarySimpleBean;
 import com.force.spa.core.testbeans.CustomBean;
 import com.force.spa.core.testbeans.EnumBean;
 import com.force.spa.core.testbeans.EnumWithAbstractMethod;
@@ -25,6 +29,7 @@ import com.force.spa.core.testbeans.FieldWithNoAccessorBean;
 import com.force.spa.core.testbeans.NoGetterBean;
 import com.force.spa.core.testbeans.NoSetterBean;
 import com.force.spa.core.testbeans.RecursiveBean;
+import com.force.spa.core.testbeans.SecondarySimpleBean;
 import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
 import com.force.spa.core.testbeans.TransientFieldBean;
@@ -209,5 +214,18 @@ public class MappingContextTest {
             hasFieldName("Value1"),
             hasFieldName("Id"),
             hasFieldName("attributes")));
+    }
+
+    @Test
+    public void testTwoPrimaries() {
+        mappingContext.getObjectDescriptor(SimpleBean.class);
+        mappingContext.getObjectDescriptor(SecondarySimpleBean.class);
+        try {
+            mappingContext.getObjectDescriptor(AlternatePrimarySimpleBean.class);
+            fail("Didn't get expected exception for too many primaries");
+        } catch (Exception e) {
+            assertThat(e, is(instanceOf(IllegalStateException.class)));
+            assertThat(e.getMessage(), containsString("Two different classes claim to be the primary"));
+        }
     }
 }

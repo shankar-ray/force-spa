@@ -21,6 +21,7 @@ import com.force.spa.RecordAccessor;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.core.MappingContext;
 import com.force.spa.core.TestRestConnector;
+import com.force.spa.core.utils.ResourceUtils;
 
 /**
  * An abstract base class that includes a small amount of supporting infrastructure to help with unit tests that need
@@ -73,11 +74,6 @@ public abstract class AbstractRestRecordAccessorTest {
      * @throws FileNotFoundException if the resource can not be found
      */
     protected InputStream getResourceStream(String relativeResourceName) throws FileNotFoundException {
-        String resourceName = resourcePrefix + '/' + relativeResourceName;
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(resourceName);
-        if (inputStream == null) {
-            throw new FileNotFoundException(String.format("Testing resource not found: %s", resourceName));
-        }
-        return inputStream;
+        return ResourceUtils.getResourceStream(resourcePrefix + '/' + relativeResourceName);
     }
 }

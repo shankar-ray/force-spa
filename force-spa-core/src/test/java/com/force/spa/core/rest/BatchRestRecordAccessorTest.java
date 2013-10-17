@@ -17,12 +17,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 
+import com.force.spa.QueryRecordsOperation;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordRequestException;
+import com.force.spa.core.testbeans.SecondarySimpleBean;
 import com.force.spa.core.testbeans.SimpleBean;
 
 public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest {
@@ -113,6 +116,43 @@ public class BatchRestRecordAccessorTest extends AbstractRestRecordAccessorTest 
             assertThat(createRecordOperation2.get(), is(equalTo("a01i00000000002AAC")));
 
             verify(connector).post(URI.create("/connect/batch"), getResourceString("twoCreatesRequest.json"));
+        } catch (ExecutionException e) {
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void testAmbiguousQueryDeserialization() throws Throwable {
+        try {
+            when(
+                connector.post(any(URI.class), anyString()))
+                .thenReturn(getResourceStream("twoSimpleQueriesResponse.json"));
+
+            String soql = "select * from SimpleBean";
+            QueryRecordsOperation<SimpleBean> operation1 = accessor.newQueryRecordsOperation(soql, SimpleBean.class);
+
+            QueryRecordsOperation<SecondarySimpleBean> operation2 = accessor.newQueryRecordsOperation(soql, SecondarySimpleBean.class);
+
+            accessor.execute(operation1, operation2);
+
+            List<SimpleBean> beans = operation1.get();
+
+            assertThat(beans.size(), is(equalTo(2)));
+
+            SimpleBean bean1 = beans.get(0);
+            assertThat(bean1.getAttributes().get("type"), is(equalTo("SimpleBean")));
+            assertThat(bean1.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+            assertThat(bean1.getId(), is(equalTo("a01i00000000001")));
+            assertThat(bean1.getName(), is(equalTo("Name 1")));
+            assertThat(bean1.getDescription(), is(equalTo("Description 1")));
+
+            SimpleBean bean2 = beans.get(1);
+            assertThat(bean2.getAttributes().get("type"), is(equalTo("SimpleBean")));
+            assertThat(bean2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000002")));
+            assertThat(bean2.getId(), is(equalTo("a01i00000000002")));
+            assertThat(bean2.getName(), is(equalTo("Name 2")));
+            assertThat(bean2.getDescription(), is(equalTo("Description 2")));
+
         } catch (ExecutionException e) {
             throw e.getCause();
         }

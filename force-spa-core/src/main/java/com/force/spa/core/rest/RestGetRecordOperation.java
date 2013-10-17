@@ -58,11 +58,11 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implem
     }
 
     private T deserializeRecord(JsonParser parser) throws IOException {
-        QueryResult queryResult = parser.readValueAs(QueryResult.class);
+        QueryResult<T> queryResult = QueryResult.deserialize(parser, recordClass);
         if (queryResult.getRecords() == null || queryResult.getRecords().size() < 1) {
             throw new RecordNotFoundException(id);
         }
-        return recordClass.cast(queryResult.getRecords().get(0));
+        return queryResult.getRecords().get(0);
     }
 
     @Override

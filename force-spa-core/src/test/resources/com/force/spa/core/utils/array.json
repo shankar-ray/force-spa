@@ -1,0 +1,18 @@
+[
+    {
+        "cascadeDelete": false,
+        "childSObject": "AccountFeed",
+        "deprecatedAndHidden": false,
+        "field": "RelatedRecordId",
+        "relationshipName": null,
+        "restrictedDelete": false
+    },
+    {
+        "cascadeDelete": false,
+        "childSObject": "AssetFeed",
+        "deprecatedAndHidden": false,
+        "field": "RelatedRecordId",
+        "relationshipName": null,
+        "restrictedDelete": false
+    }
+]

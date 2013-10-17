@@ -9,8 +9,8 @@ import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
 import com.force.spa.beans.NamedRecord;
 
-@SalesforceObject(primary = true)
-public class SimpleBean extends NamedRecord {
+@SalesforceObject(name = "SimpleBean", primary = true)
+public class AlternatePrimarySimpleBean extends NamedRecord {
 
     @SalesforceField(name = "Description")
     private String description;

@@ -31,13 +31,15 @@ public final class ObjectDescriptor implements Serializable {
     private final String name;
     private final JavaType javaType;
     private final boolean metadataAware;
+    private final boolean primary;
     private List<FieldDescriptor> fields;
     private final Map<String, FieldDescriptor> fieldsByName;
 
-    ObjectDescriptor(String name, JavaType javaType, boolean metadataAware) {
+    ObjectDescriptor(String name, JavaType javaType, boolean metadataAware, boolean primary) {
         this.name = name;
         this.javaType = javaType;
         this.metadataAware = metadataAware;
+        this.primary = primary;
         this.fields = Collections.emptyList();
         this.fieldsByName = new HashMap<>();
     }
@@ -102,6 +104,10 @@ public final class ObjectDescriptor implements Serializable {
 
     public boolean isMetadataAware() {
         return metadataAware;
+    }
+
+    public boolean isPrimary() {
+        return primary;
     }
 
     public List<FieldDescriptor> getFields() {

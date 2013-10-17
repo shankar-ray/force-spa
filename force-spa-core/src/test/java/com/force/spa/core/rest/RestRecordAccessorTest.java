@@ -53,6 +53,7 @@ import com.force.spa.core.testbeans.ExplicitlyNamedBean;
 import com.force.spa.core.testbeans.InsertableUpdatableBean;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
 import com.force.spa.core.testbeans.PolymorphicListFieldBean;
+import com.force.spa.core.testbeans.SecondarySimpleBean;
 import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
 import com.force.spa.core.testbeans.StandardFieldBean;
@@ -731,5 +732,32 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         List<JsonNode> nodes = accessor.createQuery("select * from SimpleBean", SimpleBean.class).execute(JsonNode.class);
 
         assertThat(nodes.size(), is(equalTo(0)));
+    }
+
+    @Test
+    public void testAmbiguousGetDeserialization() throws Exception {
+        when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
+
+        SecondarySimpleBean bean1 = accessor.get("a01i00000000001AAC", SecondarySimpleBean.class);
+
+        assertThat(bean1, is(not(nullValue())));
+
+        assertThat(bean1.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean1.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(bean1.getId(), is(equalTo("a01i00000000001")));
+        assertThat(bean1.getName(), is(equalTo("Name 1")));
+        assertThat(bean1.getDescription(), is(equalTo("Description 1")));
+
+        when(connector.get(any(URI.class))).thenReturn(getResourceStream("simpleGetResponse.json"));
+
+        SimpleBean bean2 = accessor.get("a01i00000000001AAC", SimpleBean.class);
+
+        assertThat(bean2, is(not(nullValue())));
+
+        assertThat(bean2.getAttributes().get("type"), is(equalTo("SimpleBean")));
+        assertThat(bean2.getAttributes().get("url"), is(equalTo("/services/data/v28.0/sobjects/SimpleBean/a01i00000000001")));
+        assertThat(bean2.getId(), is(equalTo("a01i00000000001")));
+        assertThat(bean2.getName(), is(equalTo("Name 1")));
+        assertThat(bean2.getDescription(), is(equalTo("Description 1")));
     }
 }

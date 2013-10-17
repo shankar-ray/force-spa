@@ -29,4 +29,11 @@ public @interface SalesforceObject {
      * Whether object processing should leverage server-side metadata.
      */
     boolean metadataAware() default false;
+
+    /**
+     * Whether this is the primary bean for a Salesforce object when there are multiple beans defined for the same
+     * object. This comes into play during polymorphic parsing when there is no other hint to help choose the right
+     * bean.
+     */
+    boolean primary() default false;
 }
