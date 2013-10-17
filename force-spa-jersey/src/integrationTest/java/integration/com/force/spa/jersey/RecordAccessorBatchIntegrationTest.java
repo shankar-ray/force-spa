@@ -133,26 +133,13 @@ public class RecordAccessorBatchIntegrationTest extends AbstractRecordAccessorIn
         RecordOperation<ObjectMetadata> describeFeedItemOperation = getRecordAccessor().newDescribeObjectOperation("FeedItem");
         RecordOperation<ObjectMetadata> describeFeedCommentOperation = getRecordAccessor().newDescribeObjectOperation("FeedComment");
         RecordOperation<ObjectMetadata> describeGroupOperation = getRecordAccessor().newDescribeObjectOperation("Group");
-        RecordOperation<ObjectMetadata> describeCustomReportTypeOperation = getRecordAccessor().newDescribeObjectOperation("CustomReportType");
+        RecordOperation<ObjectMetadata> describeUserOperation = getRecordAccessor().newDescribeObjectOperation("User");
 
-        getRecordAccessor().execute(describeFeedItemOperation, describeFeedCommentOperation, describeGroupOperation, describeCustomReportTypeOperation);
-
-        assertThat(describeFeedItemOperation.get(), is(not(nullValue())));
-        assertThat(describeFeedCommentOperation.get(), is(not(nullValue())));
-        assertThat(describeGroupOperation.get(), is(not(nullValue())));
-        assertThat(describeCustomReportTypeOperation.get(), is(not(nullValue())));
-
-
-        describeFeedItemOperation = getRecordAccessor().newDescribeObjectOperation("FeedItem");
-        describeFeedCommentOperation = getRecordAccessor().newDescribeObjectOperation("FeedComment");
-        describeGroupOperation = getRecordAccessor().newDescribeObjectOperation("Group");
-        describeCustomReportTypeOperation = getRecordAccessor().newDescribeObjectOperation("CustomReportType");
-
-        getRecordAccessor().execute(describeFeedItemOperation, describeFeedCommentOperation, describeGroupOperation, describeCustomReportTypeOperation);
+        getRecordAccessor().execute(describeFeedItemOperation, describeFeedCommentOperation, describeGroupOperation, describeUserOperation);
 
         assertThat(describeFeedItemOperation.get(), is(not(nullValue())));
         assertThat(describeFeedCommentOperation.get(), is(not(nullValue())));
         assertThat(describeGroupOperation.get(), is(not(nullValue())));
-        assertThat(describeCustomReportTypeOperation.get(), is(not(nullValue())));
+        assertThat(describeUserOperation.get(), is(not(nullValue())));
     }
 }
