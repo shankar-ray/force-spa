@@ -5,6 +5,8 @@
  */
 package com.force.spa.core.rest;
 
+import static com.force.spa.core.utils.SanitizeUtils.sanitizeSoql;
+
 import java.io.IOException;
 import java.net.URI;
 
@@ -68,8 +70,10 @@ class RestGetRecordOperation<T> extends AbstractRestRecordOperation<T, T> implem
     @Override
     public String toString() {
         String string = "Get " + getObjectDescriptor().getName() + " with id " + id;
-        if (getLogger().isDebugEnabled()) {
+        if (getLogger().isTraceEnabled()) {
             string += ": " + soql;
+        } else if (getLogger().isDebugEnabled()) {
+            string += ": " + sanitizeSoql(soql);
         }
         return string;
     }

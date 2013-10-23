@@ -56,7 +56,7 @@ class RestUpdateRecordOperation<T> extends AbstractRestRecordOperation<T, Void> 
     @Override
     public String toString() {
         String string = "Update " + getObjectDescriptor().getName() + " with id " + id;
-        if (getLogger().isDebugEnabled()) {
+        if (getLogger().isTraceEnabled()) {
             string += ": " + jsonBody;
         }
         return string;

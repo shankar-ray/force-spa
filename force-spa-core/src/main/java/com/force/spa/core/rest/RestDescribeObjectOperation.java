@@ -59,7 +59,7 @@ class RestDescribeObjectOperation extends AbstractRestRecordOperation<Void, Obje
     @Override
     public String toString() {
         String string = "Describe " + getName();
-        if (getLogger().isDebugEnabled() && objectMetadata != null) {
+        if (getLogger().isTraceEnabled() && objectMetadata != null) {
             string += ": " + objectMetadata;
         }
         return string;

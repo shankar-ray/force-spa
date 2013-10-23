@@ -5,6 +5,8 @@
  */
 package com.force.spa.core.rest;
 
+import static com.force.spa.core.utils.SanitizeUtils.sanitizeSoql;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -142,8 +144,10 @@ final class RestQueryRecordsOperation<T, R> extends AbstractRestRecordOperation<
     @Override
     public String toString() {
         String string = "Query " + getObjectDescriptor().getName();
-        if (getLogger().isDebugEnabled()) {
+        if (getLogger().isTraceEnabled()) {
             string += ": " + soql;
+        } else if (getLogger().isDebugEnabled()) {
+            string += ": " + sanitizeSoql(soql);
         }
         return string;
     }

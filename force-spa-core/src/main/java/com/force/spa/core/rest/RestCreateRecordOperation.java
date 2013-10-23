@@ -99,7 +99,7 @@ final class RestCreateRecordOperation<T> extends AbstractRestRecordOperation<T, 
     @Override
     public String toString() {
         String string = "Create " + getObjectDescriptor().getName();
-        if (getLogger().isDebugEnabled()) {
+        if (getLogger().isTraceEnabled()) {
             string += ": " + jsonBody;
         }
         return string;

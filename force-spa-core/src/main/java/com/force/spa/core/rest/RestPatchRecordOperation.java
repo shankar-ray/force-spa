@@ -56,7 +56,7 @@ class RestPatchRecordOperation<T> extends AbstractRestRecordOperation<T, Void> i
     @Override
     public String toString() {
         String string = "Patch " + getObjectDescriptor().getName() + " with id " + id;
-        if (getLogger().isDebugEnabled()) {
+        if (getLogger().isTraceEnabled()) {
             string += ": " + jsonBody;
         }
         return string;
