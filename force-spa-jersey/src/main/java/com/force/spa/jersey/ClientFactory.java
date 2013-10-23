@@ -11,6 +11,7 @@ import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_MAX_CONNECTIONS
 import static com.force.spa.jersey.ExtendedClientConfig.PROPERTY_SSL_SOCKET_FACTORY;
 import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_CONNECT_TIMEOUT;
 import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_READ_TIMEOUT;
+import static com.sun.jersey.api.client.config.ClientConfig.PROPERTY_THREADPOOL_SIZE;
 import static com.sun.jersey.client.apache4.config.ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -18,6 +19,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import javax.ws.rs.core.HttpHeaders;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -51,6 +53,7 @@ public final class ClientFactory {
     // Defaults for important basic Jersey properties
     static final long DEFAULT_CONNECT_TIMEOUT = MILLISECONDS.convert(5, SECONDS);
     static final long DEFAULT_READ_TIMEOUT = MILLISECONDS.convert(60, SECONDS);
+    static final int DEFAULT_THREAD_POOL_SIZE = 10;
 
     // Defaults for important Apache Jersey properties
     static final boolean DEFAULT_DISABLE_COOKIES = true;
@@ -92,6 +95,7 @@ public final class ClientFactory {
 
         applyDefaultIfAbsent(clientConfig, PROPERTY_CONNECT_TIMEOUT, DEFAULT_CONNECT_TIMEOUT);
         applyDefaultIfAbsent(clientConfig, PROPERTY_READ_TIMEOUT, DEFAULT_READ_TIMEOUT);
+        applyDefaultIfAbsent(clientConfig, PROPERTY_THREADPOOL_SIZE, DEFAULT_THREAD_POOL_SIZE);
         applyDefaultIfAbsent(clientConfig, PROPERTY_DISABLE_COOKIES, DEFAULT_DISABLE_COOKIES);
         applyDefaultIfAbsent(clientConfig, PROPERTY_CONNECTION_TIME_TO_LIVE, DEFAULT_CONNECTION_TIME_TO_LIVE);
         applyDefaultIfAbsent(clientConfig, PROPERTY_MAX_CONNECTIONS_TOTAL, DEFAULT_MAX_CONNECTIONS_TOTAL);
@@ -157,7 +161,14 @@ public final class ClientFactory {
         client.addFilter(new ClientFilter() {
             @Override
             public ClientResponse handle(ClientRequest clientRequest) {
-                clientRequest.getHeaders().putSingle(HttpHeaders.AUTHORIZATION, authorizationConnector.getAuthorization());
+
+                // Add authorization only if it doesn't already exist. This allows the surrounding code to override.
+                if (!clientRequest.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                    String authorization = authorizationConnector.getAuthorization();
+                    if (StringUtils.isNotEmpty(authorization)) {
+                        clientRequest.getHeaders().putSingle(HttpHeaders.AUTHORIZATION, authorizationConnector.getAuthorization());
+                    }
+                }
                 return getNext().handle(clientRequest);
             }
         });

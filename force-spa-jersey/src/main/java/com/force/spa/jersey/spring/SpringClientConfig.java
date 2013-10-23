@@ -40,6 +40,15 @@ public class SpringClientConfig extends ExtendedClientConfig {
     }
 
     /**
+     * Sets the thread pool size for asynchronous operations.
+     * <p/>
+     * @see com.sun.jersey.api.client.config.ClientConfig#PROPERTY_THREADPOOL_SIZE
+     */
+    public void setThreadPoolSize(int threadPoolSize) {
+        getProperties().put(ExtendedClientConfig.PROPERTY_THREADPOOL_SIZE, threadPoolSize);
+    }
+
+    /**
      * Sets the maximum time to keep unused connections open in the Apache Http client pool, in milliseconds.
      * <p/>
      * If not specified, the value defaults to 300000 (5 minutes).
