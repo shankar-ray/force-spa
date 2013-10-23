@@ -23,6 +23,7 @@ import com.force.spa.Statistics;
 public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R>, CompletionHandler<R, Statistics> {
 
     private static final String STATISTICS_MDC_KEY = "spa.statistics";
+    private static final String STATISTICS_SIMPLE_MDC_KEY = "spa.statistics.simple";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -77,8 +78,10 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.statistics = statistics;
 
         if (getLogger().isInfoEnabled()) {
-            MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
+            MDC.put(STATISTICS_MDC_KEY, statistics.toString(KeyValueToStringStyle.INSTANCE));
+            MDC.put(STATISTICS_SIMPLE_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
             getLogger().info((isBatched() ? "(Batched) " : "") + this);
+            MDC.remove(STATISTICS_SIMPLE_MDC_KEY);
             MDC.remove(STATISTICS_MDC_KEY);
         }
     }
@@ -93,8 +96,10 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         this.statistics = statistics;
 
         if (getLogger().isInfoEnabled()) {
-            MDC.put(STATISTICS_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
+            MDC.put(STATISTICS_MDC_KEY, statistics.toString(KeyValueToStringStyle.INSTANCE));
+            MDC.put(STATISTICS_SIMPLE_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
             getLogger().info((isBatched() ? "(Batched) " : "") + this, exception);
+            MDC.remove(STATISTICS_SIMPLE_MDC_KEY);
             MDC.remove(STATISTICS_MDC_KEY);
         }
     }
@@ -122,5 +127,25 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
 
     protected final Logger getLogger() {
         return logger;
+    }
+
+    private static final class KeyValueToStringStyle extends ToStringStyle {
+        private static final long serialVersionUID = 9179813885104212954L;
+
+        static final KeyValueToStringStyle INSTANCE = new KeyValueToStringStyle();
+
+        private KeyValueToStringStyle() {
+            super();
+            this.setUseClassName(false);
+            this.setUseIdentityHashCode(false);
+            this.setUseFieldNames(true);
+            this.setContentStart("");
+            this.setContentEnd("");
+        }
+
+        @SuppressWarnings("SameReturnValue")
+        private Object readResolve() {
+            return INSTANCE; // Ensure singleton after serialization
+        }
     }
 }

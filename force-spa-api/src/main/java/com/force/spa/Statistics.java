@@ -18,8 +18,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  */
 public class Statistics implements Serializable {
 
-    private static final ToStringStyle TO_STRING_STYLE = new OperationStatisticsToStringStyle();
-
     private static final long serialVersionUID = 5658021718579655518L;
 
     private final long bytesSent;
@@ -83,7 +81,7 @@ public class Statistics implements Serializable {
 
     @Override
     public final String toString() {
-        return toString(TO_STRING_STYLE);
+        return toString(ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
     public final String toString(ToStringStyle style) {
@@ -91,10 +89,10 @@ public class Statistics implements Serializable {
     }
 
     protected ToStringBuilder appendToStringBuilder(ToStringBuilder builder) {
-        builder.append("millis", NANOSECONDS.toMicros(elapsedNanos) / 1000D); // Convert to floating point millis
-        builder.append("sent", bytesSent);
-        builder.append("received", bytesReceived);
-        builder.append("rows", rowsProcessed);
+        builder.append("elapsedMillis", NANOSECONDS.toMicros(elapsedNanos) / 1000D); // Convert to floating point millis
+        builder.append("bytesSent", bytesSent);
+        builder.append("bytesReceived", bytesReceived);
+        builder.append("rowsProcessed", rowsProcessed);
         builder.append("totalRows", totalRows);
 
         return builder;
@@ -181,22 +179,6 @@ public class Statistics implements Serializable {
         @Override
         public String toString() {
             return ReflectionToStringBuilder.toString(this);
-        }
-    }
-
-    public static class OperationStatisticsToStringStyle extends ToStringStyle {
-        private static final long serialVersionUID = -8799177462827453155L;
-
-        OperationStatisticsToStringStyle() {
-            super();
-            this.setUseClassName(false);
-            this.setUseIdentityHashCode(false);
-            this.setUseFieldNames(true);
-        }
-
-        @SuppressWarnings("SameReturnValue")
-        private Object readResolve() {
-            return Statistics.TO_STRING_STYLE; // Ensure singleton after serialization
         }
     }
 }
