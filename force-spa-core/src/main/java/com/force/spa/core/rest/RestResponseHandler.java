@@ -30,7 +30,7 @@ import com.force.spa.core.utils.CountingJsonParser;
  * Ideally this class wouldn't exist and we'd just have a completion handler but subtleties of the server batching
  * response layout require some additional handling before completion. This class helps with that.
  * <p/>
- * Default implements of many of the methods exist to handle the most common cases.
+ * Default implementations of many of the methods exist to handle the most common cases.
  */
 public abstract class RestResponseHandler<R> implements CompletionHandler<R, Statistics> {
 

@@ -32,7 +32,7 @@ public abstract class AbstractRestRecordOperation<T, R> extends AbstractRecordOp
 
     /**
      * A default REST response handler with many methods implemented appropriately for an all operations. Individual
-     * operations only need to override those things they need handle to do differently.
+     * operations only need to override those things they need to handle differently.
      */
     protected class ResponseHandler extends RestResponseHandler<R> {
         @Override
