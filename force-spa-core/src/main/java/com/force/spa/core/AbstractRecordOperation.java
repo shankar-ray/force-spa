@@ -7,6 +7,8 @@ package com.force.spa.core;
 
 import java.nio.channels.CompletionHandler;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.slf4j.Logger;
@@ -32,13 +34,15 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
 
     private R result;
     private Throwable exception;
-    private boolean completed;
+    private boolean done;
+    private boolean cancelled;
     private boolean batched;
     private Statistics statistics;
 
     protected AbstractRecordOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
-        this.completed = false;
+        this.done = false;
+        this.cancelled = false;
         this.batched = false;
 
         // Get the descriptor at early to make sure mapping context is loaded and ready to handle inbound polymorphism.
@@ -46,8 +50,13 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     }
 
     @Override
-    public final boolean isCompleted() {
-        return completed;
+    public final boolean isDone() {
+        return done;
+    }
+
+    @Override
+    public final boolean isCancelled() {
+        return cancelled;
     }
 
     @Override
@@ -56,24 +65,34 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     }
 
     @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        throw new UnsupportedOperationException("Not implemented yet"); // TODO
+    }
+
+    @Override
+    public R get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        throw new UnsupportedOperationException("Not implemented yet"); // TODO
+    }
+
+    @Override
     public final R get() throws ExecutionException {
-        if (completed) {
+        if (done) {
             if (exception != null) {
                 throw new ExecutionException(exception);
             } else {
                 return result;
             }
         } else {
-            throw new IllegalStateException("Operation not completed yet");
+            throw new IllegalStateException("Operation is not done yet");
         }
     }
 
     @Override
     public void completed(R result, Statistics statistics) {
-        if (completed) {
-            throw new IllegalStateException("Operation is already completed");
+        if (done) {
+            throw new IllegalStateException("Operation is already done");
         }
-        completed = true;
+        done = true;
         this.result = result;
         this.statistics = statistics;
 
@@ -88,10 +107,10 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
 
     @Override
     public void failed(Throwable exception, Statistics statistics) {
-        if (completed) {
-            throw new IllegalStateException("Operation is already completed");
+        if (done) {
+            throw new IllegalStateException("Operation is already done");
         }
-        completed = true;
+        done = true;
         this.exception = exception;
         this.statistics = statistics;
 

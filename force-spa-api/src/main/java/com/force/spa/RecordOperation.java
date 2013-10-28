@@ -5,36 +5,20 @@
  */
 package com.force.spa;
 
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * @param <R> the type of result expected from the operation
  */
-public interface RecordOperation<R> {
-
-    /**
-     * Returns the operation result.
-     *
-     * @return the operation result
-     * @throws ExecutionException if the operation threw an exception. Interesting 'cause' values for the execution
-     * exception include {@link UnauthorizedException}, {@link ObjectNotFoundException}, {@link RecordNotFoundException}
-     */
-    R get() throws ExecutionException;
-
-    /**
-     * Returns an indication of whether the operation is completed. Completion could be the result of successful
-     * execution or an exception.
-     */
-    boolean isCompleted();
-
+public interface RecordOperation<R> extends Future<R> {
     /**
      * Returns an indication of whether the operation is batched with other operations.
      */
     boolean isBatched();
 
     /**
-     * Returns statistics for the operation execution. The information is only available after the operation has
-     * completed (or failed).
+     * Returns statistics for the operation execution. The information is only available after the operation is
+     * done (successfully or not).
      */
     Statistics getStatistics();
 }

@@ -100,10 +100,8 @@ public interface RecordAccessor {
      * Executes a list of record operations.
      * <p/>
      * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link RecordOperation#get()}). If
-     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
-     * is thrown.
-     *
+     * status is determined by asking for the operation result (using {@link RecordOperation#get()}).
+    *
      * @param operations the operations
      */
     void execute(RecordOperation<?>... operations);
@@ -112,9 +110,7 @@ public interface RecordAccessor {
      * Executes a list of record operations.
      * <p/>
      * Interaction with each operation result is patterned after {@link java.util.concurrent.FutureTask}. The completion
-     * status is determined by asking for the operation result (using {@link RecordOperation#get()}). If
-     * the operation is successful the result value is returned otherwise {@link java.util.concurrent.ExecutionException}
-     * is thrown.
+     * status is determined by asking for the operation result (using {@link RecordOperation#get()}).
      *
      * @param operations the operations
      */

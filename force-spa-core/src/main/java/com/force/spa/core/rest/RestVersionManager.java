@@ -5,8 +5,6 @@
  */
 package com.force.spa.core.rest;
 
-import static com.force.spa.SpaException.getCauseAsSpaException;
-
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -19,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.force.spa.ApiVersion;
+import com.force.spa.SpaException;
 import com.force.spa.Statistics;
 import com.force.spa.core.utils.CountingJsonParser;
 import com.google.common.cache.Cache;
@@ -51,7 +50,7 @@ public final class RestVersionManager {
                 }
             });
         } catch (ExecutionException | UncheckedExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 

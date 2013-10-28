@@ -5,8 +5,6 @@
  */
 package com.force.spa.core;
 
-import static com.force.spa.SpaException.getCauseAsSpaException;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -25,6 +23,7 @@ import com.force.spa.RecordAccessorConfig;
 import com.force.spa.RecordOperation;
 import com.force.spa.RecordQuery;
 import com.force.spa.RecordRequestException;
+import com.force.spa.SpaException;
 import com.force.spa.UpdateRecordOperation;
 import com.force.spa.metadata.ObjectMetadata;
 
@@ -49,8 +48,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             return operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -60,8 +61,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             return operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -78,8 +81,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -89,8 +94,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -107,8 +114,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -126,8 +135,10 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
         execute(operation);
         try {
             return operation.get();
+        } catch (InterruptedException e) {
+            throw SpaException.valueOf(e);
         } catch (ExecutionException e) {
-            throw getCauseAsSpaException(e);
+            throw SpaException.valueOf(e.getCause());
         }
     }
 
@@ -177,11 +188,15 @@ public abstract class AbstractRecordAccessor implements RecordAccessor {
                 operation.setStartPosition(startPosition);
             if (maxResults != 0)
                 operation.setMaxResults(maxResults);
+
             AbstractRecordAccessor.this.execute(operation);
+
             try {
                 return operation.get();
+            } catch (InterruptedException e) {
+                throw SpaException.valueOf(e);
             } catch (ExecutionException e) {
-                throw getCauseAsSpaException(e);
+                throw SpaException.valueOf(e.getCause());
             }
         }
 
