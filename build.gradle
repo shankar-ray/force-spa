@@ -16,10 +16,12 @@ configure(allprojects) {
         guavaVersion = '15.0'
         hamcrestVersion = '1.3'
         jackson2Version = '2.1.4'
+        javaLanguageVersion = '1.7'
         jerseyVersion = '1.17.1'
         junitVersion = '4.11'
         logbackVersion = '1.0.13'
         mockitoVersion = "1.9.5"
+        servletVersion = '3.0.1'
         slf4jVersion = '1.7.5'
         springVersion = '3.0.5.RELEASE'
         salesforceApiVersion = '29.0.0'
@@ -37,7 +39,7 @@ configure(rootProject) {
 
     idea {
         project {
-            languageLevel = '1.7'
+            languageLevel = javaLanguageVersion
 
             ipr {
                 withXml { provider ->
@@ -78,8 +80,12 @@ configure(subprojects - project(":config") - project(":force-spa-testschema")) {
 
     ext.gitHash = rootProject.gitHash  // So we don't execute git command multiple times
 
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+    // Support for 'provided' dependencies in generated poms
+    ext.providedDependencies = []
+    ext.provided = { providedDependencies << it }
+
+    sourceCompatibility = javaLanguageVersion
+    targetCompatibility = javaLanguageVersion
 
     idea {
         module {
@@ -201,10 +207,6 @@ configure(subprojects - project(":config") - project(":force-spa-testschema")) {
             }
         }
     }
-
-    // Support for 'provided' dependencies in generated poms
-    ext.providedDependencies = []
-    ext.provided = { providedDependencies << it }
 }
 
 /**
@@ -249,6 +251,18 @@ def customizePom(pom, gradleProject) {
 }
 
 /**
+ * Returns a brand new Ipr component node with no children. If an existing component node is found it is removed along
+ * with all of its children and a fresh one is created.
+ */
+def getFreshIprComponent(Node projectNode, String componentName) {
+    Node existingComponent = (Node) projectNode.component.find { it.@name == componentName }
+    if (existingComponent) {
+        projectNode.remove(existingComponent)
+    }
+    return projectNode.appendNode('component', [name: componentName])
+}
+
+/**
  * Generates a new gradle wrapper. You'll want to do this if you change gradle version or if your jvm options change
  * below.
  */
@@ -267,17 +281,5 @@ task wrapper(type: Wrapper) {
         File wrapperBatFile = file('gradlew.bat')
         wrapperBatFile.text = wrapperBatFile.text.replace("set DEFAULT_JVM_OPTS=", "set DEFAULT_JVM_OPTS=$defaultJvmOpts")
     }
-}
-
-/**
- * Returns a brand new Ipr component node with no children. If an existing component node is found it is removed along
- * with all of its children and a fresh one is created.
- */
-def getFreshIprComponent(Node projectNode, String componentName) {
-    Node existingComponent = (Node) projectNode.component.find { it.@name == componentName }
-    if (existingComponent) {
-        projectNode.remove(existingComponent)
-    }
-    return projectNode.appendNode('component', [name: componentName])
 }
 
