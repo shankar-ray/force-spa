@@ -27,10 +27,14 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
     private final URI instanceUrl;
     private final String authorization;
 
-    public PasswordAuthorizationConnector(String serverUrl, String username, String password) {
-        Validate.notEmpty(serverUrl, "serverUrl must be specified");
+    public PasswordAuthorizationConnector(String username, String password) {
+        this(username, password, "https://login.salesforce.com");
+    }
+
+    public PasswordAuthorizationConnector(String username, String password, String serverUrl) {
         Validate.notEmpty(username, "username must be specified");
         Validate.notEmpty(password, "password must be specified");
+        Validate.notEmpty(serverUrl, "serverUrl must be specified");
 
         ConnectorConfig config = new ConnectorConfig();
         config.setUsername(username);
@@ -38,10 +42,10 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         config.setAuthEndpoint(serverUrl + "/services/Soap/u/28.0");
 
         try {
-            new PartnerConnection(config); // Connects and stores results in partnerConfig as side effect
+            new PartnerConnection(config); // Connects and stores results in config as side effect
 
             authorization = "Bearer " + config.getSessionId();
-            instanceUrl = URI.create(config.getServiceEndpoint());
+            instanceUrl = URI.create(extractInstanceUrl(config.getServiceEndpoint()));
         } catch (ConnectionException e) {
             throw new SpaException(e);
         }
@@ -55,5 +59,10 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
     @Override
     public final URI getInstanceUrl() {
         return instanceUrl;
+    }
+
+    private static String extractInstanceUrl(String serviceEndpoint) {
+        int p = serviceEndpoint.indexOf("/services");
+        return serviceEndpoint.substring(0, p);
     }
 }
