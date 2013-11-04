@@ -299,7 +299,12 @@ class BatchRestConnector implements RestConnector {
         }
 
         private Statistics buildStatistics(long elapsedNanos) {
-            return new Statistics.Builder().bytesSent(bytesSent).bytesReceived(bytesReceived).elapsedNanos(elapsedNanos).build();
+            return new Statistics.Builder()
+                .bytesSent(bytesSent)
+                .bytesReceived(bytesReceived)
+                .elapsedNanos(elapsedNanos)
+                .batched(true)
+                .build();
         }
 
         private static Throwable mapSelectedExceptions(Throwable exception) {

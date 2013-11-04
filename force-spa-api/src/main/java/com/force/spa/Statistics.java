@@ -8,6 +8,8 @@ package com.force.spa;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -20,11 +22,19 @@ public class Statistics implements Serializable {
 
     private static final long serialVersionUID = 5658021718579655518L;
 
+    private static final ThreadLocal<NumberFormat> elapsedDisplayFormat = new ThreadLocal<NumberFormat>() {
+        @Override
+        protected NumberFormat initialValue() {
+            return new DecimalFormat("#0.000");  // If you want micros then could be "#0.000000"
+        }
+    };
+
     private final long bytesSent;
     private final long bytesReceived;
     private final long elapsedNanos;
     private final long rowsProcessed;
     private final long totalRows;
+    private final boolean batched;
 
     protected Statistics(Builder builder) {
         this.bytesSent = builder.bytesSent;
@@ -32,6 +42,7 @@ public class Statistics implements Serializable {
         this.elapsedNanos = builder.elapsedNanos;
         this.rowsProcessed = builder.rowsProcessed;
         this.totalRows = builder.totalRows;
+        this.batched = builder.batched;
     }
 
     /**
@@ -62,6 +73,17 @@ public class Statistics implements Serializable {
     }
 
     /**
+     * Returns the number of seconds elapsed during operation processing with microsecond precision.
+     *
+     * The precision of the number includes all the way down to microseconds.
+     *
+     * @return the number of nanoseconds elapsed during operation processing with microsecond precision
+     */
+    public final double getElapsedSeconds() {
+        return NANOSECONDS.toMicros(elapsedNanos) / 1000000D;
+    }
+
+    /**
      * Returns the number of rows that were processed.
      *
      * @return the number of rows that were processed
@@ -79,6 +101,15 @@ public class Statistics implements Serializable {
         return totalRows;
     }
 
+    /**
+     * Indicates whether the operation from for which these statistics apply was batched.
+     *
+     * @return whether the operation from for which these statistics apply was batched
+     */
+    public final boolean isBatched() {
+        return batched;
+    }
+
     @Override
     public final String toString() {
         return toString(ToStringStyle.SHORT_PREFIX_STYLE);
@@ -89,11 +120,12 @@ public class Statistics implements Serializable {
     }
 
     protected ToStringBuilder appendToStringBuilder(ToStringBuilder builder) {
-        builder.append("elapsedMillis", NANOSECONDS.toMicros(elapsedNanos) / 1000D); // Convert to floating point millis
-        builder.append("bytesSent", bytesSent);
-        builder.append("bytesReceived", bytesReceived);
-        builder.append("rowsProcessed", rowsProcessed);
+        builder.append("elapsed", elapsedDisplayFormat.get().format(getElapsedSeconds()));
+        builder.append("sent", bytesSent);
+        builder.append("received", bytesReceived);
+        builder.append("rows", rowsProcessed);
         builder.append("totalRows", totalRows);
+        builder.append("batched", batched);
 
         return builder;
     }
@@ -105,6 +137,7 @@ public class Statistics implements Serializable {
         private long elapsedNanos;
         private long rowsProcessed;
         private long totalRows;
+        private boolean batched;
 
         public Builder() {
             bytesSent = 0;
@@ -112,6 +145,7 @@ public class Statistics implements Serializable {
             elapsedNanos = 0;
             rowsProcessed = 0;
             totalRows = 0;
+            batched = false;
         }
 
         public Builder(Statistics that) {
@@ -120,6 +154,7 @@ public class Statistics implements Serializable {
             this.elapsedNanos = that.elapsedNanos;
             this.rowsProcessed = that.rowsProcessed;
             this.totalRows = that.totalRows;
+            this.batched = that.batched;
         }
 
         public Statistics build() {
@@ -148,6 +183,11 @@ public class Statistics implements Serializable {
 
         public Builder totalRows(long totalRows) {
             this.totalRows = totalRows;
+            return this;
+        }
+
+        public Builder batched(boolean batched) {
+            this.batched = batched;
             return this;
         }
 

@@ -36,14 +36,12 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     private Throwable exception;
     private boolean done;
     private boolean cancelled;
-    private boolean batched;
     private Statistics statistics;
 
     protected AbstractRecordOperation(AbstractRecordAccessor recordAccessor, Class<T> recordClass) {
         this.recordAccessor = recordAccessor;
         this.done = false;
         this.cancelled = false;
-        this.batched = false;
 
         // Get the descriptor at early to make sure mapping context is loaded and ready to handle inbound polymorphism.
         this.objectDescriptor = (recordClass != null) ? getMappingContext().getObjectDescriptor(recordClass) : null;
@@ -57,11 +55,6 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
     @Override
     public final boolean isCancelled() {
         return cancelled;
-    }
-
-    @Override
-    public final boolean isBatched() {
-        return batched;
     }
 
     @Override
@@ -99,7 +92,7 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         if (getLogger().isInfoEnabled()) {
             MDC.put(STATISTICS_MDC_KEY, statistics.toString(KeyValueToStringStyle.INSTANCE));
             MDC.put(STATISTICS_SIMPLE_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
-            getLogger().info((isBatched() ? "(Batched) " : "") + this);
+            getLogger().info(this.toString());
             MDC.remove(STATISTICS_SIMPLE_MDC_KEY);
             MDC.remove(STATISTICS_MDC_KEY);
         }
@@ -117,7 +110,7 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
         if (getLogger().isInfoEnabled()) {
             MDC.put(STATISTICS_MDC_KEY, statistics.toString(KeyValueToStringStyle.INSTANCE));
             MDC.put(STATISTICS_SIMPLE_MDC_KEY, statistics.toString(ToStringStyle.SIMPLE_STYLE));
-            getLogger().info((isBatched() ? "(Batched) " : "") + this, exception);
+            getLogger().info(this.toString(), exception);
             MDC.remove(STATISTICS_SIMPLE_MDC_KEY);
             MDC.remove(STATISTICS_MDC_KEY);
         }
@@ -134,10 +127,6 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
 
     public final ObjectDescriptor getObjectDescriptor() {
         return objectDescriptor;
-    }
-
-    public final void setBatched(boolean batched) {
-        this.batched = batched;
     }
 
     protected final MappingContext getMappingContext() {
@@ -158,6 +147,7 @@ public abstract class AbstractRecordOperation<T, R> implements RecordOperation<R
             this.setUseClassName(false);
             this.setUseIdentityHashCode(false);
             this.setUseFieldNames(true);
+            this.setFieldSeparator(", ");
             this.setContentStart("");
             this.setContentEnd("");
         }

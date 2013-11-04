@@ -125,9 +125,6 @@ public final class RestRecordAccessor extends AbstractRecordAccessor {
 
     private RestConnector chooseBatchedOrUnbatchedConnector(List<RecordOperation<?>> operations) {
         if (shouldBatch(operations)) {
-            for (RecordOperation<?> operation : operations) {
-                AbstractRestRecordOperation.class.cast(operation).setBatched(true);
-            }
             return new BatchRestConnector(connector);
         } else {
             return connector;

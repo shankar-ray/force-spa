@@ -12,11 +12,6 @@ import java.util.concurrent.Future;
  */
 public interface RecordOperation<R> extends Future<R> {
     /**
-     * Returns an indication of whether the operation is batched with other operations.
-     */
-    boolean isBatched();
-
-    /**
      * Returns statistics for the operation execution. The information is only available after the operation is
      * done (successfully or not).
      */
