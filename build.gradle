@@ -1,7 +1,7 @@
 configure(allprojects) {
     apply plugin: 'idea'
 
-    version = '1.0-SNAPSHOT'
+    version = '1.0'
     group = "net.davidbuccola.${rootProject.name}"
 
     // Symbolic versions for select dependencies. The version of most dependencies is specified inline with the
@@ -215,6 +215,11 @@ configure(subprojects - project(":config") - project(":force-spa-testschema")) {
 @SuppressWarnings("GroovyAssignabilityCheck")
 def customizePom(pom, gradleProject) {
     pom.project {
+        parent {
+            groupId 'org.sonatype.oss'
+            artifactId 'oss-parent'
+            version '7'
+        }
         name = gradleProject.name
         description = gradleProject.description
         url = "https://github.com/davidbuccola/${rootProject.name}"
@@ -231,9 +236,9 @@ def customizePom(pom, gradleProject) {
             }
         }
         scm {
-            url = "https://github.com/davidbuccola/${rootProject.name}"
-            connection = "scm:git:git://github.com/davidbuccola/${rootProject.name}.git"
-            developerConnection = "scm:git:git://github.com/davidbuccola/${rootProject.name}.git"
+            url = "git@github.com:davidbuccola/${rootProject.name}.git"
+            connection = "scm:git:git@github.com:davidbuccola/${rootProject.name}.git"
+            developerConnection = "scm:git:git@github.com:davidbuccola/${rootProject.name}.git"
         }
         licenses {
             license {
