@@ -10,6 +10,7 @@ import static com.force.spa.core.utils.YourKitUtils.isYourKitPresent;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import org.junit.Before;
@@ -19,6 +20,7 @@ import com.force.spa.RecordAccessorConfig;
 import com.force.spa.core.rest.AbstractRestRecordAccessorTest;
 import com.force.spa.core.testbeans.IndirectToSimpleContainerBean;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
+import com.force.spa.core.testbeans.PolymorphicToContainerBean;
 import com.force.spa.core.testbeans.RecursiveBean;
 import com.force.spa.core.testbeans.SimpleBean;
 import com.force.spa.core.testbeans.SimpleContainerBean;
@@ -118,10 +120,25 @@ public class SoqlBuilderTest extends AbstractRestRecordAccessorTest {
     @Test
     public void testIndirectToSimpleContainerQuery() throws Exception {
         String soqlTemplate = "select * from IndirectToSimpleContainerBean where Id = '012345678901234'";
-        String expectedSoql = "select Id,Name,ContainerBean.Id from IndirectToSimpleContainerBean where Id = '012345678901234'";
 
-        String soql = new SoqlBuilder(accessor).object(IndirectToSimpleContainerBean.class).template(soqlTemplate).build();
-        assertThat(soql, is(equalTo(expectedSoql)));
+        try {
+            new SoqlBuilder(accessor).object(IndirectToSimpleContainerBean.class).template(soqlTemplate).build();
+            fail("Didn't get expected exception");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is(equalTo("Beans with parent-to-child fields cannot be referenced indirectly")));
+        }
+    }
+
+    @Test
+    public void testContainerInsidePolymorphism() throws Exception {
+        String soqlTemplate = "select * from PolymorphicToContainerBean where Id = '012345678901234'";
+
+        try {
+            new SoqlBuilder(accessor).object(PolymorphicToContainerBean.class).template(soqlTemplate).build();
+            fail("Didn't get expected exception");
+        } catch (IllegalArgumentException e) {
+            assertThat(e.getMessage(), is(equalTo("Beans with parent-to-child fields cannot be referenced polymorphically")));
+        }
     }
 
     @Test

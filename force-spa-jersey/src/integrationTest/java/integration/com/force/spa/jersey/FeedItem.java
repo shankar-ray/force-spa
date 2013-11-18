@@ -12,11 +12,12 @@ import com.force.spa.beans.Record;
 import com.force.spa.beans.UserBrief;
 
 @SalesforceObject
+@SuppressWarnings("UnusedDeclaration")
 public class FeedItem extends Record {
     @SalesforceField(name = "Body")
     private String body;
 
-    @Polymorphic({Account.class, UserBrief.class})
+    @Polymorphic({AccountBrief.class, UserBrief.class})
     @SalesforceField(name = "Parent")
     private Record parent;
 

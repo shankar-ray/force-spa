@@ -106,7 +106,7 @@ public final class SoqlBuilder {
                 pendingCursor = i + 1;
 
                 String prefix = (prefixCursor != i) ? new String(chars, prefixCursor, i - prefixCursor - 1) : null;
-                builder.append(expandObject(object, prefix, depth));
+                builder.append(expandObject(object, new Context(prefix, depth, false)));
             } else if (c == '\'' || c == '\"') {
                 quoteChar = c;
             }
@@ -127,17 +127,17 @@ public final class SoqlBuilder {
         return wildcardCursor;
     }
 
-    private String expandObject(ObjectDescriptor object, String prefix, int remainingDepth) {
-        CacheKey cacheKey = new CacheKey(object, prefix, remainingDepth);
+    private String expandObject(ObjectDescriptor object, Context context) {
+        CacheKey cacheKey = new CacheKey(object, context);
         String expansion = sharedExpansionsCache.get(cacheKey);
         if (expansion != null)
             return expansion;
 
-        if (remainingDepth >= 0) {
+        if (context.getRemainingDepth() >= 0) {
             List<String> accumulator = new ArrayList<>();
             for (FieldDescriptor field : object.getFields()) {
                 if (isFieldVisible(object, field)) {
-                    String expandedField = expandField(field, prefix, remainingDepth);
+                    String expandedField = expandField(field, context);
                     if (expandedField != null) {
                         accumulator.add(expandedField);
                     }
@@ -169,69 +169,120 @@ public final class SoqlBuilder {
         return !object.isMetadataAware(); // Leveraging per-user metadata makes it useless in a shared cache
     }
 
-    private String expandField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandField(FieldDescriptor field, Context context) {
         if (field.isRelationship()) {
-            return expandRelationshipField(field, prefix, remainingDepth);
+            return expandRelationshipField(field, context);
         } else {
-            return expandSimpleField(field, prefix);
+            return expandSimpleField(field, context);
         }
     }
 
-    private static String expandSimpleField(FieldDescriptor field, String prefix) {
-        return StringUtils.isEmpty(prefix) ? field.getName() : prefix + "." + field.getName();
+    private static String expandSimpleField(FieldDescriptor field, Context context) {
+        return StringUtils.isEmpty(context.getPrefix()) ? field.getName() : context.getPrefix() + "." + field.getName();
     }
 
-    private String expandRelationshipField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandRelationshipField(FieldDescriptor field, Context context) {
         if (field.isPolymorphic()) {
-            return expandPolymorphicField(field, prefix, remainingDepth);
+            return expandPolymorphicField(field, context);
         } else if (field.getJavaType().isContainerType()) {
-            return expandContainerField(field, prefix, remainingDepth);
+            return expandContainerField(field, context);
         } else {
-            return expandObject(field.getRelatedObject(), expandSimpleField(field, prefix), remainingDepth - 1);
+            String nestedPrefix = expandSimpleField(field, context);
+            Context nestedContext = new Context(nestedPrefix, context.getRemainingDepth() - 1, context.isReferencedPolymorphically());
+            return expandObject(field.getRelatedObject(), nestedContext);
         }
     }
 
-    private String expandPolymorphicField(FieldDescriptor field, String prefix, int remainingDepth) {
+    private String expandPolymorphicField(FieldDescriptor field, Context context) {
         StringBuilder builder = new StringBuilder();
-        builder.append("TYPEOF ").append(expandSimpleField(field, prefix));
+        builder.append("TYPEOF ").append(expandSimpleField(field, context));
+        Context nestedContext = new Context(null, context.getRemainingDepth() - 1, true);
         for (ObjectDescriptor object : field.getPolymorphicChoices()) {
             builder.append(" WHEN ").append(object.getName()).append(" THEN ");
-            builder.append(expandObject(object, null, remainingDepth - 1));
+            builder.append(expandObject(object, nestedContext));
         }
         if (field.getRelatedObject() != null) {
             builder.append(" ELSE ");
-            builder.append(expandObject(field.getRelatedObject(), null, remainingDepth - 1));
+            builder.append(expandObject(field.getRelatedObject(), nestedContext));
         }
         builder.append(" END");
 
         return builder.toString();
     }
 
-    private String expandContainerField(FieldDescriptor field, String prefix, int remainingDepth) {
-        if (StringUtils.isEmpty(prefix)) {
+    private String expandContainerField(FieldDescriptor field, Context context) {
+        if (context.isReferencedPolymorphically()) {
+            // The server can't handle this kind of nesting. The server complains with a SOQL syntax error.
+
+            throw new IllegalArgumentException("Beans with parent-to-child fields cannot be referenced polymorphically");
+
+        } else if (StringUtils.isEmpty(context.getPrefix())) {
             return new SoqlBuilder(accessor)
                 .object(field.getRelatedObject())
-                .template("(SELECT * from " + expandSimpleField(field, prefix) + ")")
-                .depth(remainingDepth - 1)
+                .template("(SELECT * from " + expandSimpleField(field, context) + ")")
+                .depth(context.getRemainingDepth() - 1)
                 .build();
         } else {
             // The server can't handle this kind of nesting. The server complains with "First SObject of a nested query
-            // must be a child of its outer query". We can only query down into collection fields if the container
-            // is at the top of the query. If the container is nested down inside somewhere then we have to skip the
-            // contained objects.
-            return null;
+            // must be a child of its outer query".
+
+            throw new IllegalArgumentException("Beans with parent-to-child fields cannot be referenced indirectly");
+        }
+    }
+
+    private static final class Context {
+        private final String prefix;
+        private final int remainingDepth;
+        private final boolean referencedPolymorphically;
+
+        Context(String prefix, int remainingDepth, boolean referencedPolymorphically) {
+            this.prefix = prefix;
+            this.remainingDepth = remainingDepth;
+            this.referencedPolymorphically = referencedPolymorphically;
+        }
+
+        private String getPrefix() {
+            return prefix;
+        }
+
+        private boolean isReferencedPolymorphically() {
+            return referencedPolymorphically;
+        }
+
+        private int getRemainingDepth() {
+            return remainingDepth;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Context context = (Context) o;
+
+            if (referencedPolymorphically != context.referencedPolymorphically) return false;
+            if (remainingDepth != context.remainingDepth) return false;
+            if (prefix != null ? !prefix.equals(context.prefix) : context.prefix != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = prefix != null ? prefix.hashCode() : 0;
+            result = 31 * result + remainingDepth;
+            result = 31 * result + (referencedPolymorphically ? 1 : 0);
+            return result;
         }
     }
 
     private static final class CacheKey {
         private final ObjectDescriptor descriptor;
-        private final String prefix;
-        private final int remainingDepth;
+        private final Context context;
 
-        CacheKey(ObjectDescriptor descriptor, String prefix, int remainingDepth) {
+        CacheKey(ObjectDescriptor descriptor, Context context) {
             this.descriptor = descriptor;
-            this.prefix = prefix;
-            this.remainingDepth = remainingDepth;
+            this.context = context;
         }
 
         @Override
@@ -241,9 +292,8 @@ public final class SoqlBuilder {
 
             CacheKey cacheKey = (CacheKey) o;
 
-            if (remainingDepth != cacheKey.remainingDepth) return false;
+            if (!context.equals(cacheKey.context)) return false;
             if (!descriptor.equals(cacheKey.descriptor)) return false;
-            if (prefix != null ? !prefix.equals(cacheKey.prefix) : cacheKey.prefix != null) return false;
 
             return true;
         }
@@ -251,8 +301,7 @@ public final class SoqlBuilder {
         @Override
         public int hashCode() {
             int result = descriptor.hashCode();
-            result = 31 * result + (prefix != null ? prefix.hashCode() : 0);
-            result = 31 * result + remainingDepth;
+            result = 31 * result + context.hashCode();
             return result;
         }
     }

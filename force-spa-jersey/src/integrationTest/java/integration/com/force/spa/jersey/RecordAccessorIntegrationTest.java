@@ -149,7 +149,6 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     }
 
     @Test
-    @Ignore("Exposes bug or limitation?")
     public void testFeedItemPolymorphism() {
         Account account = createAccount();
 
@@ -159,7 +158,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         String feedItemId = getRecordAccessor().create(feedItem);
 
         FeedItem feedItem2 = getRecordAccessor().get(feedItemId, FeedItem.class);
-        assertThat(feedItem2.getParent(), is(instanceOf(Account.class)));
+        assertThat(feedItem2.getParent(), is(instanceOf(AccountBrief.class)));
     }
 
     @Test
