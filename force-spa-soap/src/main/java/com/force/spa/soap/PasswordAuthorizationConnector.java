@@ -24,6 +24,7 @@ import com.sforce.ws.ConnectorConfig;
  */
 public class PasswordAuthorizationConnector implements AuthorizationConnector {
 
+    private final String userId;
     private final URI instanceUrl;
     private final String authorization;
 
@@ -42,10 +43,11 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
         config.setAuthEndpoint(serverUrl + "/services/Soap/u/28.0");
 
         try {
-            new PartnerConnection(config); // Connects and stores results in config as side effect
+            PartnerConnection connection = new PartnerConnection(config);
 
-            authorization = "Bearer " + config.getSessionId();
-            instanceUrl = URI.create(extractInstanceUrl(config.getServiceEndpoint()));
+            authorization = "Bearer " + connection.getConfig().getSessionId();
+            instanceUrl = URI.create(extractInstanceUrl(connection.getConfig().getServiceEndpoint()));
+            userId = connection.getUserInfo().getUserId();
         } catch (ConnectionException e) {
             throw new SpaException(e);
         }
@@ -59,6 +61,11 @@ public class PasswordAuthorizationConnector implements AuthorizationConnector {
     @Override
     public final URI getInstanceUrl() {
         return instanceUrl;
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
     }
 
     private static String extractInstanceUrl(String serviceEndpoint) {

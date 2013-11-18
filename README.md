@@ -1,4 +1,5 @@
-force-spa
-=========
+# Simple Persistence API for Salesforce
 
-Simple Persistence Annotations for Salesforce. A CRUD-based interface for interacting with records in Salesforce through the use of annotated Javabeans.
+A CRUD-based interface for interacting with records in Salesforce through the use of annotated Javabeans.
+
+## Configuring Integration Tests

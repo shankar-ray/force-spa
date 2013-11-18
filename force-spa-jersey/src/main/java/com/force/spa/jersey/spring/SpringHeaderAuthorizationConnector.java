@@ -37,6 +37,11 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
         return getInstanceUrl(getCurrentRequest());
     }
 
+    @Override
+    public String getUserId() {
+        return getUserId(getCurrentRequest());
+    }
+
     /**
      * Obtain the current {@link javax.servlet.http.HttpServletRequest} from the Spring container.
      *
@@ -58,7 +63,6 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
      * Extracts authentication information from the current inbound request.
      *
      * @param request the current request
-     *
      * @return a value for the outbound "Authorization" header
      */
     protected String getAuthorization(HttpServletRequest request) {
@@ -70,13 +74,6 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
         }
     }
 
-    /**
-     * Extracts the instance URL from the current inbound request.
-     *
-     * @param request the current request
-     *
-     * @return the instance URL
-     */
     protected URI getInstanceUrl(HttpServletRequest request) {
         String instanceUrlHeader = request.getHeader("Force-Instance-Url");
         if (instanceUrlHeader != null) {
@@ -87,6 +84,15 @@ public class SpringHeaderAuthorizationConnector implements AuthorizationConnecto
             }
         } else {
             throw new BadRequestException("Missing Force-Instance-Url header");
+        }
+    }
+
+    protected String getUserId(HttpServletRequest request) {
+        String userIdHeader = request.getHeader("Force-User-Id");
+        if (userIdHeader != null) {
+            return userIdHeader;
+        } else {
+            throw new BadRequestException("Missing Force-User-Id header");
         }
     }
 }
