@@ -69,7 +69,7 @@ configure(rootProject) {
     }
 }
 
-configure(subprojects - project(":config") - project(":force-spa-testschema")) {
+configure(subprojects - project(":config")) {
     apply plugin: 'java'
     apply plugin: 'osgi'
     apply plugin: 'maven'
