@@ -67,9 +67,9 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     }
 
     @Test
-    @Ignore("Exposes bug with parent-to-child relationships on update")
     public void testUpdate() {
         Account account = createAccount();
+        account = getRecordAccessor().get(account.getId(), Account.class);
 
         String newName = "Special " +  account.getName();
         account.setName(newName);

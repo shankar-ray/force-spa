@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URI;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -759,5 +760,23 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(bean2.getId(), is(equalTo("a01i00000000001")));
         assertThat(bean2.getName(), is(equalTo("Name 1")));
         assertThat(bean2.getDescription(), is(equalTo("Description 1")));
+    }
+
+    @Test
+    public void testCreateWithChildren() throws Exception {
+        SimpleBean containedBean = new SimpleBean();
+        containedBean.setDescription("Description 1");
+        SimpleContainerBean containerBean = new SimpleContainerBean();
+        containerBean.setRelatedBeans(Collections.singletonList(containedBean));
+
+        when(
+            connector.post(any(URI.class), anyString()))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        accessor.create(containerBean);
+
+        verify(connector).post(
+            URI.create("/sobjects/SimpleContainerBean"), getResourceString("createWithChildrenRequest.json"));
+
     }
 }

@@ -5,7 +5,9 @@
  */
 package com.force.spa.core;
 
+import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
 import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
+import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
@@ -55,7 +57,7 @@ import com.force.spa.SalesforceObject;
  */
 public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
 
-    private static final long serialVersionUID = 8766637889000218773L;
+    private static final long serialVersionUID = -6830955834654276474L;
 
     private static final Class<?>[] NEVER_VIEWS = new Class<?>[]{SerializationViews.Never.class};
     private static final Class<?>[] CREATE_VIEWS = new Class<?>[]{SerializationViews.Create.class};
@@ -99,7 +101,12 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         boolean insertable = isInsertable(annotated);
         boolean updatable = isUpdatable(annotated);
 
-        if (!insertable || !updatable) {
+        if (isParentToChildRelationship(annotated)) {
+
+            return getNeverViews();       // Updating children in bulk is not supported by Salesforce
+
+        } else if (!insertable || !updatable) {
+
             if (!insertable && !updatable) {
                 return getNeverViews();   // Never serialized
             } else if (insertable) {
@@ -107,8 +114,19 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             } else {
                 return getUpdateViews();  // Only serialized for update (and patch).
             }
+
         } else {
             return super.findViews(annotated);
+        }
+    }
+
+    private boolean isParentToChildRelationship(Annotated annotated) {
+        if (annotated instanceof AnnotatedMember) {
+            AnnotatedMember member = (AnnotatedMember) annotated;
+            JavaType javaType = getJavaTypeFor(member);
+            return javaType.isContainerType() && canBeSalesforceObject(javaType.containedType(0).getRawClass(), false);
+        } else {
+            return false;
         }
     }
 
