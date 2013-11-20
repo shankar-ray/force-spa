@@ -16,7 +16,6 @@ import static org.junit.Assert.fail;
 
 import java.security.SecureRandom;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.force.spa.RecordNotFoundException;
@@ -31,26 +30,6 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     public void testCreateAccountWithNote() {
         Account account = createAccount();
         Note note = createNote(account);
-
-        Account account2 = getRecordAccessor().get(account.getId(), Account.class);
-        assertThat(account2.getId(), is(equalTo(account.getId())));
-        assertThat(account2.getName(), is(equalTo(account.getName())));
-        assertThat(account2.getAnnualRevenue(), is(equalTo(account.getAnnualRevenue())));
-
-        assertThat(account2.getNotes().size(), is(equalTo(1)));
-        assertThat(account2.getNotes().get(0).getTitle(), is(equalTo(note.getTitle())));
-        assertThat(account2.getNotes().get(0).getBody(), is(equalTo(note.getBody())));
-        assertThat(account2.getNotes().get(0).getParent().getId(), is(equalTo(account.getId())));
-    }
-
-    @Test
-    @Ignore("Exposes bug (or lack of feature) for base typed parent field")
-    public void testCreateAccountWithNoteByExternalId() {
-        Account account = createAccount();
-
-        Account accountWithJustName = new Account();
-        accountWithJustName.setName(account.getName());
-        Note note = createNote(accountWithJustName);
 
         Account account2 = getRecordAccessor().get(account.getId(), Account.class);
         assertThat(account2.getId(), is(equalTo(account.getId())));

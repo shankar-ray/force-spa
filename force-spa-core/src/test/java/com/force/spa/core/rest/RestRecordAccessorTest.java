@@ -55,6 +55,7 @@ import com.force.spa.core.testbeans.InsertableUpdatableFieldBean;
 import com.force.spa.core.testbeans.InsertableUpdatableGetterBean;
 import com.force.spa.core.testbeans.InsertableUpdatableGetterOverrideBean;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
+import com.force.spa.core.testbeans.PolymorphicFieldWithoutAnnotationBean;
 import com.force.spa.core.testbeans.PolymorphicListFieldBean;
 import com.force.spa.core.testbeans.SecondarySimpleBean;
 import com.force.spa.core.testbeans.SimpleBean;
@@ -727,6 +728,27 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
 
         verify(connector).post(
             URI.create("/sobjects/PolymorphicFieldBean"), getResourceString("polymorphicKeyLookupCreateRequest.json"));
+    }
+
+    @Test
+    public void testPolymorphicKeyLookupCreateWithoutAnnotation() throws Exception {
+        PolymorphicFieldWithoutAnnotationBean polymorphicFieldBean = new PolymorphicFieldWithoutAnnotationBean();
+        SimpleBean simpleBean = new SimpleBean();
+        simpleBean.setName("Name 1");
+        polymorphicFieldBean.setValue1(simpleBean);
+        ExplicitlyNamedBean explicitlyNamedBean = new ExplicitlyNamedBean();
+        explicitlyNamedBean.setName("Name 2");
+        polymorphicFieldBean.setValue2(explicitlyNamedBean);
+
+        when(
+            connector.post(any(URI.class), anyString()))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(polymorphicFieldBean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(connector).post(
+            URI.create("/sobjects/PolymorphicFieldWithoutAnnotationBean"), getResourceString("polymorphicKeyLookupCreateRequest.json"));
     }
 
     @Test

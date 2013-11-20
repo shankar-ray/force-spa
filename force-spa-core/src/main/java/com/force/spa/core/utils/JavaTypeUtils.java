@@ -29,6 +29,14 @@ public final class JavaTypeUtils {
         return TypeFactory.defaultInstance().constructType(getGenericTypeFor(member), member.getDeclaringClass());
     }
 
+    public static boolean isInstanceOrContainerOf(JavaType javaType, Class<?> clazz) {
+        if (javaType.isContainerType()) {
+            return javaType.containedType(0).getRawClass().equals(clazz);
+        } else {
+            return javaType.getRawClass().equals(clazz);
+        }
+    }
+
     private static Type getGenericTypeFor(BeanPropertyDefinition property) {
         if (property.hasSetter()) {
             return property.getSetter().getGenericParameterType(0);

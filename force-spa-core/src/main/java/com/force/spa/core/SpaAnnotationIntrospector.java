@@ -7,6 +7,7 @@ package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
 import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
+import static com.force.spa.core.utils.JavaTypeUtils.isInstanceOrContainerOf;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ import com.force.spa.Polymorphic;
 import com.force.spa.RecordAccessorConfig;
 import com.force.spa.SalesforceField;
 import com.force.spa.SalesforceObject;
+import com.force.spa.beans.NamedRecord;
+import com.force.spa.beans.Record;
 
 /**
  * An {@link com.fasterxml.jackson.databind.AnnotationIntrospector} which understands the special persistence
@@ -327,7 +330,7 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
     }
 
     private TypeResolverBuilder<?> findTypeResolver(Annotated annotated, JavaType baseType) {
-        if (hasPolymorphicAnnotation(annotated) || isObjectOrContainerOfObject(baseType)) {
+        if (hasPolymorphicAnnotation(annotated) || isInstanceOrContainerOfGenericSuperType(baseType)) {
             return new SpaTypeResolverBuilder(mappingContext).init(JsonTypeInfo.Id.NAME, null);
         } else {
             return null;
@@ -338,11 +341,9 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
         return annotated.getAnnotation(Polymorphic.class) != null;
     }
 
-    private static boolean isObjectOrContainerOfObject(JavaType baseType) {
-        if (baseType.isContainerType()) {
-            return baseType.containedType(0).getRawClass().equals(Object.class);
-        } else {
-            return baseType.getRawClass().equals(Object.class);
-        }
+    private static boolean isInstanceOrContainerOfGenericSuperType(JavaType baseType) {
+        return isInstanceOrContainerOf(baseType, Object.class)
+            || isInstanceOrContainerOf(baseType, Record.class)
+            || isInstanceOrContainerOf(baseType, NamedRecord.class);
     }
 }
