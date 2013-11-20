@@ -12,6 +12,8 @@ import javax.ws.rs.ext.Provider;
 import org.springframework.stereotype.Component;
 
 import com.force.spa.BadRequestException;
+import com.force.spa.ObjectNotFoundException;
+import com.force.spa.RecordNotFoundException;
 import com.force.spa.RecordRequestException;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.UniformInterfaceException;
@@ -29,6 +31,13 @@ public class RecordRequestExceptionMapper implements ExceptionMapper<RecordReque
 
             return Response
                 .status(ClientResponse.Status.BAD_REQUEST)
+                .entity(exception.getMessage())
+                .build();
+
+        } else if (exception instanceof ObjectNotFoundException || exception instanceof RecordNotFoundException) {
+
+            return Response
+                .status(ClientResponse.Status.NOT_FOUND)
                 .entity(exception.getMessage())
                 .build();
 
