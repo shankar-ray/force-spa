@@ -6,10 +6,8 @@
 package com.force.spa.core;
 
 import static com.force.spa.core.IntrospectionUtils.canBeSalesforceObject;
-import static com.force.spa.core.IntrospectionUtils.getRelatedElements;
 import static com.force.spa.core.utils.JavaTypeUtils.getJavaTypeFor;
 
-import java.lang.reflect.AnnotatedElement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -243,33 +241,31 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return null;
         }
 
-        // Search the field, getter, and setter for relevant annotations.
-        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
-            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
-            if (salesforceField != null) {
-                return salesforceField.name();
-            }
-
-            Attributes attributes = element.getAnnotation(Attributes.class);
-            if (attributes != null) {
-                return ObjectDescriptor.ATTRIBUTES_FIELD_NAME;
-            }
-
-            Id id = element.getAnnotation(Id.class);
-            if (id != null) {
-                return ObjectDescriptor.ID_FIELD_NAME;
-            }
-
-            Column column = element.getAnnotation(Column.class);
-            if (column != null) {
-                return column.name();
-            }
-
-            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
-            if (joinColumn != null) {
-                return joinColumn.name();
-            }
+        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
+        if (salesforceField != null) {
+            return salesforceField.name();
         }
+
+        Attributes attributes = annotated.getAnnotation(Attributes.class);
+        if (attributes != null) {
+            return ObjectDescriptor.ATTRIBUTES_FIELD_NAME;
+        }
+
+        Id id = annotated.getAnnotation(Id.class);
+        if (id != null) {
+            return ObjectDescriptor.ID_FIELD_NAME;
+        }
+
+        Column column = annotated.getAnnotation(Column.class);
+        if (column != null) {
+            return column.name();
+        }
+
+        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
+        if (joinColumn != null) {
+            return joinColumn.name();
+        }
+
         return null;
     }
 
@@ -278,23 +274,21 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return false;
         }
 
-        // Search the field, getter, and setter for relevant annotations.
-        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
-            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
-            if (salesforceField != null) {
-                return salesforceField.insertable();
-            }
-
-            Column column = element.getAnnotation(Column.class);
-            if (column != null) {
-                return column.insertable();
-            }
-
-            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
-            if (joinColumn != null) {
-                return joinColumn.insertable();
-            }
+        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
+        if (salesforceField != null) {
+            return salesforceField.insertable();
         }
+
+        Column column = annotated.getAnnotation(Column.class);
+        if (column != null) {
+            return column.insertable();
+        }
+
+        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
+        if (joinColumn != null) {
+            return joinColumn.insertable();
+        }
+
         return true;
     }
 
@@ -303,22 +297,19 @@ public class SpaAnnotationIntrospector extends NopAnnotationIntrospector {
             return false;
         }
 
-        // Search the field, getter, and setter for relevant annotations.
-        for (AnnotatedElement element : getRelatedElements((AnnotatedMember) annotated)) {
-            SalesforceField salesforceField = element.getAnnotation(SalesforceField.class);
-            if (salesforceField != null) {
-                return salesforceField.updatable();
-            }
+        SalesforceField salesforceField = annotated.getAnnotation(SalesforceField.class);
+        if (salesforceField != null) {
+            return salesforceField.updatable();
+        }
 
-            Column column = element.getAnnotation(Column.class);
-            if (column != null) {
-                return column.updatable();
-            }
+        Column column = annotated.getAnnotation(Column.class);
+        if (column != null) {
+            return column.updatable();
+        }
 
-            JoinColumn joinColumn = element.getAnnotation(JoinColumn.class);
-            if (joinColumn != null) {
-                return joinColumn.updatable();
-            }
+        JoinColumn joinColumn = annotated.getAnnotation(JoinColumn.class);
+        if (joinColumn != null) {
+            return joinColumn.updatable();
         }
         return true;
     }

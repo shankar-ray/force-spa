@@ -15,15 +15,12 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
 import java.security.SecureRandom;
-import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
 import com.force.spa.RecordNotFoundException;
-import com.force.spa.beans.GroupBrief;
 import com.force.spa.beans.Record;
-import com.force.spa.beans.Share;
 import com.force.spa.metadata.ObjectMetadata;
 
 public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegrationTest {
@@ -71,7 +68,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         Account account = createAccount();
         account = getRecordAccessor().get(account.getId(), Account.class);
 
-        String newName = "Special " +  account.getName();
+        String newName = "Special " + account.getName();
         account.setName(newName);
         getRecordAccessor().update(account.getId(), account);
 
@@ -85,7 +82,7 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     public void testPatch() {
         Account account = createAccount();
 
-        String newName = "Special " +  account.getName();
+        String newName = "Special " + account.getName();
         Account accountChanges1 = new Account();
         accountChanges1.setName(newName);
         getRecordAccessor().patch(account.getId(), accountChanges1);
@@ -127,28 +124,6 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
     }
 
     @Test
-    @Ignore("Different name for AccountShare access level causes problems")
-    public void testAccountSharingRow() {
-        Account account = createAccount();
-        GroupBrief group = getAllInternalUsersGroup();
-
-        AccountShare share = new AccountShare();
-        share.setAccessLevel(Share.AccessLevel.Edit);
-        share.setRowCause(Share.RowCause.Manual);
-        share.setParent(account);
-        share.setUserOrGroupId(group.getId());
-
-        String shareId = getRecordAccessor().create(share);
-
-        AccountShare share2 = getRecordAccessor().get(shareId, AccountShare.class);
-        assertThat(share2.getId(), is(equalTo(shareId)));
-        assertThat(share2.getAccessLevel(), is(equalTo(share.getAccessLevel())));
-        assertThat(share2.getRowCause(), is(equalTo(share.getRowCause())));
-        assertThat(share2.getParent().getId(), is(equalTo(share.getParent().getId())));
-        assertThat(share2.getUserOrGroupId(), is(equalTo(share.getUserOrGroupId())));
-    }
-
-    @Test
     public void testFeedItemPolymorphism() {
         Account account = createAccount();
 
@@ -169,15 +144,6 @@ public class RecordAccessorIntegrationTest extends AbstractRecordAccessorIntegra
         assertThat(objectMetadata, is(not(nullValue())));
         assertThat(objectMetadata.getName(), is(equalTo("FeedItem")));
         assertThat(objectMetadata.getFields().size(), is(greaterThan(0)));
-    }
-
-    private GroupBrief getAllInternalUsersGroup() {
-        String soql = "select * from Group where DeveloperName=\'AllInternalUsers\'";
-        List<GroupBrief> groups = getRecordAccessor().createQuery(soql, GroupBrief.class).execute();
-        if (groups.size() == 0) {
-            return null;
-        }
-        return groups.get(0);
     }
 
     private Account createAccount() {

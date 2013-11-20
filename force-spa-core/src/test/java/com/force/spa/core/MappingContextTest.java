@@ -26,6 +26,7 @@ import com.force.spa.core.testbeans.EnumBean;
 import com.force.spa.core.testbeans.EnumWithAbstractMethod;
 import com.force.spa.core.testbeans.ExplicitlyNamedBean;
 import com.force.spa.core.testbeans.FieldWithNoAccessorBean;
+import com.force.spa.core.testbeans.HideAttributesBean;
 import com.force.spa.core.testbeans.NoGetterBean;
 import com.force.spa.core.testbeans.NoSetterBean;
 import com.force.spa.core.testbeans.RecursiveBean;
@@ -227,5 +228,15 @@ public class MappingContextTest {
             assertThat(e, is(instanceOf(IllegalStateException.class)));
             assertThat(e.getMessage(), containsString("Two different classes claim to be the primary"));
         }
+    }
+
+    @Test
+    public void testHideAttributesBean() {
+        ObjectDescriptor descriptor = mappingContext.getObjectDescriptor(HideAttributesBean.class);
+        assertThat(descriptor.getName(), is(equalTo("HideAttributesBean")));
+        assertThat(descriptor.getFields(), is(not(nullValue())));
+        assertThat(descriptor.getFields(), containsInAnyOrder(
+            hasFieldName("Id"),
+            hasFieldName("NotAttributes")));
     }
 }

@@ -10,17 +10,16 @@ import com.force.spa.SalesforceObject;
 import com.force.spa.beans.NamedRecord;
 
 @SalesforceObject
-public class InsertableUpdatableBean extends NamedRecord {
+@SuppressWarnings("UnusedDeclaration")
+public class InsertableUpdatableGetterOverrideBean extends NamedRecord {
 
-    @SalesforceField(name = "NotInsertable", insertable = false)
     private String notInsertable;
 
-    @SalesforceField(name = "NotUpdatable", updatable = false)
     private String notUpdatable;
 
-    @SalesforceField(name = "NotInsertableOrUpdatable", insertable = false, updatable = false)
     private String notInsertableOrUpdatable;
 
+    @SalesforceField(name = "NotInsertableOverriddenToBeWrong", insertable = true)
     public String getNotInsertable() {
         return notInsertable;
     }
@@ -29,19 +28,21 @@ public class InsertableUpdatableBean extends NamedRecord {
         this.notInsertable = notInsertable;
     }
 
-    public String getNotInsertableOrUpdatable() {
-        return notInsertableOrUpdatable;
-    }
-
-    public void setNotInsertableOrUpdatable(String notInsertableOrUpdatable) {
-        this.notInsertableOrUpdatable = notInsertableOrUpdatable;
-    }
-
+    @SalesforceField(name = "NotUpdatableOverriddenToBeWrong", updatable = true)
     public String getNotUpdatable() {
         return notUpdatable;
     }
 
     public void setNotUpdatable(String notUpdatable) {
         this.notUpdatable = notUpdatable;
+    }
+
+    @SalesforceField(name = "NotInsertableOrUpdatableOverriddenToBeWrong", insertable = true, updatable = true)
+    public String getNotInsertableOrUpdatable() {
+        return notInsertableOrUpdatable;
+    }
+
+    public void setNotInsertableOrUpdatable(String notInsertableOrUpdatable) {
+        this.notInsertableOrUpdatable = notInsertableOrUpdatable;
     }
 }

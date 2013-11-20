@@ -51,7 +51,9 @@ import com.force.spa.UpdateRecordOperation;
 import com.force.spa.beans.NamedRecord;
 import com.force.spa.core.testbeans.DateTimeBean;
 import com.force.spa.core.testbeans.ExplicitlyNamedBean;
-import com.force.spa.core.testbeans.InsertableUpdatableBean;
+import com.force.spa.core.testbeans.InsertableUpdatableFieldBean;
+import com.force.spa.core.testbeans.InsertableUpdatableGetterBean;
+import com.force.spa.core.testbeans.InsertableUpdatableGetterOverrideBean;
 import com.force.spa.core.testbeans.PolymorphicFieldBean;
 import com.force.spa.core.testbeans.PolymorphicListFieldBean;
 import com.force.spa.core.testbeans.SecondarySimpleBean;
@@ -180,8 +182,8 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
     }
 
     @Test
-    public void testCreateInsertableUpdatable() throws Exception {
-        InsertableUpdatableBean bean = new InsertableUpdatableBean();
+    public void testCreateInsertableUpdatableWithFieldAnnotations() throws Exception {
+        InsertableUpdatableFieldBean bean = new InsertableUpdatableFieldBean();
         bean.setName("Name 1");
         bean.setNotInsertable("Updatable but not insertable value");
         bean.setNotUpdatable("Insertable but not updatable value");
@@ -195,7 +197,96 @@ public class RestRecordAccessorTest extends AbstractRestRecordAccessorTest {
         assertThat(id, is(equalTo("a01i00000000001AAC")));
 
         verify(connector).post(
-            URI.create("/sobjects/InsertableUpdatableBean"), getResourceString("createInsertableUpdatableRequest.json"));
+            URI.create("/sobjects/InsertableUpdatableFieldBean"), getResourceString("createInsertableUpdatableRequest.json"));
+    }
+
+    @Test
+    public void testUpdateInsertableUpdatableWithFieldAnnotations() throws Exception {
+        InsertableUpdatableFieldBean bean = new InsertableUpdatableFieldBean();
+        bean.setId("a01i00000000001AAC");
+        bean.setName("Name 1");
+        bean.setNotInsertable("Updatable but not insertable value");
+        bean.setNotUpdatable("Insertable but not updatable value");
+        bean.setNotInsertableOrUpdatable("Not insertable or updatable value");
+
+        doNothing().when(connector).patch(any(URI.class), anyString());
+
+        accessor.update(bean.getId(), bean);
+
+        verify(connector).patch(
+            URI.create("/sobjects/InsertableUpdatableFieldBean/a01i00000000001AAC"), getResourceString("updateInsertableUpdatableRequest.json"));
+    }
+
+    @Test
+    public void testCreateInsertableUpdatableWithGetterAnnotations() throws Exception {
+        InsertableUpdatableGetterBean bean = new InsertableUpdatableGetterBean();
+        bean.setName("Name 1");
+        bean.setNotInsertable("Updatable but not insertable value");
+        bean.setNotUpdatable("Insertable but not updatable value");
+        bean.setNotInsertableOrUpdatable("Not insertable or updatable value");
+
+        when(
+            connector.post(any(URI.class), anyString()))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(bean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(connector).post(
+            URI.create("/sobjects/InsertableUpdatableGetterBean"), getResourceString("createInsertableUpdatableRequest.json"));
+    }
+
+    @Test
+    public void testUpdateInsertableUpdatableWithGetterAnnotations() throws Exception {
+        InsertableUpdatableGetterBean bean = new InsertableUpdatableGetterBean();
+        bean.setId("a01i00000000001AAC");
+        bean.setName("Name 1");
+        bean.setNotInsertable("Updatable but not insertable value");
+        bean.setNotUpdatable("Insertable but not updatable value");
+        bean.setNotInsertableOrUpdatable("Not insertable or updatable value");
+
+        doNothing().when(connector).patch(any(URI.class), anyString());
+
+        accessor.update(bean.getId(), bean);
+
+        verify(connector).patch(
+            URI.create("/sobjects/InsertableUpdatableGetterBean/a01i00000000001AAC"), getResourceString("updateInsertableUpdatableRequest.json"));
+    }
+
+    @Test
+    public void testCreateInsertableUpdatableWithGetterAnnotationsOverriddenToBeWrong() throws Exception {
+        InsertableUpdatableGetterOverrideBean bean = new InsertableUpdatableGetterOverrideBean();
+        bean.setName("Name 1");
+        bean.setNotInsertable("Insertable and Updatable value");
+        bean.setNotUpdatable("Insertable and Updatable value");
+        bean.setNotInsertableOrUpdatable("Insertable and Updatable value");
+
+        when(
+            connector.post(any(URI.class), anyString()))
+            .thenReturn(getResourceStream("createSuccessResponse.json"));
+
+        String id = accessor.create(bean);
+        assertThat(id, is(equalTo("a01i00000000001AAC")));
+
+        verify(connector).post(
+            URI.create("/sobjects/InsertableUpdatableGetterOverrideBean"), getResourceString("createInsertableUpdatableOverriddenToBeWrongRequest.json"));
+    }
+
+    @Test
+    public void testUpdateInsertableUpdatableWithGetterAnnotationsOverriddenToBeWrong() throws Exception {
+        InsertableUpdatableGetterOverrideBean bean = new InsertableUpdatableGetterOverrideBean();
+        bean.setId("a01i00000000001AAC");
+        bean.setName("Name 1");
+        bean.setNotInsertable("Insertable and Updatable value");
+        bean.setNotUpdatable("Insertable and Updatable value");
+        bean.setNotInsertableOrUpdatable("Insertable and Updatable value");
+
+        doNothing().when(connector).patch(any(URI.class), anyString());
+
+        accessor.update(bean.getId(), bean);
+
+        verify(connector).patch(
+            URI.create("/sobjects/InsertableUpdatableGetterOverrideBean/a01i00000000001AAC"), getResourceString("updateInsertableUpdatableOverriddenToBeWrongRequest.json"));
     }
 
     @Test

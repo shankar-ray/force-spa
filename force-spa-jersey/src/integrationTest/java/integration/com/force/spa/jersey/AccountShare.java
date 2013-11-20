@@ -10,13 +10,20 @@ import com.force.spa.SalesforceObject;
 import com.force.spa.beans.Share;
 
 @SalesforceObject
+@SuppressWarnings("UnusedDeclaration")
 public class AccountShare extends Share<Account> {
 
-    // Deal with oddity that name for this field is different for Accounts.
+    // Deal with oddity that several names are different for Account shares.
 
     @Override
     @SalesforceField(name = "AccountAccessLevel")
     public AccessLevel getAccessLevel() {
         return super.getAccessLevel();
+    }
+
+    @Override
+    @SalesforceField(name = "Account")
+    public Account getParent() {
+        return super.getParent();
     }
 }
