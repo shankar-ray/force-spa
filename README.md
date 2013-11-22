@@ -1,25 +1,42 @@
 # Simple Persistence API for Salesforce
 
-A CRUD-based interface for interacting with records in Salesforce through the use of annotated Javabeans.
+## Introduction
+
+The Simple Persistence API for Salesforce (SPA) is a high-level library that simplifies Java interactions with
+Salesforce objects. SPA uses [Salesforce REST](http://www.salesforce.com/us/developer/docs/api_rest/) to communicate
+with the Salesforce server and is based on the popular [Jackson](http://wiki.fasterxml.com/JacksonHome) library for
+JSON processing, but leverages Java annotations and built-in semantic knowledge about Salesforce objects and
+relationships to enable powerful interactions that are much simpler than if done with Jackson alone.
+
+## Presentations
+
+* [Dreamforce 2013 - Simplifying Salesforce REST in Java using Annotations](./docs/DF13 - Simplifying Salesforce REST in Java using Annotations.pdf)
 
 ## Building from Source
 
-### Prequisities
-[Gradle](http://www.gradle.org/) is used as the build tool and [git](http://git-scm.com/) for source control. Here's what you'll need to do the first time you try to build:
-* Download and install java  (version 1.7.0_40 or better)
-* Download and install git
+### Prequisities for Building
 
-You don't need to preinstall gradle because it will dynamically download
+SPA is built using [Gradle](http://www.gradle.org/), and as you aleady know, uses [Git](http://git-scm.com/) for
+source control. Before building SPA from source you'll need to:
+
+* Download and install git
+* Download and install java (version 1.7.0_40 or better)
+
+You don't need to install gradle because it will be dynamically download
 
 ### Build Steps
-1. Check out the source with the following command:
 
-`git clone git@github.com:davidbuccola/force-spa.git`
+Check out the source with the following command:
 
-2. Change your current working directory to the source you just retrieved:
+```git clone git@github.com:davidbuccola/force-spa.git
+```
 
-`cd force-spa`
+Change your current working directory to the source you just retrieved:
 
-3. Build (includes running the unit tests)
+```cd force-spa
+```
 
-`./gradlew build`
+Build (includes running the unit tests)
+
+```./gradlew build
+```
