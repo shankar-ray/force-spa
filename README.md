@@ -6,7 +6,7 @@ The Simple Persistence API for Salesforce (SPA) is a high-level library that sim
 Salesforce objects. SPA uses [Salesforce REST](http://www.salesforce.com/us/developer/docs/api_rest/) to communicate
 with the server and is based on the popular [Jackson](http://wiki.fasterxml.com/JacksonHome) library for
 JSON processing, but leverages Java annotations and built-in semantic knowledge about Salesforce objects and
-relationships to enable powerful interactions that go beyond what can be easily done with Jackson alone.
+relationships to enable powerful interactions that go beyond what can be done with basic Jackson alone.
 
 ## Presentations
 
