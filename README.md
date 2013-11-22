@@ -4,9 +4,9 @@
 
 The Simple Persistence API for Salesforce (SPA) is a high-level library that simplifies Java interactions with
 Salesforce objects. SPA uses [Salesforce REST](http://www.salesforce.com/us/developer/docs/api_rest/) to communicate
-with the Salesforce server and is based on the popular [Jackson](http://wiki.fasterxml.com/JacksonHome) library for
+with the server and is based on the popular [Jackson](http://wiki.fasterxml.com/JacksonHome) library for
 JSON processing, but leverages Java annotations and built-in semantic knowledge about Salesforce objects and
-relationships to enable powerful interactions that are much simpler than if done with Jackson alone.
+relationships to enable powerful interactions that go beyond what can be easily done with Jackson alone.
 
 ## Presentations
 
@@ -28,15 +28,18 @@ You don't need to install gradle because it will be dynamically download
 
 Check out the source with the following command:
 
-```git clone git@github.com:davidbuccola/force-spa.git
+```
+git clone git@github.com:davidbuccola/force-spa.git
 ```
 
 Change your current working directory to the source you just retrieved:
 
-```cd force-spa
+```
+cd force-spa
 ```
 
 Build (includes running the unit tests)
 
-```./gradlew build
+```
+./gradlew build
 ```
