@@ -51,8 +51,8 @@ import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 public final class ClientFactory {
 
     // Defaults for important basic Jersey properties
-    static final long DEFAULT_CONNECT_TIMEOUT = MILLISECONDS.convert(5, SECONDS);
-    static final long DEFAULT_READ_TIMEOUT = MILLISECONDS.convert(60, SECONDS);
+    static final int DEFAULT_CONNECT_TIMEOUT = (int) MILLISECONDS.convert(5, SECONDS);
+    static final int DEFAULT_READ_TIMEOUT = (int) MILLISECONDS.convert(60, SECONDS);
     static final int DEFAULT_THREAD_POOL_SIZE = 10;
 
     // Defaults for important Apache Jersey properties
